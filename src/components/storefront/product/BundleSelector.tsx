@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { cn, formatPrice } from '@/lib/utils'
 import { BUNDLES, type BundleId } from '@/data/bundles'
 
@@ -11,78 +12,93 @@ interface BundleSelectorProps {
 export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
   return (
     <div className="space-y-4">
-      {/* Header with decorative lines */}
+      {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="flex-1 h-px bg-red-400" />
-        <h3 className="text-sm font-semibold text-gray-700 tracking-wide">
-          BUNDLE & SAVE
+        <div className="flex-1 h-px bg-brand-200" />
+        <h3 className="text-sm font-semibold text-gray-600 tracking-wider uppercase">
+          Bundle & Save
         </h3>
-        <div className="flex-1 h-px bg-red-400" />
+        <div className="flex-1 h-px bg-brand-200" />
       </div>
 
       {/* Bundle options */}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {BUNDLES.map((bundle) => {
           const isSelected = selectedId === bundle.id
+          const hasFreeShipping = bundle.id !== 'card-only'
+          const isValentinesPack = bundle.id === 'love-pack'
+
+          // Calculate savings
+          const savings = bundle.compareAt - bundle.price
+          const savingsPercent = savings > 0 ? Math.round((savings / bundle.compareAt) * 100) : 0
 
           return (
-            <button
-              key={bundle.id}
-              onClick={() => onSelect(bundle.id)}
-              className={cn(
-                'w-full p-4 rounded-xl border-2 text-left transition-all relative',
-                'bg-red-50',
-                isSelected
-                  ? 'border-red-500'
-                  : 'border-red-200 hover:border-red-300'
+            <div key={bundle.id} className="relative overflow-visible">
+              {/* Most Popular badge - on Valentine's Pack row */}
+              {isValentinesPack && (
+                <Image
+                  src="/images/most-popular-badge.png"
+                  alt="Most Popular"
+                  width={95}
+                  height={76}
+                  className="absolute -top-6 -right-5 z-10 drop-shadow-md"
+                />
               )}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {/* Radio indicator */}
-                  <div
-                    className={cn(
-                      'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0',
-                      isSelected
-                        ? 'border-red-500'
-                        : 'border-gray-300'
-                    )}
-                  >
-                    {isSelected && (
-                      <div className="w-3 h-3 rounded-full bg-red-500" />
-                    )}
-                  </div>
-
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-900">{bundle.name}</h4>
-                    <p className="text-sm text-gray-600">{bundle.description}</p>
-                  </div>
-                </div>
-
-                {/* Price */}
-                <div className="text-xl font-bold text-gray-900 flex-shrink-0">
-                  {formatPrice(bundle.price)}
-                </div>
-              </div>
-
-              {/* Most Popular badge */}
-              {bundle.badge === 'Most Popular' && (
-                <div className="absolute -bottom-4 right-4">
-                  <div className="bg-red-500 text-white text-xs font-bold px-3 py-2 rounded-full shadow-md text-center leading-tight">
-                    <div className="flex items-center justify-center gap-0.5">
-                      <span className="text-yellow-300">+</span>
-                      <span>Most</span>
-                      <span className="text-yellow-300">+</span>
+              <button
+                onClick={() => onSelect(bundle.id)}
+                className={cn(
+                  'w-full px-4 py-3.5 rounded-lg text-left transition-all duration-200 overflow-visible',
+                  isSelected
+                    ? 'bg-white ring-2 ring-brand-400 shadow-sm'
+                    : 'bg-brand-50/60 hover:bg-brand-50'
+                )}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Radio */}
+                    <div
+                      className={cn(
+                        'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors',
+                        isSelected ? 'border-brand-400' : 'border-gray-300'
+                      )}
+                    >
+                      {isSelected && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-brand-400" />
+                      )}
                     </div>
-                    <div className="flex items-center justify-center gap-0.5">
-                      <span className="text-yellow-300">+</span>
-                      <span>Popular</span>
-                      <span className="text-yellow-300">+</span>
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-semibold text-gray-900">{bundle.name}</h4>
+                        {hasFreeShipping && (
+                          <span className="text-[10px] font-bold text-brand-500 bg-brand-100 px-1.5 py-0.5 rounded uppercase tracking-wide">
+                            Free Shipping
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 mt-0.5">{bundle.description}</p>
                     </div>
                   </div>
+
+                  {/* Price */}
+                  <div className="text-right flex-shrink-0">
+                    {savingsPercent > 0 && bundle.id !== 'card-only' && (
+                      <div className="text-xs text-gray-400 line-through leading-none">
+                        {formatPrice(bundle.compareAt)}
+                      </div>
+                    )}
+                    <div className="text-lg font-bold text-gray-900 leading-tight">
+                      {formatPrice(bundle.price)}
+                    </div>
+                    {savingsPercent > 0 && bundle.id !== 'card-only' && (
+                      <div className="text-xs text-emerald-600 font-medium leading-none">
+                        Save {savingsPercent}%
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </button>
+              </button>
+            </div>
           )
         })}
       </div>
