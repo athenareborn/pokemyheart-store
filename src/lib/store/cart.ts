@@ -149,7 +149,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: 'pokemyheart-cart',
+      name: 'ultrararelove-cart',
       partialize: (state) => ({
         items: state.items,
         reservationExpiry: state.reservationExpiry,

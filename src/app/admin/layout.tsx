@@ -28,7 +28,7 @@ export default function AdminLayout({
         <div className="p-6 border-b border-gray-800">
           <Link href="/admin" className="flex items-center gap-2">
             <Heart className="h-8 w-8 text-pink-500 fill-pink-500" />
-            <span className="text-xl font-bold">Admin</span>
+            <span className="text-xl font-bold">UltraRareLove</span>
           </Link>
         </div>
 
