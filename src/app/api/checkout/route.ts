@@ -7,7 +7,10 @@ function getStripe() {
   if (!key || key.startsWith('sk_test_placeholder')) {
     throw new Error('Stripe secret key not configured')
   }
-  return new Stripe(key)
+  return new Stripe(key, {
+    timeout: 30000, // 30 second timeout
+    maxNetworkRetries: 3,
+  })
 }
 
 export async function POST(req: NextRequest) {
