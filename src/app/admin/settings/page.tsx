@@ -121,54 +121,112 @@ export default function SettingsPage() {
 
         {/* Shipping Settings */}
         <TabsContent value="shipping" className="space-y-3">
+          {/* Free Shipping Promotion */}
+          <Card className="border-emerald-200 bg-emerald-50/50">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <Truck className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-base text-emerald-800">Free Shipping Promotion</CardTitle>
+                  <CardDescription className="text-emerald-600">Active for orders $35.00 and above</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-white rounded-lg p-4 border border-emerald-200">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Threshold</p>
+                    <p className="text-2xl font-bold text-emerald-600">$35.00</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</p>
+                    <Badge className="bg-emerald-100 text-emerald-700 mt-1">Active</Badge>
+                  </div>
+                </div>
+                <Separator className="my-3" />
+                <p className="text-sm text-muted-foreground">
+                  When cart subtotal is <span className="font-medium text-foreground">$35.00 or more</span>, customers get FREE Standard Shipping and Express Shipping at a reduced rate of $4.95.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Shipping Rates */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Shipping Rates</CardTitle>
-              <CardDescription>Configure your shipping options and rates</CardDescription>
+              <CardDescription>Rates applied based on cart value</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div>
-                    <p className="font-medium text-foreground">Standard Shipping</p>
-                    <p className="text-sm text-muted-foreground">5-7 business days</p>
+            <CardContent className="space-y-4">
+              {/* Under threshold */}
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Orders under $35.00</p>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    <div>
+                      <p className="font-medium text-foreground">Standard Shipping</p>
+                      <p className="text-sm text-muted-foreground">5-7 business days</p>
+                    </div>
+                    <p className="font-semibold text-foreground">$4.95</p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Input className="w-24" defaultValue="$4.95" />
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div>
-                    <p className="font-medium text-foreground">Express Shipping</p>
-                    <p className="text-sm text-muted-foreground">1-3 business days</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <Input className="w-24" defaultValue="$9.95" />
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between p-4 border border-emerald-200 bg-emerald-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-foreground">Free Shipping Threshold</p>
-                    <p className="text-sm text-muted-foreground">Orders above this amount get free shipping</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <Input className="w-24" defaultValue="$35.00" />
-                    <Switch defaultChecked />
+                  <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    <div>
+                      <p className="font-medium text-foreground">Express Shipping</p>
+                      <p className="text-sm text-muted-foreground">1-3 business days</p>
+                    </div>
+                    <p className="font-semibold text-foreground">$9.95</p>
                   </div>
                 </div>
               </div>
+
               <Separator />
+
+              {/* Over threshold */}
               <div>
-                <p className="text-sm font-medium text-foreground mb-2">Shipping Zones</p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline">United States</Badge>
-                  <Badge variant="outline">Canada</Badge>
-                  <Badge variant="outline">United Kingdom</Badge>
-                  <Badge variant="outline">Australia</Badge>
-                  <Button variant="ghost" size="sm" className="text-pink-600">+ Add zone</Button>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Orders $35.00 and above</p>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 border border-emerald-200 bg-emerald-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-foreground">Standard Shipping</p>
+                      <p className="text-sm text-muted-foreground">5-7 business days</p>
+                    </div>
+                    <Badge className="bg-emerald-100 text-emerald-700">FREE</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    <div>
+                      <p className="font-medium text-foreground">Express Shipping</p>
+                      <p className="text-sm text-muted-foreground">1-3 business days</p>
+                    </div>
+                    <p className="font-semibold text-foreground">$4.95</p>
+                  </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Shipping Zones */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Shipping Zones</CardTitle>
+              <CardDescription>Countries where you ship to</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="px-3 py-1">
+                  <span className="mr-1">🇺🇸</span> United States
+                </Badge>
+                <Badge variant="outline" className="px-3 py-1">
+                  <span className="mr-1">🇨🇦</span> Canada
+                </Badge>
+                <Badge variant="outline" className="px-3 py-1">
+                  <span className="mr-1">🇬🇧</span> United Kingdom
+                </Badge>
+                <Badge variant="outline" className="px-3 py-1">
+                  <span className="mr-1">🇦🇺</span> Australia
+                </Badge>
               </div>
             </CardContent>
           </Card>

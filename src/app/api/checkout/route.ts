@@ -66,29 +66,47 @@ export async function POST(req: NextRequest) {
       params.append(`line_items[${index}][quantity]`, String(item.quantity))
     })
 
-    // Add shipping
+    // Add shipping address collection
     params.append('shipping_address_collection[allowed_countries][0]', 'US')
     params.append('shipping_address_collection[allowed_countries][1]', 'CA')
     params.append('shipping_address_collection[allowed_countries][2]', 'GB')
     params.append('shipping_address_collection[allowed_countries][3]', 'AU')
 
-    // Standard shipping
-    params.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount')
-    params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', '495')
-    params.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'usd')
-    params.append('shipping_options[0][shipping_rate_data][display_name]', 'Standard Shipping (5-7 days)')
+    // Free shipping threshold: $35 (3500 cents)
+    const FREE_SHIPPING_THRESHOLD = 3500
+    const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD
 
-    // Express shipping
-    params.append('shipping_options[1][shipping_rate_data][type]', 'fixed_amount')
-    params.append('shipping_options[1][shipping_rate_data][fixed_amount][amount]', '995')
-    params.append('shipping_options[1][shipping_rate_data][fixed_amount][currency]', 'usd')
-    params.append('shipping_options[1][shipping_rate_data][display_name]', 'Express Shipping (1-3 days)')
+    if (qualifiesForFreeShipping) {
+      // Free standard shipping for orders $35+
+      params.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount')
+      params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', '0')
+      params.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'usd')
+      params.append('shipping_options[0][shipping_rate_data][display_name]', 'FREE Standard Shipping (5-7 days)')
+
+      // Express shipping still available at reduced rate
+      params.append('shipping_options[1][shipping_rate_data][type]', 'fixed_amount')
+      params.append('shipping_options[1][shipping_rate_data][fixed_amount][amount]', '495')
+      params.append('shipping_options[1][shipping_rate_data][fixed_amount][currency]', 'usd')
+      params.append('shipping_options[1][shipping_rate_data][display_name]', 'Express Shipping (1-3 days)')
+    } else {
+      // Standard shipping
+      params.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount')
+      params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', '495')
+      params.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'usd')
+      params.append('shipping_options[0][shipping_rate_data][display_name]', 'Standard Shipping (5-7 days)')
+
+      // Express shipping
+      params.append('shipping_options[1][shipping_rate_data][type]', 'fixed_amount')
+      params.append('shipping_options[1][shipping_rate_data][fixed_amount][amount]', '995')
+      params.append('shipping_options[1][shipping_rate_data][fixed_amount][currency]', 'usd')
+      params.append('shipping_options[1][shipping_rate_data][display_name]', 'Express Shipping (1-3 days)')
+    }
 
     // Add metadata
     params.append('metadata[source]', 'pokemyheart-store')
     params.append('metadata[items]', JSON.stringify(orderItemsSummary))
     params.append('metadata[subtotal]', String(subtotal))
-    params.append('metadata[shipping]', '495')
+    params.append('metadata[shipping]', qualifiesForFreeShipping ? '0' : '495')
 
     // Facebook attribution data
     if (fbData?.fbc) params.append('metadata[fb_fbc]', fbData.fbc)
