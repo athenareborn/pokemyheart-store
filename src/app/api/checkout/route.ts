@@ -44,6 +44,8 @@ export async function POST(req: NextRequest) {
 
     // Build order items summary for session metadata
     const orderItemsSummary = items.map((item: {
+      name: string
+      description: string
       designId?: string
       designName?: string
       bundleId?: string
@@ -51,7 +53,10 @@ export async function POST(req: NextRequest) {
       bundleSku?: string
       quantity: number
       price: number
+      image?: string
     }) => ({
+      name: item.name,
+      description: item.description,
       designId: item.designId,
       designName: item.designName,
       bundleId: item.bundleId,
@@ -59,7 +64,13 @@ export async function POST(req: NextRequest) {
       sku: item.bundleSku,
       quantity: item.quantity,
       price: item.price,
+      image: item.image,
     }))
+
+    // Calculate subtotal (sum of all item prices * quantities)
+    const subtotal = items.reduce((sum: number, item: { price: number; quantity: number }) =>
+      sum + (item.price * item.quantity), 0
+    )
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
@@ -116,7 +127,9 @@ export async function POST(req: NextRequest) {
       allow_promotion_codes: true,
       metadata: {
         source: 'pokemyheart-store',
-        orderItems: JSON.stringify(orderItemsSummary),
+        items: JSON.stringify(orderItemsSummary),
+        subtotal: String(subtotal),
+        shipping: '495', // Default to standard shipping, actual amount determined by customer selection
       },
     })
 

@@ -1,39 +1,44 @@
-'use client'
-
 import Link from 'next/link'
 import { DollarSign, Package, Users, TrendingUp, ArrowRight, AlertTriangle } from 'lucide-react'
 import { StatCard, ActivityFeed, StatusBadge, Sparkline } from '@/components/admin'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatPrice } from '@/lib/utils'
+import { getOrderStats, getRecentOrders } from '@/lib/db/orders'
+import { getCustomerStats } from '@/lib/db/customers'
+import { formatDistanceToNow } from 'date-fns'
 
-const STATS = {
-  revenue: { value: 284750, change: '+12.5%', trend: 'up' as const },
-  orders: { value: 47, change: '+8', trend: 'up' as const },
-  customers: { value: 42, change: '+3', trend: 'up' as const },
-  conversionRate: { value: 3.2, change: '+0.4%', trend: 'up' as const },
-}
-
-const REVENUE_SPARKLINE = [120, 180, 150, 220, 280, 240, 310, 280, 350, 320, 380, 420]
-
-const RECENT_ORDERS = [
-  { id: 'PMH-008', customer: 'Jessica M.', total: 5295, status: 'unfulfilled', date: '2 min ago', bundle: 'Deluxe Love' },
-  { id: 'PMH-007', customer: 'Emily Foster', total: 3795, status: 'unfulfilled', date: '1 hour ago', bundle: 'Love Pack' },
-  { id: 'PMH-006', customer: 'Ryan Parker', total: 5295, status: 'processing', date: '3 hours ago', bundle: 'Deluxe Love' },
-  { id: 'PMH-005', customer: 'Tina L.', total: 3795, status: 'fulfilled', date: '5 hours ago', bundle: 'Love Pack' },
-  { id: 'PMH-004', customer: 'Cody B.', total: 5295, status: 'fulfilled', date: '1 day ago', bundle: 'Deluxe Love' },
-]
-
+// Mock activity data (we don't have a full activity log table yet)
 const RECENT_ACTIVITY = [
-  { id: '1', type: 'order' as const, title: 'New order #PMH-008', description: 'Jessica M. ordered Deluxe Love bundle', time: '2 minutes ago' },
-  { id: '2', type: 'customer' as const, title: 'New customer', description: 'jessica@example.com signed up', time: '2 minutes ago' },
-  { id: '3', type: 'fulfillment' as const, title: 'Order fulfilled', description: '#PMH-005 shipped via USPS', time: '5 hours ago' },
-  { id: '4', type: 'payment' as const, title: 'Payment received', description: '$52.95 from Ryan Parker', time: '3 hours ago' },
+  { id: '1', type: 'order' as const, title: 'New order received', description: 'Check recent orders for details', time: 'recently' },
+  { id: '2', type: 'customer' as const, title: 'Customer activity', description: 'View customer list for updates', time: 'recently' },
+  { id: '3', type: 'fulfillment' as const, title: 'Fulfillment pending', description: 'Check orders to fulfill', time: 'recently' },
 ]
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+  // Fetch real data from Supabase
+  const [orderStats, customerStats, recentOrders] = await Promise.all([
+    getOrderStats(),
+    getCustomerStats(),
+    getRecentOrders(5),
+  ])
+
+  const hasOrders = orderStats.orderCount > 0
+  const hasCustomers = customerStats.total > 0
+  const unfulfilledCount = orderStats.unfulfilled || 0
+
+  // Format recent orders for display
+  const formattedOrders = recentOrders.map((order) => ({
+    id: order.order_number,
+    customer: order.customer_name || order.customer_email.split('@')[0],
+    total: order.total,
+    status: order.status,
+    date: formatDistanceToNow(new Date(order.created_at), { addSuffix: true }),
+    bundle: order.items[0]?.bundle_name || 'Unknown',
+  }))
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -45,49 +50,53 @@ export default function AdminDashboard() {
         </Button>
       </div>
 
-      {/* Alert */}
-      <Card className="border-amber-200 bg-amber-50">
-        <CardContent className="py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <div>
-              <p className="text-sm font-medium text-amber-900">2 orders need fulfillment</p>
-              <p className="text-xs text-amber-700">Customers are waiting</p>
+      {/* Alert - only show if there are unfulfilled orders */}
+      {unfulfilledCount > 0 && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <div>
+                <p className="text-base font-medium text-amber-900">
+                  {unfulfilledCount} {unfulfilledCount === 1 ? 'order needs' : 'orders need'} fulfillment
+                </p>
+                <p className="text-xs text-amber-700">Customers are waiting</p>
+              </div>
             </div>
-          </div>
-          <Button size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100" asChild>
-            <Link href="/admin/orders?status=unfulfilled">
-              View orders
-              <ArrowRight className="h-3 w-3 ml-1" />
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+            <Button size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100" asChild>
+              <Link href="/admin/orders?status=unfulfilled">
+                View orders
+                <ArrowRight className="h-3 w-3 ml-1" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Revenue"
-          value={formatPrice(STATS.revenue.value)}
-          change={{ value: STATS.revenue.change, trend: STATS.revenue.trend }}
+          value={formatPrice(orderStats.revenue)}
+          change={hasOrders ? { value: 'All time', trend: 'up' as const } : undefined}
           icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Orders"
-          value={STATS.orders.value.toString()}
-          change={{ value: STATS.orders.change, trend: STATS.orders.trend }}
+          value={orderStats.orderCount.toString()}
+          change={hasOrders ? { value: `${orderStats.fulfilled || 0} fulfilled`, trend: 'up' as const } : undefined}
           icon={<Package className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Customers"
-          value={STATS.customers.value.toString()}
-          change={{ value: STATS.customers.change, trend: STATS.customers.trend }}
+          value={customerStats.total.toString()}
+          change={hasCustomers ? { value: `${customerStats.subscribers} subscribers`, trend: 'up' as const } : undefined}
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
-          title="Conversion Rate"
-          value={`${STATS.conversionRate.value}%`}
-          change={{ value: STATS.conversionRate.change, trend: STATS.conversionRate.trend }}
+          title="Avg Order Value"
+          value={formatPrice(orderStats.averageOrderValue)}
+          change={hasOrders ? { value: 'Per order', trend: 'up' as const } : undefined}
           icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
@@ -95,26 +104,36 @@ export default function AdminDashboard() {
       {/* Revenue Card */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between py-3">
-          <CardTitle className="text-sm font-medium">Revenue Overview</CardTitle>
-          <span className="text-xs text-muted-foreground">Last 12 days</span>
+          <CardTitle className="text-base font-medium">Revenue Overview</CardTitle>
+          <span className="text-xs text-muted-foreground">All time</span>
         </CardHeader>
         <CardContent className="pt-0 pb-3 px-4">
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-2xl font-semibold">{formatPrice(STATS.revenue.value)}</p>
-              <p className="text-sm text-emerald-600">+12.5% from last period</p>
+              <p className="text-2xl font-semibold">{formatPrice(orderStats.revenue)}</p>
+              <p className="text-sm text-muted-foreground">
+                {hasOrders
+                  ? `${orderStats.orderCount} orders, ${formatPrice(orderStats.averageOrderValue)} avg`
+                  : 'No orders yet'}
+              </p>
             </div>
-            <Sparkline data={REVENUE_SPARKLINE} width={120} height={40} color="hsl(var(--primary))" />
+            {/* Sparkline placeholder - would need historical data */}
+            <Sparkline
+              data={hasOrders ? [orderStats.revenue * 0.1, orderStats.revenue * 0.3, orderStats.revenue * 0.5, orderStats.revenue * 0.7, orderStats.revenue] : [0, 0, 0, 0, 0]}
+              width={120}
+              height={40}
+              color="hsl(var(--primary))"
+            />
           </div>
         </CardContent>
       </Card>
 
       {/* Grid */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Orders */}
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between py-3">
-            <CardTitle className="text-sm font-medium">Recent Orders</CardTitle>
+            <CardTitle className="text-base font-medium">Recent Orders</CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/orders">
                 View all
@@ -123,31 +142,39 @@ export default function AdminDashboard() {
             </Button>
           </CardHeader>
           <CardContent className="pt-0 pb-3 px-4">
-            <div className="space-y-3">
-              {RECENT_ORDERS.map((order) => (
-                <div key={order.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <Link href={`/admin/orders/${order.id}`} className="text-sm font-medium hover:underline">
-                        {order.id}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">{order.customer}</p>
+            {formattedOrders.length > 0 ? (
+              <div className="space-y-4">
+                {formattedOrders.map((order) => (
+                  <div key={order.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      <div>
+                        <Link href={`/admin/orders/${order.id}`} className="text-base font-medium hover:underline">
+                          {order.id}
+                        </Link>
+                        <p className="text-xs text-muted-foreground">{order.customer}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <StatusBadge status={order.status} />
+                      <span className="text-base font-medium w-16 text-right">{formatPrice(order.total)}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <StatusBadge status={order.status} />
-                    <span className="text-sm font-medium w-16 text-right">{formatPrice(order.total)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No orders yet</p>
+                <p className="text-xs">Orders will appear here when customers make purchases</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Activity */}
         <Card>
           <CardHeader className="py-3">
-            <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+            <CardTitle className="text-base font-medium">Recent Activity</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 pb-3 px-4">
             <ActivityFeed activities={RECENT_ACTIVITY} />

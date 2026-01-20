@@ -16,24 +16,24 @@ interface StatCardProps {
 export function StatCard({ title, value, change, icon, className }: StatCardProps) {
   return (
     <Card className={cn('', className)}>
-      <CardContent className="p-3">
+      <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div className="space-y-0.5">
-            <p className="text-xs font-medium text-muted-foreground">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">
               {title}
             </p>
-            <p className="text-xl font-semibold tracking-tight">
+            <p className="text-2xl font-semibold tracking-tight">
               {value}
             </p>
           </div>
           {icon && (
-            <div className="p-1.5 bg-muted rounded-md">
+            <div className="p-2 bg-muted rounded-md">
               {icon}
             </div>
           )}
         </div>
         {change && (
-          <div className="mt-2 flex items-center gap-1">
+          <div className="mt-3 flex items-center gap-1">
             {change.trend === 'up' && (
               <TrendingUp className="h-3 w-3 text-emerald-500" />
             )}
@@ -48,6 +48,7 @@ export function StatCard({ title, value, change, icon, className }: StatCardProp
             )}>
               {change.value}
             </span>
+            <span className="text-xs text-muted-foreground">vs last period</span>
           </div>
         )}
       </CardContent>

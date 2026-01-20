@@ -19,12 +19,12 @@ export default function ProductsPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [product, setProduct] = useState({
     name: PRODUCT.name,
-    description: PRODUCT.description,
+    description: PRODUCT.shortDescription,
     stockCount: PRODUCT.stockCount,
   })
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
