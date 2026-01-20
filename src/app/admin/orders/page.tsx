@@ -2,45 +2,38 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Search, Filter, Download, Eye, Truck, MoreHorizontal } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Search, Filter, Download, Eye, Truck, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
+import { StatusBadge } from '@/components/admin'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { formatPrice } from '@/lib/utils'
 
-// Mock data - will be replaced with real data from Supabase
+// Mock data
 const ORDERS = [
-  { id: 'PMH-001', customer: 'Laura Carter', email: 'laura@example.com', total: 5295, items: 1, bundle: 'Deluxe Love', status: 'fulfilled', date: '2025-02-14', tracking: 'ABC123456' },
-  { id: 'PMH-002', customer: 'Andrew F.', email: 'andrew@example.com', total: 3795, items: 1, bundle: 'Love Pack', status: 'processing', date: '2025-02-13', tracking: null },
-  { id: 'PMH-003', customer: 'Sam P.', email: 'sam@example.com', total: 2395, items: 1, bundle: 'Card Only', status: 'unfulfilled', date: '2025-02-12', tracking: null },
-  { id: 'PMH-004', customer: 'Cody B.', email: 'cody@example.com', total: 5295, items: 1, bundle: 'Deluxe Love', status: 'fulfilled', date: '2025-02-11', tracking: 'DEF789012' },
-  { id: 'PMH-005', customer: 'Tina L.', email: 'tina@example.com', total: 3795, items: 1, bundle: 'Love Pack', status: 'processing', date: '2025-02-10', tracking: null },
-  { id: 'PMH-006', customer: 'Ryan Parker', email: 'ryan@example.com', total: 5295, items: 1, bundle: 'Deluxe Love', status: 'fulfilled', date: '2025-02-09', tracking: 'GHI345678' },
-  { id: 'PMH-007', customer: 'Emily Foster', email: 'emily@example.com', total: 3795, items: 1, bundle: 'Love Pack', status: 'unfulfilled', date: '2025-02-08', tracking: null },
+  { id: 'PMH-008', customer: 'Jessica M.', email: 'jessica@example.com', total: 5295, items: 1, bundle: 'Deluxe Love', design: 'Forever Yours', status: 'unfulfilled', date: '2025-02-20', time: '9:15 AM' },
+  { id: 'PMH-007', customer: 'Emily Foster', email: 'emily@example.com', total: 3795, items: 1, bundle: 'Love Pack', design: 'My Heart', status: 'unfulfilled', date: '2025-02-19', time: '3:45 PM' },
+  { id: 'PMH-006', customer: 'Ryan Parker', email: 'ryan@example.com', total: 5295, items: 1, bundle: 'Deluxe Love', design: 'Eternal Love', status: 'processing', date: '2025-02-18', time: '11:20 AM' },
+  { id: 'PMH-005', customer: 'Tina L.', email: 'tina@example.com', total: 3795, items: 1, bundle: 'Love Pack', design: 'Soulmate', status: 'fulfilled', date: '2025-02-17', time: '2:30 PM', tracking: 'ABC123' },
+  { id: 'PMH-004', customer: 'Cody B.', email: 'cody@example.com', total: 5295, items: 1, bundle: 'Deluxe Love', design: 'True Love', status: 'fulfilled', date: '2025-02-16', time: '10:00 AM', tracking: 'DEF456' },
+  { id: 'PMH-003', customer: 'Sam P.', email: 'sam@example.com', total: 2395, items: 1, bundle: 'Card Only', design: 'Eternal Love', status: 'fulfilled', date: '2025-02-15', time: '4:15 PM', tracking: 'GHI789' },
+  { id: 'PMH-002', customer: 'Andrew F.', email: 'andrew@example.com', total: 3795, items: 1, bundle: 'Love Pack', design: 'Forever Yours', status: 'fulfilled', date: '2025-02-14', time: '1:00 PM', tracking: 'JKL012' },
+  { id: 'PMH-001', customer: 'Laura Carter', email: 'laura@example.com', total: 5295, items: 1, bundle: 'Deluxe Love', design: 'Eternal Love', status: 'fulfilled', date: '2025-02-14', time: '10:30 AM', tracking: 'MNO345' },
 ]
-
-function formatPrice(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles = {
-    fulfilled: 'bg-green-100 text-green-700',
-    processing: 'bg-blue-100 text-blue-700',
-    unfulfilled: 'bg-yellow-100 text-yellow-700',
-    refunded: 'bg-red-100 text-red-700',
-  }
-  return (
-    <Badge className={styles[status as keyof typeof styles] || 'bg-gray-100 text-gray-700'}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </Badge>
-  )
-}
 
 export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState('all')
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([])
 
   const filteredOrders = ORDERS.filter(order => {
     const matchesSearch =
@@ -52,13 +45,30 @@ export default function OrdersPage() {
     return matchesSearch && order.status === activeTab
   })
 
+  const toggleOrder = (orderId: string) => {
+    setSelectedOrders(prev =>
+      prev.includes(orderId)
+        ? prev.filter(id => id !== orderId)
+        : [...prev, orderId]
+    )
+  }
+
+  const toggleAll = () => {
+    if (selectedOrders.length === filteredOrders.length) {
+      setSelectedOrders([])
+    } else {
+      setSelectedOrders(filteredOrders.map(o => o.id))
+    }
+  }
+
   const handleExportCSV = () => {
-    const headers = ['Order ID', 'Customer', 'Email', 'Bundle', 'Total', 'Status', 'Date', 'Tracking']
+    const headers = ['Order ID', 'Customer', 'Email', 'Bundle', 'Design', 'Total', 'Status', 'Date', 'Tracking']
     const rows = filteredOrders.map(order => [
       order.id,
       order.customer,
       order.email,
       order.bundle,
+      order.design,
       formatPrice(order.total),
       order.status,
       order.date,
@@ -79,29 +89,46 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-600 mt-1">Manage and fulfill customer orders</p>
+          <h1 className="text-2xl font-semibold text-slate-900">Orders</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Manage and fulfill customer orders</p>
         </div>
-        <Button onClick={handleExportCSV}>
-          <Download className="h-4 w-4 mr-2" />
-          Export CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedOrders.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Bulk actions ({selectedOrders.length})
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>Mark as fulfilled</DropdownMenuItem>
+                <DropdownMenuItem>Print packing slips</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-red-600">Cancel orders</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <Button variant="outline" size="sm" onClick={handleExportCSV}>
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+        </div>
       </div>
 
-      {/* Filters */}
+      {/* Search & Filters */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex gap-4">
+        <CardContent className="py-3">
+          <div className="flex gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 placeholder="Search by order ID, customer, or email..."
-                className="pl-10"
+                className="pl-9 h-9 bg-slate-50 border-slate-200"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline">
+            <Button variant="outline" size="sm">
               <Filter className="h-4 w-4 mr-2" />
               Filters
             </Button>
@@ -111,74 +138,117 @@ export default function OrdersPage() {
 
       {/* Orders Table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="py-3 px-4 border-b border-slate-100">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
-              <TabsTrigger value="all">All ({ORDERS.length})</TabsTrigger>
-              <TabsTrigger value="unfulfilled">
+            <TabsList className="h-8 bg-transparent p-0 gap-4">
+              <TabsTrigger value="all" className="h-8 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-slate-900 rounded-none">
+                All ({ORDERS.length})
+              </TabsTrigger>
+              <TabsTrigger value="unfulfilled" className="h-8 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-slate-900 rounded-none">
                 Unfulfilled ({ORDERS.filter(o => o.status === 'unfulfilled').length})
               </TabsTrigger>
-              <TabsTrigger value="processing">
+              <TabsTrigger value="processing" className="h-8 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-slate-900 rounded-none">
                 Processing ({ORDERS.filter(o => o.status === 'processing').length})
               </TabsTrigger>
-              <TabsTrigger value="fulfilled">
+              <TabsTrigger value="fulfilled" className="h-8 px-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-slate-900 rounded-none">
                 Fulfilled ({ORDERS.filter(o => o.status === 'fulfilled').length})
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Order</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Customer</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Bundle</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Total</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Date</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Actions</th>
+                <tr className="border-b border-slate-100 bg-slate-50/50">
+                  <th className="w-10 py-3 px-4">
+                    <Checkbox
+                      checked={selectedOrders.length === filteredOrders.length && filteredOrders.length > 0}
+                      onCheckedChange={toggleAll}
+                    />
+                  </th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Order</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Customer</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Product</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-slate-500 uppercase tracking-wider">Total</th>
+                  <th className="w-10 py-3 px-4"></th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr key={order.id} className="border-b border-slate-50 hover:bg-slate-50/50">
                     <td className="py-3 px-4">
-                      <Link href={`/admin/orders/${order.id}`} className="font-medium text-pink-600 hover:underline">
+                      <Checkbox
+                        checked={selectedOrders.includes(order.id)}
+                        onCheckedChange={() => toggleOrder(order.id)}
+                      />
+                    </td>
+                    <td className="py-3 px-4">
+                      <Link href={`/admin/orders/${order.id}`} className="text-sm font-medium text-slate-900 hover:text-pink-600">
                         {order.id}
                       </Link>
+                      <p className="text-xs text-slate-400">{order.date} at {order.time}</p>
                     </td>
                     <td className="py-3 px-4">
-                      <div>
-                        <div className="font-medium text-gray-900">{order.customer}</div>
-                        <div className="text-sm text-gray-500">{order.email}</div>
-                      </div>
+                      <p className="text-sm text-slate-900">{order.customer}</p>
+                      <p className="text-xs text-slate-400">{order.email}</p>
                     </td>
-                    <td className="py-3 px-4 text-gray-700">{order.bundle}</td>
-                    <td className="py-3 px-4 font-medium text-gray-900">{formatPrice(order.total)}</td>
+                    <td className="py-3 px-4">
+                      <p className="text-sm text-slate-900">{order.bundle}</p>
+                      <p className="text-xs text-slate-400">{order.design}</p>
+                    </td>
                     <td className="py-3 px-4">
                       <StatusBadge status={order.status} />
                     </td>
-                    <td className="py-3 px-4 text-gray-500">{order.date}</td>
                     <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/admin/orders/${order.id}`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        {order.status !== 'fulfilled' && (
-                          <Button variant="ghost" size="icon">
-                            <Truck className="h-4 w-4" />
+                      <span className="text-sm font-medium text-slate-900">{formatPrice(order.total)}</span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                        )}
-                      </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/orders/${order.id}`}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View details
+                            </Link>
+                          </DropdownMenuItem>
+                          {order.status !== 'fulfilled' && (
+                            <DropdownMenuItem>
+                              <Truck className="h-4 w-4 mr-2" />
+                              Fulfill order
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-600">Cancel order</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100">
+            <p className="text-sm text-slate-500">
+              Showing {filteredOrders.length} of {ORDERS.length} orders
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" className="bg-slate-900 text-white hover:bg-slate-800">1</Button>
+              <Button variant="outline" size="sm" disabled>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
