@@ -29,7 +29,7 @@ export function Footer() {
             <Link href="/" className="flex items-center">
               <Image
                 src="/images/logo.png"
-                alt="Pokemyheart"
+                alt="UltraRareLove"
                 width={150}
                 height={38}
                 className="h-9 w-auto brightness-0 invert"
@@ -110,7 +110,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} Pokemyheart. All rights reserved.
+            &copy; {new Date().getFullYear()} UltraRareLove. All rights reserved.
           </p>
           <div className="flex gap-4">
             {FOOTER_LINKS.legal.map((link) => (

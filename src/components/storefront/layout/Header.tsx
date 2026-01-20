@@ -38,7 +38,7 @@ export function Header() {
                   <Link href="/" onClick={() => setMobileMenuOpen(false)}>
                     <Image
                       src="/images/logo.png"
-                      alt="Pokemyheart"
+                      alt="UltraRareLove"
                       width={130}
                       height={32}
                       className="h-8 w-auto"
@@ -78,7 +78,7 @@ export function Header() {
           <Link href="/" className="flex items-center">
             <Image
               src="/images/logo.png"
-              alt="Pokemyheart"
+              alt="UltraRareLove"
               width={160}
               height={40}
               className="h-10 w-auto"
