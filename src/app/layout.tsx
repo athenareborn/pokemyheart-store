@@ -43,6 +43,28 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: `
+          :root {
+            --brand-50: oklch(0.971 0.014 343.198);
+            --brand-100: oklch(0.948 0.028 342.258);
+            --brand-200: oklch(0.899 0.061 343.231);
+            --brand-300: oklch(0.823 0.12 346.018);
+            --brand-400: oklch(0.718 0.202 349.761);
+            --brand-500: oklch(0.656 0.241 354.308);
+            --brand-600: oklch(0.592 0.249 0.584);
+          }
+          .theme-red {
+            --brand-50: oklch(0.971 0.013 17.38);
+            --brand-100: oklch(0.936 0.032 17.717);
+            --brand-200: oklch(0.885 0.062 18.334);
+            --brand-300: oklch(0.808 0.114 19.571);
+            --brand-400: oklch(0.704 0.191 22.216);
+            --brand-500: oklch(0.637 0.237 25.331);
+            --brand-600: oklch(0.577 0.245 27.325);
+          }
+        `}} />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <FacebookPixel />
         <GoogleAnalytics />
