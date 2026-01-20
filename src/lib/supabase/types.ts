@@ -54,3 +54,39 @@ export interface AnalyticsEvent {
   session_id: string | null
   created_at: string
 }
+
+// Launch TODO Types
+export type TodoCategory =
+  | 'legal'
+  | 'storefront'
+  | 'admin'
+  | 'backend'
+  | 'marketing'
+  | 'integrations'
+  | 'seo'
+  | 'security'
+  | 'analytics'
+  | 'content'
+  | 'payments'
+  | 'email'
+
+export type TodoPriority = 'critical' | 'high' | 'medium' | 'low'
+export type TodoStatus = 'not_started' | 'in_progress' | 'blocked' | 'done'
+export type TodoAssignee = 'human' | 'ai' | 'both'
+
+export interface LaunchTodo {
+  id: string
+  category: TodoCategory
+  subcategory: string | null
+  title: string
+  description: string | null
+  priority: TodoPriority
+  status: TodoStatus
+  assignee: TodoAssignee
+  blocked_by: string[] | null
+  notes: string | null
+  links: string[] | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
