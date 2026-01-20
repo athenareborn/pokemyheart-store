@@ -10,13 +10,18 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { items, successUrl, cancelUrl } = body
 
-    // Create line items for Stripe
+    // Create line items for Stripe with metadata
     const lineItems = items.map((item: {
       name: string
       description: string
       price: number
       quantity: number
       image?: string
+      designId?: string
+      designName?: string
+      bundleId?: string
+      bundleName?: string
+      bundleSku?: string
     }) => ({
       price_data: {
         currency: 'usd',
@@ -24,10 +29,36 @@ export async function POST(req: NextRequest) {
           name: item.name,
           description: item.description,
           images: item.image ? [item.image] : [],
+          metadata: {
+            designId: item.designId || '',
+            designName: item.designName || '',
+            bundleId: item.bundleId || '',
+            bundleName: item.bundleName || '',
+            sku: item.bundleSku || '',
+          },
         },
         unit_amount: item.price, // Already in cents
       },
       quantity: item.quantity,
+    }))
+
+    // Build order items summary for session metadata
+    const orderItemsSummary = items.map((item: {
+      designId?: string
+      designName?: string
+      bundleId?: string
+      bundleName?: string
+      bundleSku?: string
+      quantity: number
+      price: number
+    }) => ({
+      designId: item.designId,
+      designName: item.designName,
+      bundleId: item.bundleId,
+      bundleName: item.bundleName,
+      sku: item.bundleSku,
+      quantity: item.quantity,
+      price: item.price,
     }))
 
     // Create Stripe Checkout Session
@@ -85,6 +116,7 @@ export async function POST(req: NextRequest) {
       allow_promotion_codes: true,
       metadata: {
         source: 'pokemyheart-store',
+        orderItems: JSON.stringify(orderItemsSummary),
       },
     })
 

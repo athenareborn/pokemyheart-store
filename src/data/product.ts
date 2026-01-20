@@ -1,9 +1,27 @@
 export const PRODUCT = {
   id: 'eternal-love-card',
-  name: 'I Choose You - The Ultimate Valentine\'s Gift',
+  name: 'The Ultimate Valentines Gamer Gift',
   slug: 'i-choose-you-the-ultimate-valentines-gift',
-  description: 'A premium holographic card that says "I Choose You" - the perfect Valentine\'s gift for your special someone.',
   shortDescription: 'Premium holographic Valentine\'s card with display case',
+
+  // Product taglines with emoji prefixes
+  taglines: [
+    {
+      emoji: '🌟',
+      title: 'Make Them Feel Truly Special.',
+      description: 'Because love like this deserves more than just flowers.',
+    },
+    {
+      emoji: '💎',
+      title: 'A Forever Keepsake.',
+      description: 'Crafted with premium materials and custom holographic details, they\'ll cherish this forever.',
+    },
+    {
+      emoji: '🎁',
+      title: 'Unique & Thoughtful.',
+      description: 'Capture your connection and celebrate your love in a way no other gift can.',
+    },
+  ],
 
   // Design variants
   designs: [
@@ -38,3 +56,4 @@ export const PRODUCT = {
 }
 
 export type Design = typeof PRODUCT.designs[number]
+export type Tagline = typeof PRODUCT.taglines[number]

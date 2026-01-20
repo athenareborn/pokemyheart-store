@@ -57,6 +57,12 @@ export function CartDrawer() {
           description: bundle?.name || 'Card',
           price: item.price,
           quantity: item.quantity,
+          // Pass design/bundle IDs for order tracking
+          designId: item.designId,
+          designName: design?.name || 'Unknown Design',
+          bundleId: item.bundleId,
+          bundleName: bundle?.name || 'Unknown Bundle',
+          bundleSku: bundle?.sku || 'PMH-CARD',
         }
       })
 

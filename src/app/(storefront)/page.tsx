@@ -14,7 +14,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-pink-50 via-white to-pink-50 py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12 items-center">
             {/* Text Content */}
             <div className="space-y-6">
               <span className="inline-block bg-pink-100 text-pink-600 px-4 py-2 rounded-full text-sm font-medium">
@@ -121,7 +121,7 @@ export default function HomePage() {
           </div>
 
           {/* Reviews Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {REVIEWS.slice(0, 6).map((review) => (
               <div
                 key={review.id}
@@ -166,7 +166,7 @@ export default function HomePage() {
       {/* Product Showcase */}
       <section className="py-16 sm:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12 items-center">
             {/* Image */}
             <div className="relative aspect-square max-w-md mx-auto lg:max-w-none">
               <Image
