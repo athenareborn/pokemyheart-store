@@ -13,11 +13,11 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
     <div className="space-y-4">
       {/* Header with decorative lines */}
       <div className="flex items-center gap-4">
-        <div className="flex-1 h-px bg-red-400" />
+        <div className="flex-1 h-px bg-pink-400" />
         <h3 className="text-sm font-semibold text-gray-700 tracking-wide">
           BUNDLE & SAVE
         </h3>
-        <div className="flex-1 h-px bg-red-400" />
+        <div className="flex-1 h-px bg-pink-400" />
       </div>
 
       {/* Bundle options */}
@@ -31,10 +31,10 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
               onClick={() => onSelect(bundle.id)}
               className={cn(
                 'w-full p-4 rounded-xl border-2 text-left transition-all relative',
-                'bg-red-50',
+                'bg-pink-50',
                 isSelected
-                  ? 'border-red-500'
-                  : 'border-red-200 hover:border-red-300'
+                  ? 'border-pink-500'
+                  : 'border-pink-200 hover:border-pink-300'
               )}
             >
               <div className="flex items-center justify-between">
@@ -44,12 +44,12 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
                     className={cn(
                       'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0',
                       isSelected
-                        ? 'border-red-500'
+                        ? 'border-pink-500'
                         : 'border-gray-300'
                     )}
                   >
                     {isSelected && (
-                      <div className="w-3 h-3 rounded-full bg-red-500" />
+                      <div className="w-3 h-3 rounded-full bg-pink-500" />
                     )}
                   </div>
 
@@ -68,7 +68,7 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
               {/* Most Popular badge */}
               {bundle.badge === 'Most Popular' && (
                 <div className="absolute -bottom-4 right-4">
-                  <div className="bg-red-500 text-white text-xs font-bold px-3 py-2 rounded-full shadow-md text-center leading-tight">
+                  <div className="bg-pink-500 text-white text-xs font-bold px-3 py-2 rounded-full shadow-md text-center leading-tight">
                     <div className="flex items-center justify-center gap-0.5">
                       <span className="text-yellow-300">+</span>
                       <span>Most</span>
