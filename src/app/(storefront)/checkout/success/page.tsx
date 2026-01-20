@@ -26,9 +26,12 @@ function CheckoutSuccessContent() {
     if (purchaseDataStr) {
       try {
         const purchaseData = JSON.parse(purchaseDataStr)
-        const sessionId = searchParams.get('session_id') || 'unknown'
+        // Support both session_id (old flow) and payment_intent (new flow)
+        const orderId = searchParams.get('session_id') ||
+                        searchParams.get('payment_intent') ||
+                        'unknown'
         fbPixel.purchase(
-          sessionId,
+          orderId,
           purchaseData.value,
           purchaseData.numItems,
           purchaseData.contentIds,
@@ -66,7 +69,7 @@ function CheckoutSuccessContent() {
           <h2 className="font-semibold text-gray-900">What&apos;s Next?</h2>
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <Mail className="w-5 h-5 text-pink-500 mt-0.5" />
+              <Mail className="w-5 h-5 text-brand-500 mt-0.5" />
               <div>
                 <p className="font-medium text-gray-900">Order Confirmation</p>
                 <p className="text-sm text-gray-600">
@@ -75,7 +78,7 @@ function CheckoutSuccessContent() {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Package className="w-5 h-5 text-pink-500 mt-0.5" />
+              <Package className="w-5 h-5 text-brand-500 mt-0.5" />
               <div>
                 <p className="font-medium text-gray-900">Shipping Updates</p>
                 <p className="text-sm text-gray-600">
@@ -87,15 +90,15 @@ function CheckoutSuccessContent() {
         </div>
 
         {/* Upsell */}
-        <div className="bg-pink-50 border border-pink-100 rounded-xl p-6 space-y-3">
-          <div className="flex items-center justify-center gap-2 text-pink-600">
-            <Heart className="w-5 h-5 fill-pink-500" />
+        <div className="bg-brand-50 border border-brand-100 rounded-xl p-6 space-y-3">
+          <div className="flex items-center justify-center gap-2 text-brand-600">
+            <Heart className="w-5 h-5 fill-brand-500" />
             <span className="font-semibold">Special Offer</span>
           </div>
           <p className="text-gray-700">
             Add a second card and get <span className="font-bold">20% off</span>!
           </p>
-          <Button className="bg-pink-500 hover:bg-pink-600 text-white" asChild>
+          <Button className="bg-brand-500 hover:bg-brand-600 text-white" asChild>
             <Link href="/products/i-choose-you-the-ultimate-valentines-gift">
               Shop Again
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -116,7 +119,7 @@ export default function CheckoutSuccessPage() {
   return (
     <Suspense fallback={
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500" />
       </div>
     }>
       <CheckoutSuccessContent />

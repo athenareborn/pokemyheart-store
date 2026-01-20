@@ -48,6 +48,12 @@ export async function POST(request: Request) {
     await handleCheckoutComplete(session, request)
   }
 
+  // Handle Payment Intent success (for custom checkout)
+  if (event.type === 'payment_intent.succeeded') {
+    const paymentIntent = event.data.object as Stripe.PaymentIntent
+    await handlePaymentIntentSuccess(paymentIntent, request)
+  }
+
   return NextResponse.json({ received: true })
 }
 
@@ -168,6 +174,115 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, request:
     userAgent: userAgent,
     fbc: metadata.fb_fbc || undefined,  // Facebook Click ID
     fbp: metadata.fb_fbp || undefined,  // Facebook Browser ID
+  })
+
+  console.log(`Facebook CAPI Purchase event sent for order ${orderNumber}`)
+}
+
+async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, request: Request) {
+  const supabase = await createClient()
+
+  // Extract order data from payment intent metadata
+  const metadata = paymentIntent.metadata
+  if (!metadata || metadata.source !== 'pokemyheart-store') {
+    // Not from our custom checkout, skip
+    return
+  }
+
+  const items = JSON.parse(metadata.items || '[]')
+  const customerEmail = metadata.customer_email
+  const customerName = metadata.customer_name || null
+  const shippingAddress = JSON.parse(metadata.shipping_address || 'null')
+
+  if (!customerEmail) {
+    console.error('No customer email in payment intent metadata')
+    return
+  }
+
+  // Generate order number
+  const { count } = await supabase
+    .from('orders')
+    .select('*', { count: 'exact', head: true })
+
+  const orderNumber = `PMH-${String((count || 0) + 1).padStart(3, '0')}`
+
+  // Create order
+  const { error: orderError } = await supabase.from('orders').insert({
+    order_number: orderNumber,
+    customer_email: customerEmail,
+    customer_name: customerName,
+    items: items,
+    subtotal: parseInt(metadata.subtotal || '0'),
+    shipping: parseInt(metadata.shipping || '0'),
+    total: paymentIntent.amount,
+    status: 'unfulfilled',
+    shipping_address: shippingAddress,
+    stripe_session_id: null,
+    stripe_payment_intent: paymentIntent.id,
+  })
+
+  if (orderError) {
+    console.error('Error creating order from payment intent:', orderError)
+    return
+  }
+
+  // Create or update customer
+  const { data: existingCustomer } = await supabase
+    .from('customers')
+    .select()
+    .eq('email', customerEmail)
+    .single()
+
+  if (existingCustomer) {
+    await supabase
+      .from('customers')
+      .update({
+        name: customerName || existingCustomer.name,
+        orders_count: existingCustomer.orders_count + 1,
+        total_spent: existingCustomer.total_spent + paymentIntent.amount,
+      })
+      .eq('email', customerEmail)
+  } else {
+    await supabase.from('customers').insert({
+      email: customerEmail,
+      name: customerName,
+      orders_count: 1,
+      total_spent: paymentIntent.amount,
+      accepts_marketing: false,
+    })
+  }
+
+  console.log(`Order ${orderNumber} created from Payment Intent`)
+
+  // Send server-side Purchase event to Facebook CAPI
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pokemyheart.com'
+  const eventId = metadata.fb_event_id || generateEventId('purchase')
+
+  const contentIds = items.map((item: { bundle_id: string; design_id: string }) =>
+    `${item.design_id}-${item.bundle_id}`
+  )
+
+  const headersList = await headers()
+  const clientIp = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                   headersList.get('x-real-ip') ||
+                   undefined
+  const userAgent = headersList.get('user-agent') || undefined
+
+  await fbCAPI.purchase({
+    eventId,
+    orderUrl: `${siteUrl}/checkout/success?payment_intent=${paymentIntent.id}`,
+    email: customerEmail,
+    firstName: customerName?.split(' ')[0],
+    lastName: customerName?.split(' ').slice(1).join(' '),
+    value: paymentIntent.amount / 100,
+    currency: 'USD',
+    contentIds,
+    numItems: items.length,
+    orderId: orderNumber,
+    ip: clientIp,
+    userAgent: userAgent,
+    fbc: metadata.fb_fbc || undefined,
+    fbp: metadata.fb_fbp || undefined,
   })
 
   console.log(`Facebook CAPI Purchase event sent for order ${orderNumber}`)
