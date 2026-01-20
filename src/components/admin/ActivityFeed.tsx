@@ -25,18 +25,18 @@ const activityIcons: Record<ActivityType, { icon: React.ElementType; className: 
 
 export function ActivityFeed({ activities, className }: ActivityFeedProps) {
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn('space-y-3', className)}>
       {activities.map((activity) => {
         const config = activityIcons[activity.type]
         const Icon = config.icon
 
         return (
-          <div key={activity.id} className="flex gap-3">
-            <div className={cn('p-2 rounded-md h-fit', config.className)}>
-              <Icon className="h-4 w-4" />
+          <div key={activity.id} className="flex gap-2.5">
+            <div className={cn('p-1.5 rounded-md h-fit', config.className)}>
+              <Icon className="h-3.5 w-3.5" />
             </div>
-            <div className="flex-1 min-w-0 space-y-0.5">
-              <p className="text-sm font-medium">{activity.title}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium leading-tight">{activity.title}</p>
               <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
               <p className="text-xs text-muted-foreground">{activity.time}</p>
             </div>

@@ -33,7 +33,7 @@ const RECENT_ACTIVITY = [
 
 export default function AdminDashboard() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -94,11 +94,11 @@ export default function AdminDashboard() {
 
       {/* Revenue Card */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Revenue Overview</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between py-3">
+          <CardTitle className="text-sm font-medium">Revenue Overview</CardTitle>
           <span className="text-xs text-muted-foreground">Last 12 days</span>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0 pb-3 px-4">
           <div className="flex items-end justify-between">
             <div>
               <p className="text-2xl font-semibold">{formatPrice(STATS.revenue.value)}</p>
@@ -110,11 +110,11 @@ export default function AdminDashboard() {
       </Card>
 
       {/* Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {/* Recent Orders */}
         <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base font-medium">Recent Orders</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between py-3">
+            <CardTitle className="text-sm font-medium">Recent Orders</CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/orders">
                 View all
@@ -122,8 +122,8 @@ export default function AdminDashboard() {
               </Link>
             </Button>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="pt-0 pb-3 px-4">
+            <div className="space-y-3">
               {RECENT_ORDERS.map((order) => (
                 <div key={order.id} className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -146,10 +146,10 @@ export default function AdminDashboard() {
 
         {/* Activity */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-medium">Recent Activity</CardTitle>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0 pb-3 px-4">
             <ActivityFeed activities={RECENT_ACTIVITY} />
           </CardContent>
         </Card>

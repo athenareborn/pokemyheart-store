@@ -36,7 +36,7 @@ export default function AdminLayout({
           sidebarCollapsed ? 'pl-16' : 'pl-60'
         )}
       >
-        <div className="p-6">
+        <div className="p-4">
           {children}
         </div>
       </main>

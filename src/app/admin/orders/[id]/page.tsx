@@ -94,7 +94,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const order = ORDERS[id] || { ...DEFAULT_ORDER, id }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -138,12 +138,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4">
         {/* Main Content - 2 columns */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-3">
           {/* Order Items */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="py-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Package className="h-4 w-4" />
                 Order Items
@@ -186,14 +186,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
           {/* Timeline */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="py-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 Order Timeline
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {order.timeline.map((event, index) => (
                   <div key={index} className="flex gap-4">
                     <div className="flex flex-col items-center">
@@ -215,10 +215,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* Sidebar - 1 column */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Customer Info */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="py-3">
               <CardTitle className="text-base font-semibold">Customer</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -240,7 +240,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
           {/* Shipping Address */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="py-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 Shipping Address
@@ -264,7 +264,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
           {/* Payment */}
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="py-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 Payment

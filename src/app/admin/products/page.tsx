@@ -24,7 +24,7 @@ export default function ProductsPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -70,7 +70,7 @@ export default function ProductsPage() {
         </CardHeader>
       </Card>
 
-      <Tabs defaultValue="details" className="space-y-6">
+      <Tabs defaultValue="details" className="space-y-3">
         <TabsList className="bg-muted">
           <TabsTrigger value="details" className="gap-2">
             <Package className="h-4 w-4" />
@@ -101,7 +101,7 @@ export default function ProductsPage() {
               <CardTitle className="text-base">Product Information</CardTitle>
               <CardDescription>Basic product details</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Product Name</label>
                 <Input
@@ -150,7 +150,7 @@ export default function ProductsPage() {
               <CardDescription>Manage your product bundles and pricing tiers</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {BUNDLES.map((bundle) => (
                   <div key={bundle.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
                     <div className="flex-1">
@@ -176,7 +176,7 @@ export default function ProductsPage() {
                 ))}
               </div>
               <Separator className="my-6" />
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-foreground">Free Shipping Threshold</p>
@@ -278,7 +278,7 @@ export default function ProductsPage() {
               <CardTitle className="text-base">Inventory Management</CardTitle>
               <CardDescription>Track and manage stock levels</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-3">
               <div className="grid sm:grid-cols-3 gap-4">
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Current Stock</p>
@@ -299,7 +299,7 @@ export default function ProductsPage() {
 
               <Separator />
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-foreground">Track inventory</p>

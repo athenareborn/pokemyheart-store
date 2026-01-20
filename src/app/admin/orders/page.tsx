@@ -65,7 +65,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -106,7 +106,7 @@ export default function OrdersPage() {
 
       {/* Table */}
       <Card>
-        <CardHeader className="py-4 border-b">
+        <CardHeader className="py-3 border-b">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
               <TabsTrigger value="all">All ({ORDERS.length})</TabsTrigger>

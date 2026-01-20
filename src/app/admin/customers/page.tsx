@@ -41,7 +41,7 @@ export default function CustomersPage() {
   const totalRevenue = CUSTOMERS.reduce((sum, c) => sum + c.totalSpent, 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Customers</h1>
@@ -49,7 +49,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <StatCard
           title="Total Customers"
           value={totalCustomers.toString()}

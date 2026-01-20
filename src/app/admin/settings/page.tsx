@@ -29,14 +29,14 @@ export default function SettingsPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">Manage your store settings and preferences</p>
       </div>
 
-      <Tabs defaultValue="general" className="space-y-6">
+      <Tabs defaultValue="general" className="space-y-3">
         <TabsList className="bg-muted">
           <TabsTrigger value="general" className="gap-2">
             <Store className="h-4 w-4" />
@@ -61,13 +61,13 @@ export default function SettingsPage() {
         </TabsList>
 
         {/* General Settings */}
-        <TabsContent value="general" className="space-y-6">
+        <TabsContent value="general" className="space-y-3">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Store Information</CardTitle>
               <CardDescription>Basic information about your store</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Store Name</label>
@@ -120,14 +120,14 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Shipping Settings */}
-        <TabsContent value="shipping" className="space-y-6">
+        <TabsContent value="shipping" className="space-y-3">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Shipping Rates</CardTitle>
               <CardDescription>Configure your shipping options and rates</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
+            <CardContent className="space-y-3">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div>
                     <p className="font-medium text-foreground">Standard Shipping</p>
@@ -175,13 +175,13 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Payment Settings */}
-        <TabsContent value="payments" className="space-y-6">
+        <TabsContent value="payments" className="space-y-3">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Payment Provider</CardTitle>
               <CardDescription>Manage your payment processing settings</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-[#635BFF] rounded-lg flex items-center justify-center">
@@ -229,14 +229,14 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Notification Settings */}
-        <TabsContent value="notifications" className="space-y-6">
+        <TabsContent value="notifications" className="space-y-3">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Email Notifications</CardTitle>
               <CardDescription>Choose what notifications you want to receive</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
+            <CardContent className="space-y-3">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-foreground">Order confirmations</p>
@@ -297,7 +297,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Users Settings */}
-        <TabsContent value="users" className="space-y-6">
+        <TabsContent value="users" className="space-y-3">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -311,7 +311,7 @@ export default function SettingsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white font-medium">

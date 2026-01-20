@@ -52,10 +52,7 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
         )}
       >
         {/* Header */}
-        <div className={cn(
-          'h-14 flex items-center border-b border-border px-3',
-          collapsed ? 'justify-center' : 'justify-between'
-        )}>
+        <div className="h-14 flex items-center border-b border-border px-3 justify-between">
           <Link href="/admin" className={cn('flex items-center gap-2', collapsed && 'justify-center')}>
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
               <Store className="h-4 w-4 text-primary-foreground" />
@@ -64,16 +61,21 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
               <span className="font-semibold text-sm text-foreground">PokeMyHeart</span>
             )}
           </Link>
-          {!collapsed && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onToggle}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            >
-              <PanelLeftClose className="h-4 w-4" />
-            </Button>
-          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggle}
+                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary"
+              >
+                {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         {/* Navigation */}
@@ -188,17 +190,6 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
             )}
           </Tooltip>
 
-          {/* Collapse Toggle (when collapsed) */}
-          {collapsed && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onToggle}
-              className="w-full justify-center text-muted-foreground hover:text-foreground"
-            >
-              <PanelLeft className="h-4 w-4" />
-            </Button>
-          )}
         </div>
       </aside>
     </TooltipProvider>
