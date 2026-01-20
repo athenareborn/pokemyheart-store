@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fce7f3"/>
+      <stop offset="100%" style="stop-color:#fff1f2"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg3)"/>
+  <rect x="50" y="200" width="200" height="280" rx="10" fill="#ec4899" transform="rotate(-15 150 340)"/>
+  <rect x="200" y="180" width="200" height="280" rx="10" fill="#8b5cf6" transform="rotate(0 300 320)"/>
+  <rect x="350" y="200" width="200" height="280" rx="10" fill="#f59e0b" transform="rotate(15 450 340)"/>
+  <text x="300" y="550" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#6b7280" text-anchor="middle">5 Unique Designs Available</text>
+</svg>
