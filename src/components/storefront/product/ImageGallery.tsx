@@ -126,7 +126,7 @@ export function ImageGallery({ images, selectedIndex, onSelectIndex, productName
       )}
 
       {/* Thumbnail Strip */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="hidden sm:flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {images.map((image, index) => (
           <button
             key={image.id}

@@ -34,18 +34,6 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
 
           return (
             <div key={bundle.id} className="relative overflow-visible">
-              {/* Most Popular badge - positioned at top right corner */}
-              {isLovePack && (
-                <div className="absolute z-20 pointer-events-none right-1 -top-7">
-                  <Image
-                    src="/images/most-popular-badge.png"
-                    alt="Most Popular"
-                    width={65}
-                    height={52}
-                    className="drop-shadow-md"
-                  />
-                </div>
-              )}
 
               <button
                 onClick={() => onSelect(bundle.id)}

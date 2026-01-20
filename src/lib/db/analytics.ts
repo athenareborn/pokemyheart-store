@@ -1,15 +1,50 @@
 import { createClient } from '@/lib/supabase/server'
-import { format, subDays, startOfDay, eachDayOfInterval } from 'date-fns'
+import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns'
 
-export type TimePeriod = '24h' | '7d' | '30d' | '90d'
+export type TimePeriod = 'today' | '7d' | '30d' | '90d'
 
-function getPeriodDays(period: TimePeriod): number {
+function getPeriodRange(period: TimePeriod): { startDate: Date; endDate: Date; prevStartDate: Date; prevEndDate: Date } {
+  const now = new Date()
+  const todayStart = startOfDay(now)
+
   switch (period) {
-    case '24h': return 1
-    case '7d': return 7
-    case '30d': return 30
-    case '90d': return 90
-    default: return 7
+    case 'today':
+      // Today: midnight today → now
+      // Previous: yesterday midnight → yesterday end
+      return {
+        startDate: todayStart,
+        endDate: now,
+        prevStartDate: startOfDay(subDays(now, 1)),
+        prevEndDate: endOfDay(subDays(now, 1)),
+      }
+    case '7d':
+      return {
+        startDate: startOfDay(subDays(now, 6)),
+        endDate: now,
+        prevStartDate: startOfDay(subDays(now, 13)),
+        prevEndDate: endOfDay(subDays(now, 7)),
+      }
+    case '30d':
+      return {
+        startDate: startOfDay(subDays(now, 29)),
+        endDate: now,
+        prevStartDate: startOfDay(subDays(now, 59)),
+        prevEndDate: endOfDay(subDays(now, 30)),
+      }
+    case '90d':
+      return {
+        startDate: startOfDay(subDays(now, 89)),
+        endDate: now,
+        prevStartDate: startOfDay(subDays(now, 179)),
+        prevEndDate: endOfDay(subDays(now, 90)),
+      }
+    default:
+      return {
+        startDate: startOfDay(subDays(now, 6)),
+        endDate: now,
+        prevStartDate: startOfDay(subDays(now, 13)),
+        prevEndDate: endOfDay(subDays(now, 7)),
+      }
   }
 }
 
@@ -48,11 +83,7 @@ export interface AnalyticsOverview {
 
 export async function getAnalyticsOverview(period: TimePeriod = '7d'): Promise<AnalyticsOverview> {
   const supabase = await createClient()
-  const days = getPeriodDays(period)
-
-  const endDate = new Date()
-  const startDate = subDays(endDate, days)
-  const prevStartDate = subDays(startDate, days)
+  const { startDate, endDate, prevStartDate, prevEndDate } = getPeriodRange(period)
 
   // Get orders for current period
   const { data: orders } = await supabase
@@ -66,7 +97,7 @@ export async function getAnalyticsOverview(period: TimePeriod = '7d'): Promise<A
     .from('orders')
     .select('*')
     .gte('created_at', prevStartDate.toISOString())
-    .lt('created_at', startDate.toISOString())
+    .lte('created_at', prevEndDate.toISOString())
 
   // Get sessions for current period
   const { data: sessions } = await supabase
@@ -80,7 +111,7 @@ export async function getAnalyticsOverview(period: TimePeriod = '7d'): Promise<A
     .from('analytics_sessions')
     .select('*')
     .gte('started_at', prevStartDate.toISOString())
-    .lt('started_at', startDate.toISOString())
+    .lte('started_at', prevEndDate.toISOString())
 
   const currentOrders = orders || []
   const previousOrders = prevOrders || []
@@ -207,17 +238,17 @@ export async function getAnalyticsOverview(period: TimePeriod = '7d'): Promise<A
     conversionRateChange: calcChange(conversionRate, prevConversionRate),
 
     revenueByDay: Object.entries(revenueByDayMap).map(([date, revenue]) => ({
-      date: format(new Date(date), period === '24h' ? 'HH:mm' : 'MMM d'),
+      date: format(new Date(date), period === 'today' ? 'HH:mm' : 'MMM d'),
       revenue,
     })),
 
     ordersByDay: Object.entries(ordersByDayMap).map(([date, orders]) => ({
-      date: format(new Date(date), period === '24h' ? 'HH:mm' : 'MMM d'),
+      date: format(new Date(date), period === 'today' ? 'HH:mm' : 'MMM d'),
       orders,
     })),
 
     visitorsByDay: Object.entries(visitorsByDayMap).map(([date, visitorSet]) => ({
-      date: format(new Date(date), period === '24h' ? 'HH:mm' : 'MMM d'),
+      date: format(new Date(date), period === 'today' ? 'HH:mm' : 'MMM d'),
       visitors: visitorSet.size,
       sessions: sessionsByDayMap[date] || 0,
     })),
