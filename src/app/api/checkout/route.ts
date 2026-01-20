@@ -2,20 +2,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { BUNDLES } from '@/data/bundles'
 
-// Validate environment variables at module load
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY environment variable is required')
+// Lazy Stripe initialization to avoid build-time errors
+let stripe: Stripe | null = null
+function getStripe(): Stripe {
+  if (!stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is required')
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-12-15.clover',
+    })
+  }
+  return stripe
 }
 
-if (!process.env.NEXT_PUBLIC_SITE_URL) {
-  throw new Error('NEXT_PUBLIC_SITE_URL environment variable is required')
+function getSiteUrl(): string {
+  if (!process.env.NEXT_PUBLIC_getSiteUrl()) {
+    throw new Error('NEXT_PUBLIC_getSiteUrl() environment variable is required')
+  }
+  return process.env.NEXT_PUBLIC_getSiteUrl()
 }
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-12-15.clover',
-})
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
 
 // Valid bundle IDs for price verification
 const VALID_BUNDLE_IDS = new Set<string>(BUNDLES.map(b => b.id))
@@ -82,7 +88,7 @@ function validateItem(item: unknown, index: number): CheckoutItem {
       throw new Error(`Invalid image at item ${index}: must be a string`)
     }
     // Only allow images from our own domain or relative paths
-    if (data.image.startsWith('/') || data.image.startsWith(SITE_URL)) {
+    if (data.image.startsWith('/') || data.image.startsWith(getSiteUrl())) {
       image = data.image
     }
     // Silently ignore other image URLs for security
@@ -138,7 +144,7 @@ export async function POST(req: NextRequest) {
         product_data: {
           name: item.name,
           description: item.description,
-          images: item.image ? [item.image.startsWith('/') ? `${SITE_URL}${item.image}` : item.image] : [],
+          images: item.image ? [item.image.startsWith('/') ? `${getSiteUrl()}${item.image}` : item.image] : [],
           metadata: {
             designId: item.designId,
             designName: item.designName,
@@ -165,12 +171,12 @@ export async function POST(req: NextRequest) {
 
     // Create Stripe Checkout Session
     // SECURITY: Use hardcoded URLs to prevent open redirect attacks
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: lineItems,
-      success_url: `${SITE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${SITE_URL}/products/i-choose-you-the-ultimate-valentines-gift`,
+      success_url: `${getSiteUrl()}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${getSiteUrl()}/products/i-choose-you-the-ultimate-valentines-gift`,
       shipping_address_collection: {
         allowed_countries: ['US', 'CA', 'GB', 'AU'],
       },
