@@ -1,53 +1,126 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { X, ShoppingBag } from 'lucide-react'
+import { X, CheckCircle, Flame } from 'lucide-react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useCartStore } from '@/lib/store/cart'
 
-// Realistic fake data
-const NAMES = ['Sarah', 'Mike', 'Emma', 'James', 'Olivia', 'David', 'Sophia', 'Chris', 'Ava', 'Josh']
-const LOCATIONS = ['New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Phoenix, AZ',
-                   'San Diego, CA', 'Dallas, TX', 'Austin, TX', 'Denver, CO', 'Seattle, WA']
-const PRODUCTS = ['Love Pack', 'Card Only', 'Deluxe Love']
-const TIME_AGO = ['just now', '2 minutes ago', '5 minutes ago', '8 minutes ago']
+// Diverse, realistic first names
+const FIRST_NAMES = [
+  'Sarah', 'Michael', 'Emma', 'James', 'Olivia', 'David', 'Sophia', 'Chris',
+  'Ava', 'Josh', 'Mia', 'Daniel', 'Isabella', 'Matthew', 'Emily', 'Andrew',
+  'Chloe', 'Ryan', 'Abigail', 'Brandon', 'Madison', 'Tyler', 'Hannah', 'Kevin',
+  'Ashley', 'Justin', 'Samantha', 'Alex', 'Grace', 'Taylor', 'Jessica', 'Nicole'
+]
+
+// Major US cities with state abbreviations
+const LOCATIONS = [
+  'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX',
+  'Phoenix, AZ', 'San Diego, CA', 'Dallas, TX', 'Austin, TX',
+  'Denver, CO', 'Seattle, WA', 'Miami, FL', 'Atlanta, GA',
+  'Boston, MA', 'San Francisco, CA', 'Portland, OR', 'Nashville, TN',
+  'Las Vegas, NV', 'San Antonio, TX', 'Orlando, FL', 'Charlotte, NC'
+]
+
+// Actual products with conversion-optimized details
+const PRODUCTS = [
+  {
+    name: 'Love Pack',
+    badge: 'Most Popular',
+    design: ['Eternal Love', 'Forever Yours', 'My Heart', 'True Love', 'Soulmate']
+  },
+  {
+    name: 'Deluxe Love',
+    badge: 'Premium',
+    design: ['Eternal Love', 'Forever Yours', 'My Heart', 'True Love', 'Soulmate']
+  },
+  {
+    name: 'Card Only',
+    badge: null,
+    design: ['Eternal Love', 'Forever Yours', 'My Heart', 'True Love', 'Soulmate']
+  },
+]
+
+// Realistic time stamps (avoid "just now" - too suspicious)
+const TIME_AGO = [
+  '2 min ago', '3 min ago', '5 min ago', '7 min ago',
+  '9 min ago', '12 min ago', '15 min ago'
+]
+
+// Weighted random - Love Pack appears more often (social proof for bestseller)
+function getWeightedProduct() {
+  const rand = Math.random()
+  if (rand < 0.55) return PRODUCTS[0] // 55% Love Pack (Most Popular)
+  if (rand < 0.80) return PRODUCTS[1] // 25% Deluxe Love
+  return PRODUCTS[2] // 20% Card Only
+}
+
+function getRandomElement<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
 
 function getRandomPurchase() {
+  const product = getWeightedProduct()
+  const showQuantity = Math.random() < 0.15 // 15% chance to show "bought 2x"
+
   return {
-    name: NAMES[Math.floor(Math.random() * NAMES.length)],
-    location: LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)],
-    product: PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)],
-    timeAgo: TIME_AGO[Math.floor(Math.random() * TIME_AGO.length)],
+    name: getRandomElement(FIRST_NAMES),
+    location: getRandomElement(LOCATIONS),
+    product: product.name,
+    badge: product.badge,
+    design: getRandomElement(product.design),
+    timeAgo: getRandomElement(TIME_AGO),
+    quantity: showQuantity ? 2 : 1,
   }
 }
 
 export function RecentPurchaseToast() {
   const [isVisible, setIsVisible] = useState(false)
-  const [purchase, setPurchase] = useState(getRandomPurchase())
+  const [purchase, setPurchase] = useState(getRandomPurchase)
+  const { isOpen: isCartOpen } = useCartStore()
 
   const showToast = useCallback(() => {
+    // Don't show when cart drawer is open - avoid distraction during checkout
+    if (isCartOpen) return
+
     setPurchase(getRandomPurchase())
     setIsVisible(true)
+  }, [isCartOpen])
 
-    // Auto-hide after 5 seconds
-    setTimeout(() => setIsVisible(false), 5000)
-  }, [])
+  // Hide toast when cart opens
+  useEffect(() => {
+    if (isCartOpen && isVisible) {
+      setIsVisible(false)
+    }
+  }, [isCartOpen, isVisible])
+
+  // Auto-hide after 6 seconds
+  useEffect(() => {
+    if (!isVisible) return
+    const timer = setTimeout(() => setIsVisible(false), 6000)
+    return () => clearTimeout(timer)
+  }, [isVisible, purchase])
 
   useEffect(() => {
-    // Initial delay before first toast (10-20 seconds)
-    const initialDelay = 10000 + Math.random() * 10000
+    // Initial delay: 8-15 seconds (quick enough to catch attention)
+    const initialDelay = 8000 + Math.random() * 7000
+
+    let intervalId: NodeJS.Timeout
 
     const initialTimer = setTimeout(() => {
       showToast()
 
-      // Then show every 20-40 seconds
-      const interval = setInterval(() => {
+      // Show every 25-45 seconds (not too spammy)
+      intervalId = setInterval(() => {
         showToast()
-      }, 20000 + Math.random() * 20000)
-
-      return () => clearInterval(interval)
+      }, 25000 + Math.random() * 20000)
     }, initialDelay)
 
-    return () => clearTimeout(initialTimer)
+    return () => {
+      clearTimeout(initialTimer)
+      if (intervalId) clearInterval(intervalId)
+    }
   }, [showToast])
 
   return (
@@ -57,29 +130,76 @@ export function RecentPurchaseToast() {
           initial={{ opacity: 0, x: -100, y: 20 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           exit={{ opacity: 0, x: -100 }}
-          className="fixed bottom-4 left-4 z-40 bg-white rounded-lg shadow-lg border border-gray-200
-                     p-4 max-w-sm flex items-start gap-3"
+          transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+          className="fixed bottom-4 left-4 z-40 hidden sm:block"
         >
-          <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <ShoppingBag className="h-5 w-5 text-pink-500" />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-900">
-              <span className="font-semibold">{purchase.name}</span> from {purchase.location}
-            </p>
-            <p className="text-sm text-gray-600">
-              purchased <span className="font-medium">{purchase.product}</span>
-            </p>
-            <p className="text-xs text-gray-400 mt-1">{purchase.timeAgo}</p>
-          </div>
-
-          <button
+          <Link
+            href="/products/i-choose-you-the-ultimate-valentines-gift"
             onClick={() => setIsVisible(false)}
-            className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+            className="block bg-white rounded-xl shadow-lg border border-gray-100
+                       p-4 max-w-[320px] hover:shadow-xl transition-shadow cursor-pointer"
           >
-            <X className="h-4 w-4" />
-          </button>
+            {/* Header with verified badge */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5 text-green-600">
+                <CheckCircle className="h-4 w-4 fill-green-100" />
+                <span className="text-xs font-medium">Verified Purchase</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setIsVisible(false)
+                }}
+                className="text-gray-400 hover:text-gray-600 -mr-1"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Main content */}
+            <div className="flex items-start gap-3">
+              {/* Product thumbnail placeholder with gradient */}
+              <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-pink-100 to-pink-200
+                              flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <span className="text-2xl">💝</span>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-900 leading-tight">
+                  <span className="font-semibold">{purchase.name}</span>
+                  <span className="text-gray-500"> from </span>
+                  <span className="font-medium">{purchase.location}</span>
+                </p>
+
+                <p className="text-sm text-gray-700 mt-0.5">
+                  purchased{' '}
+                  {purchase.quantity > 1 && (
+                    <span className="font-medium">{purchase.quantity}x </span>
+                  )}
+                  <span className="font-semibold text-gray-900">{purchase.product}</span>
+                </p>
+
+                {/* Design name */}
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {purchase.design} Design
+                </p>
+
+                {/* Footer with time and badge */}
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="text-xs text-gray-400">{purchase.timeAgo}</span>
+
+                  {purchase.badge && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium
+                                     text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">
+                      <Flame className="h-3 w-3" />
+                      {purchase.badge}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Link>
         </motion.div>
       )}
     </AnimatePresence>

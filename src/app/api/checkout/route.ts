@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { items, successUrl, cancelUrl, fbData } = body
+    const { items, successUrl, cancelUrl, fbData, discountCode } = body
 
     // Build line items for Stripe
     const lineItems = items.map((item: {
@@ -112,6 +112,11 @@ export async function POST(req: NextRequest) {
     if (fbData?.fbc) params.append('metadata[fb_fbc]', fbData.fbc)
     if (fbData?.fbp) params.append('metadata[fb_fbp]', fbData.fbp)
     if (fbData?.eventId) params.append('metadata[fb_event_id]', fbData.eventId)
+
+    // Apply discount code if provided
+    if (discountCode) {
+      params.append('discounts[0][coupon]', discountCode)
+    }
 
     const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
