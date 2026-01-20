@@ -1,126 +1,181 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { BUNDLES } from '@/data/bundles'
+import { PRODUCT } from '@/data/product'
+import { BUNDLES, type BundleId } from '@/data/bundles'
 
-// Lazy Stripe initialization to avoid build-time errors
-let stripe: Stripe | null = null
-function getStripe(): Stripe {
-  if (!stripe) {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('STRIPE_SECRET_KEY environment variable is required')
-    }
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2025-12-15.clover',
-    })
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) {
+    throw new Error('Stripe secret key not configured')
   }
-  return stripe
+  return new Stripe(key)
 }
 
-// Valid bundle IDs and prices for verification
-const VALID_BUNDLE_IDS = new Set<string>(BUNDLES.map(b => b.id))
-const BUNDLE_PRICES: Record<string, number> = Object.fromEntries(BUNDLES.map(b => [b.id, b.price]))
-
-// Input validation schema
-interface ExpressCheckoutBody {
-  amount: number
+export interface ExpressCheckoutRequest {
   designId: string
-  designName: string
-  bundleId: string
-  bundleName: string
-  bundleSku: string
-}
-
-function validateInput(body: unknown): ExpressCheckoutBody {
-  if (!body || typeof body !== 'object') {
-    throw new Error('Invalid request body')
+  bundleId: BundleId
+  fbData?: {
+    fbc?: string
+    fbp?: string
+    eventId?: string
   }
-
-  const data = body as Record<string, unknown>
-
-  // Validate amount (must be positive integer in cents)
-  if (typeof data.amount !== 'number' || !Number.isInteger(data.amount) || data.amount <= 0) {
-    throw new Error('Invalid amount: must be a positive integer in cents')
-  }
-
-  // Validate required string fields
-  const stringFields = ['designId', 'designName', 'bundleId', 'bundleName', 'bundleSku'] as const
-  for (const field of stringFields) {
-    if (typeof data[field] !== 'string' || data[field].length === 0) {
-      throw new Error(`Invalid ${field}: must be a non-empty string`)
-    }
-    // Prevent injection by limiting length and characters
-    if ((data[field] as string).length > 200) {
-      throw new Error(`Invalid ${field}: too long`)
-    }
-  }
-
-  // SECURITY: Validate bundleId is valid
-  const bundleId = data.bundleId as string
-  if (!VALID_BUNDLE_IDS.has(bundleId)) {
-    throw new Error('Invalid bundleId: unknown bundle')
-  }
-
-  // SECURITY: Verify amount matches expected bundle price (prevent price manipulation)
-  const expectedPrice = BUNDLE_PRICES[bundleId]
-  if (data.amount !== expectedPrice) {
-    throw new Error('Invalid amount: price mismatch')
-  }
-
-  return {
-    amount: data.amount as number,
-    designId: data.designId as string,
-    designName: data.designName as string,
-    bundleId,
-    bundleName: data.bundleName as string,
-    bundleSku: data.bundleSku as string,
+  gaData?: {
+    clientId?: string | null
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const validatedData = validateInput(body)
+    const stripe = getStripe()
+    const body: ExpressCheckoutRequest = await req.json()
 
-    const { amount, designId, designName, bundleId, bundleName, bundleSku } = validatedData
+    const { designId, bundleId, fbData, gaData } = body
 
-    // Create PaymentIntent for express checkout (Apple Pay/Google Pay)
-    // Express checkout includes FREE shipping
-    const paymentIntent = await getStripe().paymentIntents.create({
-      amount,
+    // Get bundle and design info
+    const bundle = BUNDLES.find(b => b.id === bundleId)
+    if (!bundle) {
+      return NextResponse.json(
+        { error: 'Invalid bundle', details: 'Bundle not found' },
+        { status: 400 }
+      )
+    }
+
+    const design = PRODUCT.designs.find(d => d.id === designId)
+    if (!design) {
+      return NextResponse.json(
+        { error: 'Invalid design', details: 'Design not found' },
+        { status: 400 }
+      )
+    }
+
+    const subtotal = bundle.price
+    const qualifiesForFreeShipping = subtotal >= PRODUCT.freeShippingThreshold
+    const shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
+    const total = subtotal + shippingCost
+
+    // Build order item for metadata
+    const orderItem = {
+      bundle_id: bundleId,
+      bundle_name: bundle.name,
+      design_id: designId,
+      design_name: design.name,
+      quantity: 1,
+      price: bundle.price,
+    }
+
+    // Create Payment Intent with deferred shipping (collected in payment sheet)
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: total,
       currency: 'usd',
       automatic_payment_methods: {
         enabled: true,
       },
       metadata: {
-        source: 'ultrararelove-express-checkout',
-        designId,
-        designName,
-        bundleId,
-        bundleName,
-        sku: bundleSku,
-        shipping: 'free',
+        source: 'ultrararelove-store',
+        checkout_type: 'express',
+        items: JSON.stringify([orderItem]),
+        subtotal: String(subtotal),
+        shipping: String(shippingCost),
+        shipping_method: 'standard',
+        fb_fbc: fbData?.fbc || '',
+        fb_fbp: fbData?.fbp || '',
+        fb_event_id: fbData?.eventId || '',
+        ga_client_id: gaData?.clientId || '',
       },
     })
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
+      amount: total,
+      subtotal,
+      shippingCost,
     })
   } catch (error) {
-    console.error('Express checkout error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Express checkout error:', errorMessage, error)
+    return NextResponse.json(
+      { error: 'Failed to create express checkout', details: errorMessage },
+      { status: 500 }
+    )
+  }
+}
 
-    // Return user-friendly error messages
-    if (error instanceof Error) {
-      if (error.message.startsWith('Invalid')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 400 }
-        )
-      }
+// Update Payment Intent with shipping details from payment sheet
+export async function PATCH(req: NextRequest) {
+  try {
+    const stripe = getStripe()
+    const body = await req.json()
+
+    const {
+      paymentIntentId,
+      email,
+      shippingAddress,
+      shippingMethod = 'standard',
+    } = body
+
+    // Get current Payment Intent to access metadata
+    const currentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    const subtotal = parseInt(currentIntent.metadata?.subtotal || '0')
+
+    // Calculate shipping
+    const qualifiesForFreeShipping = subtotal >= PRODUCT.freeShippingThreshold
+    let shippingCost = 0
+
+    if (shippingMethod === 'express') {
+      shippingCost = qualifiesForFreeShipping
+        ? PRODUCT.shipping.standard
+        : PRODUCT.shipping.express
+    } else {
+      shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
     }
 
+    const total = subtotal + shippingCost
+
+    // Update Payment Intent
+    const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
+      amount: total,
+      receipt_email: email,
+      shipping: shippingAddress ? {
+        name: shippingAddress.name,
+        address: {
+          line1: shippingAddress.address?.line1,
+          line2: shippingAddress.address?.line2 || undefined,
+          city: shippingAddress.address?.city,
+          state: shippingAddress.address?.state,
+          postal_code: shippingAddress.address?.postal_code,
+          country: shippingAddress.address?.country,
+        },
+      } : undefined,
+      metadata: {
+        ...currentIntent.metadata,
+        shipping: String(shippingCost),
+        shipping_method: shippingMethod,
+        customer_email: email || '',
+        customer_name: shippingAddress?.name || '',
+        shipping_address: shippingAddress ? JSON.stringify({
+          name: shippingAddress.name,
+          line1: shippingAddress.address?.line1,
+          line2: shippingAddress.address?.line2 || '',
+          city: shippingAddress.address?.city,
+          state: shippingAddress.address?.state,
+          postal_code: shippingAddress.address?.postal_code,
+          country: shippingAddress.address?.country,
+        }) : '',
+      },
+    })
+
+    return NextResponse.json({
+      paymentIntentId: paymentIntent.id,
+      amount: total,
+      subtotal,
+      shippingCost,
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Express checkout update error:', errorMessage, error)
     return NextResponse.json(
-      { error: 'Failed to create payment intent' },
+      { error: 'Failed to update express checkout', details: errorMessage },
       { status: 500 }
     )
   }

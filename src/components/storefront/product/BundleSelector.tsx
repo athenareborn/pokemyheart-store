@@ -23,7 +23,7 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
 
       {/* Bundle options */}
       <div className="space-y-2.5">
-        {BUNDLES.map((bundle) => {
+        {BUNDLES.map((bundle, index) => {
           const isSelected = selectedId === bundle.id
           const hasFreeShipping = bundle.id !== 'card-only'
           const isValentinesPack = bundle.id === 'love-pack'

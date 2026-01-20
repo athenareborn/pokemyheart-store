@@ -41,7 +41,7 @@ export function ProductFAQ() {
       <Accordion type="single" collapsible className="w-full">
         {FAQ_ITEMS.map((item, index) => (
           <AccordionItem key={index} value={`item-${index}`}>
-            <AccordionTrigger className="text-left text-gray-900 hover:text-pink-500">
+            <AccordionTrigger className="text-left text-gray-900 hover:text-brand-500">
               {item.question}
             </AccordionTrigger>
             <AccordionContent className="text-gray-600">

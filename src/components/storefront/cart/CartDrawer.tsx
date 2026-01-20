@@ -1,20 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import Link from 'next/link'
-import { ShoppingBag, X, ArrowRight, Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ShoppingBag, X, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCartStore } from '@/lib/store/cart'
 import { formatPrice } from '@/lib/utils'
-import { BUNDLES } from '@/data/bundles'
-import { PRODUCT } from '@/data/product'
 import { Button } from '@/components/ui/button'
 import { CartItem } from './CartItem'
 import { CountdownTimer } from './CountdownTimer'
 import { FreeShippingBar } from './FreeShippingBar'
 
 export function CartDrawer() {
-  const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const router = useRouter()
   const {
     items,
     isOpen,
@@ -46,43 +45,9 @@ export function CartDrawer() {
     // clearCart()
   }
 
-  const handleCheckout = async () => {
-    setIsCheckingOut(true)
-    try {
-      const checkoutItems = items.map(item => {
-        const bundle = BUNDLES.find(b => b.id === item.bundleId)
-        const design = PRODUCT.designs.find(d => d.id === item.designId)
-        return {
-          name: `${PRODUCT.name} - ${design?.name || 'Design'}`,
-          description: bundle?.name || 'Card',
-          price: item.price,
-          quantity: item.quantity,
-          // Pass design/bundle IDs for order tracking
-          designId: item.designId,
-          designName: design?.name || 'Unknown Design',
-          bundleId: item.bundleId,
-          bundleName: bundle?.name || 'Unknown Bundle',
-          bundleSku: bundle?.sku || 'PMH-CARD',
-        }
-      })
-
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: checkoutItems }),
-      })
-
-      const data = await response.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        console.error('No checkout URL returned')
-        setIsCheckingOut(false)
-      }
-    } catch (error) {
-      console.error('Checkout error:', error)
-      setIsCheckingOut(false)
-    }
+  const handleCheckout = () => {
+    closeCart()
+    router.push('/checkout')
   }
 
   return (
@@ -109,7 +74,7 @@ export function CartDrawer() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5 text-pink-500" />
+                <ShoppingBag className="h-5 w-5 text-brand-500" />
                 <h2 className="text-lg font-semibold">Your Cart</h2>
                 <span className="text-sm text-gray-500">({items.length} items)</span>
               </div>
@@ -185,22 +150,12 @@ export function CartDrawer() {
                 {/* Actions */}
                 <div className="space-y-2">
                   <Button
-                    className="w-full bg-pink-500 hover:bg-pink-600 text-white"
+                    className="w-full bg-brand-500 hover:bg-brand-600 text-white"
                     size="lg"
                     onClick={handleCheckout}
-                    disabled={isCheckingOut}
                   >
-                    {isCheckingOut ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        Checkout
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
+                    Checkout
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"

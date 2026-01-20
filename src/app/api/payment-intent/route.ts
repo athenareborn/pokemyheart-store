@@ -1,145 +1,213 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { BUNDLES } from '@/data/bundles'
+import { PRODUCT } from '@/data/product'
 
-// Lazy Stripe initialization to avoid build-time errors
-let stripe: Stripe | null = null
-function getStripe(): Stripe {
-  if (!stripe) {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('STRIPE_SECRET_KEY environment variable is required')
-    }
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2025-12-15.clover',
-    })
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) {
+    throw new Error('Stripe secret key not configured')
   }
-  return stripe
+  return new Stripe(key)
 }
 
-// Valid bundle IDs and prices for verification
-const VALID_BUNDLE_IDS = new Set<string>(BUNDLES.map(b => b.id))
-const BUNDLE_PRICES: Record<string, number> = Object.fromEntries(BUNDLES.map(b => [b.id, b.price]))
-
-// Valid shipping amounts (in cents)
-const VALID_SHIPPING_AMOUNTS = [0, 495, 995] // Free, Standard $4.95, Express $9.95
-
-// Input validation schema
-interface PaymentIntentBody {
-  amount: number
-  shipping: number
-  designId: string
-  designName: string
-  bundleId: string
-  bundleName: string
-  bundleSku: string
-}
-
-function validateInput(body: unknown): PaymentIntentBody {
-  if (!body || typeof body !== 'object') {
-    throw new Error('Invalid request body')
+export interface PaymentIntentRequest {
+  items: Array<{
+    name: string
+    description: string
+    price: number
+    quantity: number
+    designId: string
+    designName: string
+    bundleId: string
+    bundleName: string
+    bundleSku: string
+  }>
+  email: string
+  shippingAddress: {
+    firstName: string
+    lastName: string
+    address1: string
+    address2?: string
+    city: string
+    state: string
+    postalCode: string
+    country: string
+    phone?: string
   }
-
-  const data = body as Record<string, unknown>
-
-  // Validate amount (must be positive integer in cents)
-  if (typeof data.amount !== 'number' || !Number.isInteger(data.amount) || data.amount <= 0) {
-    throw new Error('Invalid amount: must be a positive integer in cents')
+  shippingMethod: 'standard' | 'express'
+  discountCode?: string
+  discountAmount?: number
+  fbData?: {
+    fbc?: string
+    fbp?: string
+    eventId?: string
   }
-
-  // Validate shipping (must be non-negative integer in cents)
-  if (typeof data.shipping !== 'number' || !Number.isInteger(data.shipping) || data.shipping < 0) {
-    throw new Error('Invalid shipping: must be a non-negative integer in cents')
-  }
-
-  // SECURITY: Validate shipping is a known amount
-  if (!VALID_SHIPPING_AMOUNTS.includes(data.shipping as number)) {
-    throw new Error('Invalid shipping: unknown shipping rate')
-  }
-
-  // Validate required string fields
-  const stringFields = ['designId', 'designName', 'bundleId', 'bundleName', 'bundleSku'] as const
-  for (const field of stringFields) {
-    if (typeof data[field] !== 'string' || data[field].length === 0) {
-      throw new Error(`Invalid ${field}: must be a non-empty string`)
-    }
-    // Prevent injection by limiting length and characters
-    if ((data[field] as string).length > 200) {
-      throw new Error(`Invalid ${field}: too long`)
-    }
-  }
-
-  // SECURITY: Validate bundleId is valid
-  const bundleId = data.bundleId as string
-  if (!VALID_BUNDLE_IDS.has(bundleId)) {
-    throw new Error('Invalid bundleId: unknown bundle')
-  }
-
-  // SECURITY: Verify amount matches expected bundle price (prevent price manipulation)
-  const expectedPrice = BUNDLE_PRICES[bundleId]
-  if (data.amount !== expectedPrice) {
-    throw new Error('Invalid amount: price mismatch')
-  }
-
-  return {
-    amount: data.amount as number,
-    shipping: data.shipping as number,
-    designId: data.designId as string,
-    designName: data.designName as string,
-    bundleId,
-    bundleName: data.bundleName as string,
-    bundleSku: data.bundleSku as string,
+  gaData?: {
+    clientId?: string | null
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const validatedData = validateInput(body)
+    const stripe = getStripe()
+    const body: PaymentIntentRequest = await req.json()
 
-    const { amount, shipping, designId, designName, bundleId, bundleName, bundleSku } = validatedData
+    const {
+      items,
+      email,
+      shippingAddress,
+      shippingMethod,
+      discountCode,
+      discountAmount = 0,
+      fbData,
+      gaData,
+    } = body
 
-    // Total = product amount + shipping
-    const totalAmount = amount + shipping
+    // Calculate subtotal
+    const subtotal = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    )
 
-    // Create PaymentIntent for standard checkout
-    const paymentIntent = await getStripe().paymentIntents.create({
-      amount: totalAmount,
+    // Calculate shipping
+    const qualifiesForFreeShipping = subtotal >= PRODUCT.freeShippingThreshold
+    let shippingCost = 0
+
+    if (shippingMethod === 'express') {
+      shippingCost = qualifiesForFreeShipping
+        ? PRODUCT.shipping.standard // Reduced express when free shipping unlocked
+        : PRODUCT.shipping.express
+    } else {
+      shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
+    }
+
+    // Calculate total
+    const total = subtotal + shippingCost - discountAmount
+
+    // Build order summary for metadata
+    const orderItemsSummary = items.map((item) => ({
+      bundle_id: item.bundleId,
+      bundle_name: item.bundleName,
+      design_id: item.designId,
+      design_name: item.designName,
+      quantity: item.quantity,
+      price: item.price,
+    }))
+
+    // Create Payment Intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: total,
       currency: 'usd',
       automatic_payment_methods: {
         enabled: true,
       },
       metadata: {
-        source: 'ultrararelove-checkout',
-        designId,
-        designName,
-        bundleId,
-        bundleName,
-        sku: bundleSku,
-        productAmount: String(amount),
-        shippingAmount: String(shipping),
+        source: 'ultrararelove-store',
+        items: JSON.stringify(orderItemsSummary),
+        subtotal: String(subtotal),
+        shipping: String(shippingCost),
+        discount_code: discountCode || '',
+        discount_amount: String(discountAmount),
+        customer_email: email,
+        customer_name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+        shipping_method: shippingMethod,
+        shipping_address: JSON.stringify({
+          name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+          line1: shippingAddress.address1,
+          line2: shippingAddress.address2 || '',
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postal_code: shippingAddress.postalCode,
+          country: shippingAddress.country,
+        }),
+        fb_fbc: fbData?.fbc || '',
+        fb_fbp: fbData?.fbp || '',
+        fb_event_id: fbData?.eventId || '',
+        ga_client_id: gaData?.clientId || '',
+      },
+      receipt_email: email,
+      shipping: {
+        name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+        address: {
+          line1: shippingAddress.address1,
+          line2: shippingAddress.address2 || undefined,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postal_code: shippingAddress.postalCode,
+          country: shippingAddress.country,
+        },
+        phone: shippingAddress.phone || undefined,
       },
     })
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
-      totalAmount,
+      amount: total,
+      subtotal,
+      shippingCost,
+      discountAmount,
     })
   } catch (error) {
-    console.error('Payment intent error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Payment Intent error:', errorMessage, error)
+    return NextResponse.json(
+      { error: 'Failed to create payment intent', details: errorMessage },
+      { status: 500 }
+    )
+  }
+}
 
-    // Return user-friendly error messages
-    if (error instanceof Error) {
-      if (error.message.startsWith('Invalid')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 400 }
-        )
-      }
+// Update existing Payment Intent
+export async function PATCH(req: NextRequest) {
+  try {
+    const stripe = getStripe()
+    const body = await req.json()
+
+    const {
+      paymentIntentId,
+      shippingMethod,
+      discountAmount = 0,
+      subtotal,
+    } = body
+
+    // Calculate shipping
+    const qualifiesForFreeShipping = subtotal >= PRODUCT.freeShippingThreshold
+    let shippingCost = 0
+
+    if (shippingMethod === 'express') {
+      shippingCost = qualifiesForFreeShipping
+        ? PRODUCT.shipping.standard
+        : PRODUCT.shipping.express
+    } else {
+      shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
     }
 
+    // Calculate new total
+    const total = subtotal + shippingCost - discountAmount
+
+    // Update Payment Intent
+    const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
+      amount: total,
+      metadata: {
+        shipping: String(shippingCost),
+        shipping_method: shippingMethod,
+        discount_amount: String(discountAmount),
+      },
+    })
+
+    return NextResponse.json({
+      paymentIntentId: paymentIntent.id,
+      amount: total,
+      subtotal,
+      shippingCost,
+      discountAmount,
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Payment Intent update error:', errorMessage, error)
     return NextResponse.json(
-      { error: 'Failed to create payment intent' },
+      { error: 'Failed to update payment intent', details: errorMessage },
       { status: 500 }
     )
   }

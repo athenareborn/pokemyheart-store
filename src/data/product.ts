@@ -25,11 +25,11 @@ export const PRODUCT = {
 
   // Design variants
   designs: [
-    { id: 'design-1', name: 'Eternal Love', image: '/images/design-1.svg', thumbnail: '/images/design-1.svg' },
-    { id: 'design-2', name: 'Forever Yours', image: '/images/design-2.svg', thumbnail: '/images/design-2.svg' },
-    { id: 'design-3', name: 'My Heart', image: '/images/design-3.svg', thumbnail: '/images/design-3.svg' },
-    { id: 'design-4', name: 'True Love', image: '/images/design-4.svg', thumbnail: '/images/design-4.svg' },
-    { id: 'design-5', name: 'Soulmate', image: '/images/design-5.svg', thumbnail: '/images/design-5.svg' },
+    { id: 'design-1', name: 'Eternal Love', image: '/images/cards/cardd1.png', thumbnail: '/images/cards/cardd1.png' },
+    { id: 'design-2', name: 'Forever Yours', image: '/images/cards/cardd2.png', thumbnail: '/images/cards/cardd2.png' },
+    { id: 'design-3', name: 'My Heart', image: '/images/cards/cardd3.png', thumbnail: '/images/cards/cardd3.png' },
+    { id: 'design-4', name: 'True Love', image: '/images/cards/cardd4.png', thumbnail: '/images/cards/cardd4.png' },
+    { id: 'design-5', name: 'Soulmate', image: '/images/cards/cardd5.png', thumbnail: '/images/cards/cardd5.png' },
   ],
 
   // Gallery images (6 images as per spec)

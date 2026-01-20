@@ -56,6 +56,19 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Brand color palette - themeable */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
 }
 
 :root {
@@ -91,6 +104,19 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Brand colors - Pink (default) */
+  --brand-50: oklch(0.971 0.014 343.198);
+  --brand-100: oklch(0.948 0.028 342.258);
+  --brand-200: oklch(0.899 0.061 343.231);
+  --brand-300: oklch(0.823 0.12 346.018);
+  --brand-400: oklch(0.718 0.202 349.761);
+  --brand-500: oklch(0.656 0.241 354.308);
+  --brand-600: oklch(0.592 0.249 0.584);
+  --brand-700: oklch(0.525 0.223 3.958);
+  --brand-800: oklch(0.459 0.187 3.815);
+  --brand-900: oklch(0.408 0.153 2.432);
+  --brand-950: oklch(0.284 0.109 3.907);
 }
 
 .dark {
@@ -125,6 +151,21 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* Red Valentine Theme - overrides brand colors */
+.theme-red {
+  --brand-50: oklch(0.971 0.013 17.38);
+  --brand-100: oklch(0.936 0.032 17.717);
+  --brand-200: oklch(0.885 0.062 18.334);
+  --brand-300: oklch(0.808 0.114 19.571);
+  --brand-400: oklch(0.704 0.191 22.216);
+  --brand-500: oklch(0.637 0.237 25.331);
+  --brand-600: oklch(0.577 0.245 27.325);
+  --brand-700: oklch(0.505 0.213 27.518);
+  --brand-800: oklch(0.444 0.177 26.899);
+  --brand-900: oklch(0.396 0.141 25.723);
+  --brand-950: oklch(0.258 0.092 26.042);
 }
 
 @layer base {
