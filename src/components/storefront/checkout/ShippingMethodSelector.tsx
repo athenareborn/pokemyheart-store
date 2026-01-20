@@ -80,14 +80,14 @@ export function ShippingMethodSelector() {
               className={cn(
                 'w-full flex items-start gap-4 p-4 rounded-lg border-2 transition-all text-left',
                 isSelected
-                  ? 'border-pink-500 bg-pink-50'
+                  ? 'border-brand-500 bg-brand-50'
                   : 'border-gray-200 hover:border-gray-300 bg-white'
               )}
             >
               <div
                 className={cn(
                   'flex items-center justify-center w-5 h-5 mt-0.5 rounded-full border-2 transition-all',
-                  isSelected ? 'border-pink-500 bg-pink-500' : 'border-gray-300'
+                  isSelected ? 'border-brand-500 bg-brand-500' : 'border-gray-300'
                 )}
               >
                 {isSelected && <Check className="w-3 h-3 text-white" />}
@@ -98,13 +98,13 @@ export function ShippingMethodSelector() {
                   <option.icon
                     className={cn(
                       'w-4 h-4',
-                      isSelected ? 'text-pink-600' : 'text-gray-500'
+                      isSelected ? 'text-brand-600' : 'text-gray-500'
                     )}
                   />
                   <span
                     className={cn(
                       'font-medium',
-                      isSelected ? 'text-pink-900' : 'text-gray-900'
+                      isSelected ? 'text-brand-900' : 'text-gray-900'
                     )}
                   >
                     {option.name}

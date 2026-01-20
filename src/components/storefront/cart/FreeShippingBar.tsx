@@ -24,7 +24,7 @@ export function FreeShippingBar({ amountToFreeShipping, isFreeShipping }: FreeSh
         <div className="flex items-center justify-center gap-2 text-gray-600">
           <Truck className="h-5 w-5" />
           <span>
-            <span className="font-semibold text-pink-500">{formatPrice(amountToFreeShipping)}</span>
+            <span className="font-semibold text-brand-500">{formatPrice(amountToFreeShipping)}</span>
             {' '}away from free shipping!
           </span>
         </div>
@@ -34,7 +34,7 @@ export function FreeShippingBar({ amountToFreeShipping, isFreeShipping }: FreeSh
       <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
         <div
           className={`absolute inset-y-0 left-0 transition-all duration-500 ease-out rounded-full ${
-            isFreeShipping ? 'bg-green-500' : 'bg-pink-500'
+            isFreeShipping ? 'bg-green-500' : 'bg-brand-500'
           }`}
           style={{ width: `${progress}%` }}
         />

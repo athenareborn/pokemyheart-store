@@ -11,10 +11,10 @@ export default function RefundPolicyPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <section className="bg-gradient-to-br from-pink-50 via-white to-pink-50 py-12 sm:py-16">
+      <section className="bg-gradient-to-br from-brand-50 via-white to-brand-50 py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-pink-100 rounded-full mb-6">
-            <RefreshCw className="w-8 h-8 text-pink-500" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-100 rounded-full mb-6">
+            <RefreshCw className="w-8 h-8 text-brand-500" />
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Refund Policy
@@ -26,21 +26,21 @@ export default function RefundPolicyPage() {
       </section>
 
       {/* Quick Summary */}
-      <section className="py-8 sm:py-12 bg-pink-50">
+      <section className="py-8 sm:py-12 bg-brand-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <div className="bg-white p-6 rounded-xl text-center">
-              <Clock className="w-8 h-8 text-pink-500 mx-auto mb-3" />
+              <Clock className="w-8 h-8 text-brand-500 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900 mb-1">30 Days</h3>
               <p className="text-sm text-gray-600">Return window</p>
             </div>
             <div className="bg-white p-6 rounded-xl text-center">
-              <Package className="w-8 h-8 text-pink-500 mx-auto mb-3" />
+              <Package className="w-8 h-8 text-brand-500 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900 mb-1">Original Packaging</h3>
               <p className="text-sm text-gray-600">Items must be unused</p>
             </div>
             <div className="bg-white p-6 rounded-xl text-center">
-              <RefreshCw className="w-8 h-8 text-pink-500 mx-auto mb-3" />
+              <RefreshCw className="w-8 h-8 text-brand-500 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900 mb-1">Full Refund</h3>
               <p className="text-sm text-gray-600">To original payment</p>
             </div>
@@ -148,11 +148,11 @@ export default function RefundPolicyPage() {
             <p className="text-gray-600 mb-4">
               For return requests or questions about our refund policy:
             </p>
-            <div className="bg-pink-50 p-6 rounded-xl mb-6 flex items-start gap-4">
-              <Mail className="w-6 h-6 text-pink-500 flex-shrink-0 mt-1" />
+            <div className="bg-brand-50 p-6 rounded-xl mb-6 flex items-start gap-4">
+              <Mail className="w-6 h-6 text-brand-500 flex-shrink-0 mt-1" />
               <div>
                 <p className="text-gray-900 font-semibold">Email Us</p>
-                <a href="mailto:support@pokemyheart.com" className="text-pink-500 hover:text-pink-600">
+                <a href="mailto:support@pokemyheart.com" className="text-brand-500 hover:text-brand-600">
                   support@pokemyheart.com
                 </a>
                 <p className="text-sm text-gray-600 mt-1">We respond within 24-48 hours</p>
@@ -162,15 +162,15 @@ export default function RefundPolicyPage() {
             <div className="mt-10 pt-8 border-t border-gray-200">
               <p className="text-gray-600">
                 See also:{' '}
-                <Link href="/shipping" className="text-pink-500 hover:text-pink-600">
+                <Link href="/shipping" className="text-brand-500 hover:text-brand-600">
                   Shipping Policy
                 </Link>{' '}
                 |{' '}
-                <Link href="/faq" className="text-pink-500 hover:text-pink-600">
+                <Link href="/faq" className="text-brand-500 hover:text-brand-600">
                   FAQ
                 </Link>{' '}
                 |{' '}
-                <Link href="/contact" className="text-pink-500 hover:text-pink-600">
+                <Link href="/contact" className="text-brand-500 hover:text-brand-600">
                   Contact Us
                 </Link>
               </p>

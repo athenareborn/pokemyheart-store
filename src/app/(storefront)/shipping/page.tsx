@@ -11,10 +11,10 @@ export default function ShippingPolicyPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <section className="bg-gradient-to-br from-pink-50 via-white to-pink-50 py-12 sm:py-16">
+      <section className="bg-gradient-to-br from-brand-50 via-white to-brand-50 py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-pink-100 rounded-full mb-6">
-            <Truck className="w-8 h-8 text-pink-500" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-100 rounded-full mb-6">
+            <Truck className="w-8 h-8 text-brand-500" />
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Shipping Policy
@@ -26,7 +26,7 @@ export default function ShippingPolicyPage() {
       </section>
 
       {/* Shipping Rates Table */}
-      <section className="py-8 sm:py-12 bg-pink-50">
+      <section className="py-8 sm:py-12 bg-brand-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-gray-900 text-center mb-6">Shipping Rates - United States</h2>
           <div className="bg-white rounded-xl overflow-hidden shadow-sm">
@@ -44,13 +44,13 @@ export default function ShippingPolicyPage() {
                   <td className="px-4 py-3 text-gray-600">5-7 business days</td>
                   <td className="px-4 py-3 text-right text-gray-900">$4.99</td>
                 </tr>
-                <tr className="bg-pink-50">
+                <tr className="bg-brand-50">
                   <td className="px-4 py-3 text-gray-900">
                     <span className="font-medium">FREE Standard Shipping</span>
-                    <span className="text-sm text-pink-600 block">Orders over $35</span>
+                    <span className="text-sm text-brand-600 block">Orders over $35</span>
                   </td>
                   <td className="px-4 py-3 text-gray-600">5-7 business days</td>
-                  <td className="px-4 py-3 text-right text-pink-600 font-semibold">FREE</td>
+                  <td className="px-4 py-3 text-right text-brand-600 font-semibold">FREE</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-3 text-gray-900">Expedited Shipping</td>
@@ -74,7 +74,7 @@ export default function ShippingPolicyPage() {
           <div className="prose prose-gray max-w-none">
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4 flex items-center gap-3">
-              <Clock className="w-6 h-6 text-pink-500" />
+              <Clock className="w-6 h-6 text-brand-500" />
               Processing Time
             </h2>
             <p className="text-gray-600 mb-6">
@@ -84,7 +84,7 @@ export default function ShippingPolicyPage() {
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4 flex items-center gap-3">
-              <Package className="w-6 h-6 text-pink-500" />
+              <Package className="w-6 h-6 text-brand-500" />
               Domestic Shipping (United States)
             </h2>
             <p className="text-gray-600 mb-4">
@@ -101,7 +101,7 @@ export default function ShippingPolicyPage() {
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4 flex items-center gap-3">
-              <Globe className="w-6 h-6 text-pink-500" />
+              <Globe className="w-6 h-6 text-brand-500" />
               International Shipping
             </h2>
             <p className="text-gray-600 mb-4">
@@ -131,7 +131,7 @@ export default function ShippingPolicyPage() {
             </div>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4 flex items-center gap-3">
-              <MapPin className="w-6 h-6 text-pink-500" />
+              <MapPin className="w-6 h-6 text-brand-500" />
               Order Tracking
             </h2>
             <p className="text-gray-600 mb-6">
@@ -183,9 +183,9 @@ export default function ShippingPolicyPage() {
             <p className="text-gray-600 mb-4">
               If you have any questions about shipping, please contact us:
             </p>
-            <div className="bg-pink-50 p-6 rounded-xl mb-6">
+            <div className="bg-brand-50 p-6 rounded-xl mb-6">
               <p className="text-gray-900 font-semibold mb-1">Email Us</p>
-              <a href="mailto:support@pokemyheart.com" className="text-pink-500 hover:text-pink-600">
+              <a href="mailto:support@pokemyheart.com" className="text-brand-500 hover:text-brand-600">
                 support@pokemyheart.com
               </a>
             </div>
@@ -193,15 +193,15 @@ export default function ShippingPolicyPage() {
             <div className="mt-10 pt-8 border-t border-gray-200">
               <p className="text-gray-600">
                 See also:{' '}
-                <Link href="/refunds" className="text-pink-500 hover:text-pink-600">
+                <Link href="/refunds" className="text-brand-500 hover:text-brand-600">
                   Refund Policy
                 </Link>{' '}
                 |{' '}
-                <Link href="/faq" className="text-pink-500 hover:text-pink-600">
+                <Link href="/faq" className="text-brand-500 hover:text-brand-600">
                   FAQ
                 </Link>{' '}
                 |{' '}
-                <Link href="/contact" className="text-pink-500 hover:text-pink-600">
+                <Link href="/contact" className="text-brand-500 hover:text-brand-600">
                   Contact Us
                 </Link>
               </p>

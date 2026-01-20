@@ -154,7 +154,7 @@ export function CheckoutPage() {
         <ShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
         <h1 className="text-2xl font-semibold text-gray-900 mb-2">Your cart is empty</h1>
         <p className="text-gray-500 mb-6">Add items to checkout</p>
-        <Link href="/products/i-choose-you-the-ultimate-valentines-gift" className="text-pink-500">
+        <Link href="/products/i-choose-you-the-ultimate-valentines-gift" className="text-brand-500">
           Continue Shopping
         </Link>
       </div>
@@ -164,7 +164,7 @@ export function CheckoutPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-pink-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
       </div>
     )
   }
@@ -173,7 +173,7 @@ export function CheckoutPage() {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
         <p className="text-red-500 mb-4">{error || 'Failed to load checkout'}</p>
-        <Link href="/products/i-choose-you-the-ultimate-valentines-gift" className="text-pink-500">
+        <Link href="/products/i-choose-you-the-ultimate-valentines-gift" className="text-brand-500">
           Return to shop
         </Link>
       </div>
@@ -484,14 +484,14 @@ function CheckoutForm({
       <div className="space-y-3">
         <Label>Shipping method</Label>
         <div className="space-y-2">
-          <label className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer ${selectedShippingMethod === 'standard' ? 'border-pink-500 bg-pink-50' : 'border-gray-200'}`}>
+          <label className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer ${selectedShippingMethod === 'standard' ? 'border-brand-500 bg-brand-50' : 'border-gray-200'}`}>
             <div className="flex items-center gap-3">
               <input
                 type="radio"
                 name="shipping"
                 checked={selectedShippingMethod === 'standard'}
                 onChange={() => setShippingMethod('standard')}
-                className="w-4 h-4 text-pink-500"
+                className="w-4 h-4 text-brand-500"
               />
               <div>
                 <p className="font-medium text-sm">Standard (5-7 days)</p>
@@ -501,14 +501,14 @@ function CheckoutForm({
               {qualifiesForFree ? 'FREE' : formatPrice(PRODUCT.shipping.standard)}
             </span>
           </label>
-          <label className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer ${selectedShippingMethod === 'express' ? 'border-pink-500 bg-pink-50' : 'border-gray-200'}`}>
+          <label className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer ${selectedShippingMethod === 'express' ? 'border-brand-500 bg-brand-50' : 'border-gray-200'}`}>
             <div className="flex items-center gap-3">
               <input
                 type="radio"
                 name="shipping"
                 checked={selectedShippingMethod === 'express'}
                 onChange={() => setShippingMethod('express')}
-                className="w-4 h-4 text-pink-500"
+                className="w-4 h-4 text-brand-500"
               />
               <div>
                 <p className="font-medium text-sm">Express (1-3 days)</p>
@@ -604,7 +604,7 @@ function CheckoutForm({
           <button
             type="submit"
             disabled={!stripe || isProcessing}
-            className="w-full bg-pink-500 hover:bg-pink-600 disabled:bg-pink-300 text-white font-semibold py-4 rounded-lg flex items-center justify-center gap-2 text-lg transition-colors"
+            className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-brand-300 text-white font-semibold py-4 rounded-lg flex items-center justify-center gap-2 text-lg transition-colors"
           >
             {isProcessing ? (
               <>

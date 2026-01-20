@@ -20,12 +20,12 @@ export function AnnouncementBar() {
   }, [])
 
   return (
-    <div className="bg-pink-500 text-white py-2 px-4 text-center text-sm font-medium">
+    <div className="bg-brand-500 text-white py-2 px-4 text-center text-sm font-medium">
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
         <span className="animate-pulse">{ANNOUNCEMENTS[currentIndex]}</span>
         <Link
           href="/products/i-choose-you-the-ultimate-valentines-gift"
-          className="bg-white text-pink-500 px-3 py-1 rounded-full text-xs font-bold hover:bg-pink-100 transition-colors"
+          className="bg-white text-brand-500 px-3 py-1 rounded-full text-xs font-bold hover:bg-brand-100 transition-colors"
         >
           Shop now!
         </Link>

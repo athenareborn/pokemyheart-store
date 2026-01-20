@@ -11,14 +11,14 @@ export default function AboutPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-pink-50 via-white to-pink-50 py-16 sm:py-24">
+      <section className="relative bg-gradient-to-br from-brand-50 via-white to-brand-50 py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-6">
-            <span className="inline-block bg-pink-100 text-pink-600 px-4 py-2 rounded-full text-sm font-medium">
+            <span className="inline-block bg-brand-100 text-brand-600 px-4 py-2 rounded-full text-sm font-medium">
               Our Story
             </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-              Where Passion Meets <span className="text-pink-500">Heartfelt Gifts</span>
+              Where Passion Meets <span className="text-brand-500">Heartfelt Gifts</span>
             </h1>
             <p className="text-lg text-gray-600">
               We create premium collectible cards that help you express your love in a language that speaks to gamers, anime fans, and collectors alike.
@@ -51,25 +51,25 @@ export default function AboutPage() {
 
             {/* Visual Element */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl p-8 sm:p-12">
+              <div className="bg-gradient-to-br from-brand-100 to-brand-200 rounded-2xl p-8 sm:p-12">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <Heart className="h-10 w-10 text-pink-500 mb-3" />
+                    <Heart className="h-10 w-10 text-brand-500 mb-3" />
                     <p className="text-2xl font-bold text-gray-900">10K+</p>
                     <p className="text-sm text-gray-600">Happy Couples</p>
                   </div>
                   <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <Sparkles className="h-10 w-10 text-pink-500 mb-3" />
+                    <Sparkles className="h-10 w-10 text-brand-500 mb-3" />
                     <p className="text-2xl font-bold text-gray-900">100%</p>
                     <p className="text-sm text-gray-600">Holographic Quality</p>
                   </div>
                   <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <Users className="h-10 w-10 text-pink-500 mb-3" />
+                    <Users className="h-10 w-10 text-brand-500 mb-3" />
                     <p className="text-2xl font-bold text-gray-900">4.9</p>
                     <p className="text-sm text-gray-600">Star Rating</p>
                   </div>
                   <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <Palette className="h-10 w-10 text-pink-500 mb-3" />
+                    <Palette className="h-10 w-10 text-brand-500 mb-3" />
                     <p className="text-2xl font-bold text-gray-900">Unique</p>
                     <p className="text-sm text-gray-600">Original Designs</p>
                   </div>
@@ -95,8 +95,8 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {/* Value 1 */}
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center mb-6">
-                <Sparkles className="h-7 w-7 text-pink-500" />
+              <div className="w-14 h-14 bg-brand-100 rounded-2xl flex items-center justify-center mb-6">
+                <Sparkles className="h-7 w-7 text-brand-500" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Premium Quality</h3>
               <p className="text-gray-600">
@@ -106,8 +106,8 @@ export default function AboutPage() {
 
             {/* Value 2 */}
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center mb-6">
-                <Heart className="h-7 w-7 text-pink-500" />
+              <div className="w-14 h-14 bg-brand-100 rounded-2xl flex items-center justify-center mb-6">
+                <Heart className="h-7 w-7 text-brand-500" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Made with Love</h3>
               <p className="text-gray-600">
@@ -117,8 +117,8 @@ export default function AboutPage() {
 
             {/* Value 3 */}
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center mb-6">
-                <Users className="h-7 w-7 text-pink-500" />
+              <div className="w-14 h-14 bg-brand-100 rounded-2xl flex items-center justify-center mb-6">
+                <Users className="h-7 w-7 text-brand-500" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Community First</h3>
               <p className="text-gray-600">
@@ -132,17 +132,17 @@ export default function AboutPage() {
       {/* CTA Section */}
       <section className="py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl p-8 sm:p-12 lg:p-16 text-center">
+          <div className="bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl p-8 sm:p-12 lg:p-16 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
               Ready to Make Their Heart Skip a Beat?
             </h2>
-            <p className="text-pink-100 text-lg max-w-2xl mx-auto mb-8">
+            <p className="text-brand-100 text-lg max-w-2xl mx-auto mb-8">
               Browse our collection of premium holographic cards and find the perfect way to say &quot;I choose you&quot; this Valentine&apos;s Day.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-white text-pink-600 hover:bg-pink-50 text-lg px-8 py-6"
+                className="bg-white text-brand-600 hover:bg-brand-50 text-lg px-8 py-6"
                 asChild
               >
                 <Link href="/products/i-choose-you-the-ultimate-valentines-gift">

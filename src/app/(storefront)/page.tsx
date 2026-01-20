@@ -12,12 +12,12 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-pink-50 via-white to-pink-50 py-16 sm:py-24">
+      <section className="relative bg-gradient-to-br from-brand-50 via-white to-brand-50 py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12 items-center">
             {/* Text Content */}
             <div className="space-y-6">
-              <span className="inline-block bg-pink-100 text-pink-600 px-4 py-2 rounded-full text-sm font-medium">
+              <span className="inline-block bg-brand-100 text-brand-600 px-4 py-2 rounded-full text-sm font-medium">
                 Valentine&apos;s Day Special
               </span>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
@@ -46,7 +46,7 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   size="lg"
-                  className="bg-pink-500 hover:bg-pink-600 text-white text-lg px-8 py-6"
+                  className="bg-brand-500 hover:bg-brand-600 text-white text-lg px-8 py-6"
                   asChild
                 >
                   <Link href="/products/i-choose-you-the-ultimate-valentines-gift">
@@ -68,7 +68,7 @@ export default function HomePage() {
             {/* Hero Image */}
             <div className="relative">
               <div className="relative aspect-square max-w-md mx-auto">
-                <div className="absolute inset-0 bg-gradient-to-br from-pink-200 to-pink-300 rounded-3xl rotate-3" />
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-200 to-brand-300 rounded-3xl rotate-3" />
                 <div className="absolute inset-0 bg-white rounded-3xl shadow-2xl overflow-hidden">
                   <Image
                     src="/images/hero-card.svg"
@@ -89,19 +89,19 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div className="flex flex-col items-center gap-2">
-              <Shield className="h-8 w-8 text-pink-500" />
+              <Shield className="h-8 w-8 text-brand-500" />
               <span className="text-sm font-medium text-gray-700">Secure Checkout</span>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <Truck className="h-8 w-8 text-pink-500" />
+              <Truck className="h-8 w-8 text-brand-500" />
               <span className="text-sm font-medium text-gray-700">Free Shipping $35+</span>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <Gift className="h-8 w-8 text-pink-500" />
+              <Gift className="h-8 w-8 text-brand-500" />
               <span className="text-sm font-medium text-gray-700">Gift-Ready Packaging</span>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <Heart className="h-8 w-8 text-pink-500" />
+              <Heart className="h-8 w-8 text-brand-500" />
               <span className="text-sm font-medium text-gray-700">Made with Love</span>
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function HomePage() {
           <div className="text-center mt-12">
             <Button
               size="lg"
-              className="bg-pink-500 hover:bg-pink-600 text-white"
+              className="bg-brand-500 hover:bg-brand-600 text-white"
               asChild
             >
               <Link href="/products/i-choose-you-the-ultimate-valentines-gift">
@@ -202,7 +202,7 @@ export default function HomePage() {
               </ul>
               <Button
                 size="lg"
-                className="bg-pink-500 hover:bg-pink-600 text-white"
+                className="bg-brand-500 hover:bg-brand-600 text-white"
                 asChild
               >
                 <Link href="/products/i-choose-you-the-ultimate-valentines-gift">

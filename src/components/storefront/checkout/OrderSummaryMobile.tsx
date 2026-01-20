@@ -41,14 +41,14 @@ export function OrderSummaryMobile() {
         className="w-full flex items-center justify-between p-4"
       >
         <div className="flex items-center gap-2">
-          <span className="text-pink-500">
+          <span className="text-brand-500">
             {isExpanded ? (
               <ChevronUp className="w-5 h-5" />
             ) : (
               <ChevronDown className="w-5 h-5" />
             )}
           </span>
-          <span className="text-sm text-pink-500">
+          <span className="text-sm text-brand-500">
             {isExpanded ? 'Hide' : 'Show'} order summary
           </span>
           <span className="text-sm text-gray-500">({itemCount} items)</span>

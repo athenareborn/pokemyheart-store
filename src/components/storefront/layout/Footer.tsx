@@ -26,20 +26,20 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2">
-              <Heart className="h-8 w-8 text-pink-500 fill-pink-500" />
+              <Heart className="h-8 w-8 text-brand-500 fill-brand-500" />
               <span className="text-xl font-bold text-white">Pokemyheart</span>
             </Link>
             <p className="text-sm text-gray-400">
               Premium holographic cards that say &quot;I Choose You&quot; - the perfect Valentine&apos;s gift.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-pink-500 transition-colors">
+              <a href="#" className="hover:text-brand-500 transition-colors">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-pink-500 transition-colors">
+              <a href="#" className="hover:text-brand-500 transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-pink-500 transition-colors">
+              <a href="#" className="hover:text-brand-500 transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
             </div>
@@ -53,7 +53,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm hover:text-pink-500 transition-colors"
+                    className="text-sm hover:text-brand-500 transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -70,7 +70,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm hover:text-pink-500 transition-colors"
+                    className="text-sm hover:text-brand-500 transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -89,11 +89,11 @@ export function Footer() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:border-pink-500"
+                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:border-brand-500"
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-pink-500 text-white rounded-lg text-sm font-medium hover:bg-pink-600 transition-colors"
+                className="px-4 py-2 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors"
               >
                 <Mail className="h-4 w-4" />
               </button>
@@ -111,7 +111,7 @@ export function Footer() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-gray-400 hover:text-pink-500 transition-colors"
+                className="text-sm text-gray-400 hover:text-brand-500 transition-colors"
               >
                 {link.label}
               </Link>

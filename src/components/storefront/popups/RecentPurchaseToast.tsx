@@ -123,6 +123,13 @@ export function RecentPurchaseToast() {
     }
   }, [showToast])
 
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: { offset: { x: number } }) => {
+    // Swipe left to dismiss on mobile
+    if (Math.abs(info.offset.x) > 100) {
+      setIsVisible(false)
+    }
+  }
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -131,13 +138,17 @@ export function RecentPurchaseToast() {
           animate={{ opacity: 1, x: 0, y: 0 }}
           exit={{ opacity: 0, x: -100 }}
           transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-          className="fixed bottom-4 left-4 z-40 hidden sm:block"
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.3}
+          onDragEnd={handleDragEnd}
+          className="fixed z-40 bottom-24 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-auto"
         >
           <Link
             href="/products/i-choose-you-the-ultimate-valentines-gift"
             onClick={() => setIsVisible(false)}
             className="block bg-white rounded-xl shadow-lg border border-gray-100
-                       p-4 max-w-[320px] hover:shadow-xl transition-shadow cursor-pointer"
+                       p-3 sm:p-4 max-w-full sm:max-w-[320px] mx-auto sm:mx-0 hover:shadow-xl transition-shadow cursor-pointer"
           >
             {/* Header with verified badge */}
             <div className="flex items-center justify-between mb-2">
@@ -160,7 +171,7 @@ export function RecentPurchaseToast() {
             {/* Main content */}
             <div className="flex items-start gap-3">
               {/* Product thumbnail placeholder with gradient */}
-              <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-pink-100 to-pink-200
+              <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-brand-100 to-brand-200
                               flex items-center justify-center flex-shrink-0 overflow-hidden">
                 <span className="text-2xl">💝</span>
               </div>

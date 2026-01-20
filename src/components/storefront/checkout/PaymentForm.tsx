@@ -92,7 +92,7 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
       <Button
         type="submit"
         disabled={!stripe || isProcessing}
-        className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg font-semibold"
+        className="w-full bg-brand-500 hover:bg-brand-600 text-white py-6 text-lg font-semibold"
       >
         {isProcessing ? (
           <>

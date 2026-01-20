@@ -29,8 +29,8 @@ export function CheckoutSteps({ currentStep }: CheckoutStepsProps) {
                 <div
                   className={cn(
                     'flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all',
-                    isCompleted && 'bg-pink-500 border-pink-500',
-                    isCurrent && 'border-pink-500 text-pink-500',
+                    isCompleted && 'bg-brand-500 border-brand-500',
+                    isCurrent && 'border-brand-500 text-brand-500',
                     !isCompleted && !isCurrent && 'border-gray-300 text-gray-400'
                   )}
                 >
@@ -43,7 +43,7 @@ export function CheckoutSteps({ currentStep }: CheckoutStepsProps) {
                 <span
                   className={cn(
                     'ml-2 text-sm font-medium hidden sm:block',
-                    isCurrent && 'text-pink-500',
+                    isCurrent && 'text-brand-500',
                     isCompleted && 'text-gray-900',
                     !isCompleted && !isCurrent && 'text-gray-400'
                   )}
@@ -55,7 +55,7 @@ export function CheckoutSteps({ currentStep }: CheckoutStepsProps) {
                 <div
                   className={cn(
                     'w-8 sm:w-16 h-0.5 mx-2 sm:mx-4',
-                    index < currentIndex ? 'bg-pink-500' : 'bg-gray-300'
+                    index < currentIndex ? 'bg-brand-500' : 'bg-gray-300'
                   )}
                 />
               )}

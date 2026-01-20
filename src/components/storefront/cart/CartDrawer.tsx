@@ -74,7 +74,7 @@ export function CartDrawer() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5 text-pink-500" />
+                <ShoppingBag className="h-5 w-5 text-brand-500" />
                 <h2 className="text-lg font-semibold">Your Cart</h2>
                 <span className="text-sm text-gray-500">({items.length} items)</span>
               </div>
@@ -150,7 +150,7 @@ export function CartDrawer() {
                 {/* Actions */}
                 <div className="space-y-2">
                   <Button
-                    className="w-full bg-pink-500 hover:bg-pink-600 text-white"
+                    className="w-full bg-brand-500 hover:bg-brand-600 text-white"
                     size="lg"
                     onClick={handleCheckout}
                   >

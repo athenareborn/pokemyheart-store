@@ -36,7 +36,7 @@ export function Header() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="text-lg font-medium text-gray-900 hover:text-pink-500 transition-colors"
+                    className="text-lg font-medium text-gray-900 hover:text-brand-500 transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {link.label}
@@ -48,7 +48,7 @@ export function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <Heart className="h-8 w-8 text-pink-500 fill-pink-500" />
+            <Heart className="h-8 w-8 text-brand-500 fill-brand-500" />
             <span className="text-xl font-bold text-gray-900 hidden sm:block">
               Pokemyheart
             </span>
@@ -60,7 +60,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-gray-700 hover:text-pink-500 transition-colors"
+                className="text-sm font-medium text-gray-700 hover:text-brand-500 transition-colors"
               >
                 {link.label}
               </Link>
@@ -77,7 +77,7 @@ export function Header() {
             >
               <ShoppingBag className="h-5 w-5" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-pink-500 text-white text-xs font-bold flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-brand-500 text-white text-xs font-bold flex items-center justify-center">
                   {itemCount}
                 </span>
               )}

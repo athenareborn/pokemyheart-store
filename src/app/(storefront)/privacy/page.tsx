@@ -10,7 +10,7 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <section className="bg-gradient-to-br from-pink-50 via-white to-pink-50 py-12 sm:py-16">
+      <section className="bg-gradient-to-br from-brand-50 via-white to-brand-50 py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Privacy Policy
@@ -142,11 +142,11 @@ export default function PrivacyPolicyPage() {
             <div className="mt-10 pt-8 border-t border-gray-200">
               <p className="text-gray-600">
                 For questions about orders or products, please visit our{' '}
-                <Link href="/contact" className="text-pink-500 hover:text-pink-600">
+                <Link href="/contact" className="text-brand-500 hover:text-brand-600">
                   Contact page
                 </Link>{' '}
                 or{' '}
-                <Link href="/faq" className="text-pink-500 hover:text-pink-600">
+                <Link href="/faq" className="text-brand-500 hover:text-brand-600">
                   FAQ
                 </Link>.
               </p>

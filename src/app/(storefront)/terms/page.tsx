@@ -10,7 +10,7 @@ export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <section className="bg-gradient-to-br from-pink-50 via-white to-pink-50 py-12 sm:py-16">
+      <section className="bg-gradient-to-br from-brand-50 via-white to-brand-50 py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Terms of Service
@@ -61,7 +61,7 @@ export default function TermsOfServicePage() {
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">5. Shipping and Delivery</h2>
             <p className="text-gray-600 mb-4">
-              Please refer to our <Link href="/shipping" className="text-pink-500 hover:text-pink-600">Shipping Policy</Link> for
+              Please refer to our <Link href="/shipping" className="text-brand-500 hover:text-brand-600">Shipping Policy</Link> for
               detailed information on shipping methods, costs, and delivery times. Key points:
             </p>
             <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
@@ -72,7 +72,7 @@ export default function TermsOfServicePage() {
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">6. Returns and Refunds</h2>
             <p className="text-gray-600 mb-6">
-              Please refer to our <Link href="/refunds" className="text-pink-500 hover:text-pink-600">Refund Policy</Link> for
+              Please refer to our <Link href="/refunds" className="text-brand-500 hover:text-brand-600">Refund Policy</Link> for
               complete details on returns, exchanges, and refunds. We offer a 30-day return policy for unused items
               in original packaging.
             </p>
@@ -148,15 +148,15 @@ export default function TermsOfServicePage() {
             <div className="mt-10 pt-8 border-t border-gray-200">
               <p className="text-gray-600">
                 See also:{' '}
-                <Link href="/privacy" className="text-pink-500 hover:text-pink-600">
+                <Link href="/privacy" className="text-brand-500 hover:text-brand-600">
                   Privacy Policy
                 </Link>{' '}
                 |{' '}
-                <Link href="/refunds" className="text-pink-500 hover:text-pink-600">
+                <Link href="/refunds" className="text-brand-500 hover:text-brand-600">
                   Refund Policy
                 </Link>{' '}
                 |{' '}
-                <Link href="/shipping" className="text-pink-500 hover:text-pink-600">
+                <Link href="/shipping" className="text-brand-500 hover:text-brand-600">
                   Shipping Policy
                 </Link>
               </p>

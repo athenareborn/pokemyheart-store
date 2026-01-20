@@ -42,9 +42,9 @@ export default function ContactPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-pink-50 via-white to-pink-50 py-16 sm:py-24">
+      <section className="relative bg-gradient-to-br from-brand-50 via-white to-brand-50 py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-block bg-pink-100 text-pink-600 px-4 py-2 rounded-full text-sm font-medium mb-6">
+          <span className="inline-block bg-brand-100 text-brand-600 px-4 py-2 rounded-full text-sm font-medium mb-6">
             We&apos;re Here to Help
           </span>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
@@ -70,8 +70,8 @@ export default function ContactPage() {
 
                 {isSubmitted ? (
                   <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Send className="w-8 h-8 text-pink-500" />
+                    <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Send className="w-8 h-8 text-brand-500" />
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       Message Sent!
@@ -84,7 +84,7 @@ export default function ContactPage() {
                         setIsSubmitted(false)
                         setFormData({ name: '', email: '', subject: '', message: '' })
                       }}
-                      className="bg-pink-500 hover:bg-pink-600 text-white"
+                      className="bg-brand-500 hover:bg-brand-600 text-white"
                     >
                       Send Another Message
                     </Button>
@@ -106,7 +106,7 @@ export default function ContactPage() {
                         onChange={handleChange}
                         placeholder="Enter your name"
                         required
-                        className="focus-visible:border-pink-500 focus-visible:ring-pink-500/50"
+                        className="focus-visible:border-brand-500 focus-visible:ring-brand-500/50"
                       />
                     </div>
 
@@ -125,7 +125,7 @@ export default function ContactPage() {
                         onChange={handleChange}
                         placeholder="you@example.com"
                         required
-                        className="focus-visible:border-pink-500 focus-visible:ring-pink-500/50"
+                        className="focus-visible:border-brand-500 focus-visible:ring-brand-500/50"
                       />
                     </div>
 
@@ -142,7 +142,7 @@ export default function ContactPage() {
                         value={formData.subject}
                         onChange={handleChange}
                         required
-                        className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-pink-500 focus-visible:ring-pink-500/50 focus-visible:ring-[3px] md:text-sm"
+                        className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-brand-500 focus-visible:ring-brand-500/50 focus-visible:ring-[3px] md:text-sm"
                       >
                         {SUBJECT_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -167,14 +167,14 @@ export default function ContactPage() {
                         placeholder="How can we help you?"
                         rows={5}
                         required
-                        className="focus-visible:border-pink-500 focus-visible:ring-pink-500/50"
+                        className="focus-visible:border-brand-500 focus-visible:ring-brand-500/50"
                       />
                     </div>
 
                     <Button
                       type="submit"
                       size="lg"
-                      className="w-full bg-pink-500 hover:bg-pink-600 text-white"
+                      className="w-full bg-brand-500 hover:bg-brand-600 text-white"
                     >
                       Send Message
                       <Send className="ml-2 h-5 w-5" />
@@ -192,14 +192,14 @@ export default function ContactPage() {
                 </h2>
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-6 h-6 text-pink-500" />
+                    <div className="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-6 h-6 text-brand-500" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Email Us</h3>
                       <a
                         href="mailto:hello@pokemyheart.com"
-                        className="text-pink-500 hover:text-pink-600 transition-colors"
+                        className="text-brand-500 hover:text-brand-600 transition-colors"
                       >
                         hello@pokemyheart.com
                       </a>
@@ -208,7 +208,7 @@ export default function ContactPage() {
                       </p>
                       <a
                         href="mailto:support@pokemyheart.com"
-                        className="text-pink-500 hover:text-pink-600 transition-colors text-sm"
+                        className="text-brand-500 hover:text-brand-600 transition-colors text-sm"
                       >
                         support@pokemyheart.com
                       </a>
@@ -219,8 +219,8 @@ export default function ContactPage() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Clock className="w-6 h-6 text-pink-500" />
+                    <div className="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-6 h-6 text-brand-500" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Response Time</h3>
@@ -250,10 +250,10 @@ export default function ContactPage() {
               </div>
 
               {/* FAQ Suggestion */}
-              <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 sm:p-8 rounded-2xl">
+              <div className="bg-gradient-to-br from-brand-50 to-brand-100 p-6 sm:p-8 rounded-2xl">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-                    <MessageCircle className="w-6 h-6 text-pink-500" />
+                    <MessageCircle className="w-6 h-6 text-brand-500" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-2">
@@ -265,7 +265,7 @@ export default function ContactPage() {
                     </p>
                     <Button
                       variant="outline"
-                      className="border-pink-500 text-pink-500 hover:bg-pink-50"
+                      className="border-brand-500 text-brand-500 hover:bg-brand-50"
                       asChild
                     >
                       <Link href="/faq">

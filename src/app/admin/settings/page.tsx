@@ -9,7 +9,8 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { Store, Truck, CreditCard, Bell, Users, Save, ExternalLink } from 'lucide-react'
+import { Store, Truck, CreditCard, Bell, Users, Save, ExternalLink, Palette } from 'lucide-react'
+import { useThemeStore, type ThemeMode } from '@/lib/store/theme'
 
 export default function SettingsPage() {
   const [storeSettings, setStoreSettings] = useState({
@@ -27,6 +28,8 @@ export default function SettingsPage() {
     newCustomer: false,
     weeklyReport: true,
   })
+
+  const { themeMode, setThemeMode } = useThemeStore()
 
   return (
     <div className="space-y-6">
@@ -57,6 +60,10 @@ export default function SettingsPage() {
           <TabsTrigger value="users" className="gap-2">
             <Users className="h-4 w-4" />
             Users
+          </TabsTrigger>
+          <TabsTrigger value="appearance" className="gap-2">
+            <Palette className="h-4 w-4" />
+            Appearance
           </TabsTrigger>
         </TabsList>
 
@@ -385,6 +392,86 @@ export default function SettingsPage() {
                     <Button variant="ghost" size="sm" disabled>Remove</Button>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Appearance Settings */}
+        <TabsContent value="appearance" className="space-y-3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Store Theme</CardTitle>
+              <CardDescription>Choose your storefront color scheme</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                {/* Pink Theme Option */}
+                <button
+                  onClick={() => setThemeMode('pink')}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    themeMode === 'pink'
+                      ? 'border-pink-500 bg-pink-50'
+                      : 'border-border hover:border-pink-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-400 to-pink-600" />
+                    <div>
+                      <p className="font-medium text-foreground">Pink</p>
+                      <p className="text-xs text-muted-foreground">Default theme</p>
+                    </div>
+                    {themeMode === 'pink' && (
+                      <Badge className="ml-auto bg-pink-500">Active</Badge>
+                    )}
+                  </div>
+                  <div className="flex gap-1">
+                    <div className="w-6 h-6 rounded bg-pink-50 border border-pink-100" title="pink-50" />
+                    <div className="w-6 h-6 rounded bg-pink-100" title="pink-100" />
+                    <div className="w-6 h-6 rounded bg-pink-200" title="pink-200" />
+                    <div className="w-6 h-6 rounded bg-pink-400" title="pink-400" />
+                    <div className="w-6 h-6 rounded bg-pink-500" title="pink-500" />
+                    <div className="w-6 h-6 rounded bg-pink-600" title="pink-600" />
+                  </div>
+                </button>
+
+                {/* Red Valentine Theme Option */}
+                <button
+                  onClick={() => setThemeMode('red')}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    themeMode === 'red'
+                      ? 'border-red-500 bg-red-50'
+                      : 'border-border hover:border-red-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-400 to-red-600" />
+                    <div>
+                      <p className="font-medium text-foreground">Red Valentine</p>
+                      <p className="text-xs text-muted-foreground">Valentine&apos;s Day special</p>
+                    </div>
+                    {themeMode === 'red' && (
+                      <Badge className="ml-auto bg-red-500">Active</Badge>
+                    )}
+                  </div>
+                  <div className="flex gap-1">
+                    <div className="w-6 h-6 rounded bg-red-50 border border-red-100" title="red-50" />
+                    <div className="w-6 h-6 rounded bg-red-100" title="red-100" />
+                    <div className="w-6 h-6 rounded bg-red-200" title="red-200" />
+                    <div className="w-6 h-6 rounded bg-red-400" title="red-400" />
+                    <div className="w-6 h-6 rounded bg-red-500" title="red-500" />
+                    <div className="w-6 h-6 rounded bg-red-600" title="red-600" />
+                  </div>
+                </button>
+              </div>
+
+              <Separator />
+
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">Note:</strong> Theme changes apply instantly to your storefront.
+                  The admin dashboard colors remain unchanged for consistency.
+                </p>
               </div>
             </CardContent>
           </Card>

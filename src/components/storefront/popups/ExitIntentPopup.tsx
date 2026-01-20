@@ -75,8 +75,8 @@ export function ExitIntentPopup() {
 
             {/* Content */}
             <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Gift className="h-8 w-8 text-pink-500" />
+              <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Gift className="h-8 w-8 text-brand-500" />
               </div>
 
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
@@ -88,14 +88,14 @@ export function ExitIntentPopup() {
 
               {/* Discount code box */}
               <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-4 mb-6">
-                <span className="text-2xl font-mono font-bold text-pink-600">
+                <span className="text-2xl font-mono font-bold text-brand-600">
                   {DISCOUNT_CODE}
                 </span>
               </div>
 
               <Button
                 onClick={handleCopy}
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white mb-3"
+                className="w-full bg-brand-500 hover:bg-brand-600 text-white mb-3"
                 size="lg"
               >
                 {copied ? '✓ Copied!' : 'Copy Code'}

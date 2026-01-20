@@ -149,10 +149,10 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-pink-50 via-white to-pink-50 py-12 sm:py-16">
+      <section className="bg-gradient-to-br from-brand-50 via-white to-brand-50 py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-pink-100 rounded-full mb-6">
-            <HelpCircle className="w-8 h-8 text-pink-500" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-100 rounded-full mb-6">
+            <HelpCircle className="w-8 h-8 text-brand-500" />
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Frequently Asked Questions
@@ -171,9 +171,9 @@ export default function FAQPage() {
             {faqCategories.map((category) => (
               <div key={category.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {/* Category Header */}
-                <div className="bg-pink-50 px-4 sm:px-6 py-4 border-b border-pink-100">
+                <div className="bg-brand-50 px-4 sm:px-6 py-4 border-b border-brand-100">
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 bg-pink-500 rounded-lg">
+                    <div className="flex items-center justify-center w-10 h-10 bg-brand-500 rounded-lg">
                       <category.icon className="w-5 h-5 text-white" />
                     </div>
                     <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
@@ -191,7 +191,7 @@ export default function FAQPage() {
                         value={`${category.id}-${index}`}
                         className="border-b border-gray-100 last:border-b-0"
                       >
-                        <AccordionTrigger className="text-left text-gray-900 hover:text-pink-500 hover:no-underline py-4 sm:py-5">
+                        <AccordionTrigger className="text-left text-gray-900 hover:text-brand-500 hover:no-underline py-4 sm:py-5">
                           <span className="text-sm sm:text-base font-medium pr-4">
                             {item.question}
                           </span>
@@ -221,7 +221,7 @@ export default function FAQPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              className="bg-pink-500 hover:bg-pink-600 text-white"
+              className="bg-brand-500 hover:bg-brand-600 text-white"
               asChild
             >
               <Link href="mailto:support@pokemyheart.com">
