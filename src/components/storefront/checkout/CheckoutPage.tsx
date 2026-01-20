@@ -13,6 +13,7 @@ import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
 import { fbPixel } from '@/lib/analytics/fpixel'
+import { ga4 } from '@/lib/analytics/ga4'
 import { formatPrice } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -75,12 +76,28 @@ export function CheckoutPage() {
     }
   }, [isCartEmpty, router])
 
-  // Track InitiateCheckout
+  // Track InitiateCheckout (Facebook + GA4)
   useEffect(() => {
     if (items.length > 0) {
+      // Facebook Pixel
       const eventId = generateEventId('ic')
       const contentIds = items.map(item => `${item.designId}-${item.bundleId}`)
       fbPixel.initiateCheckout(getTotal() / 100, items.length, contentIds, 'USD', eventId)
+
+      // Google Analytics 4
+      ga4.beginCheckout({
+        value: getTotal() / 100,
+        items: items.map(item => {
+          const bundle = BUNDLES.find(b => b.id === item.bundleId)
+          const design = PRODUCT.designs.find(d => d.id === item.designId)
+          return {
+            itemId: `${item.designId}-${item.bundleId}`,
+            itemName: `${PRODUCT.name} - ${design?.name || 'Design'}`,
+            price: item.price / 100,
+            quantity: item.quantity,
+          }
+        }),
+      })
     }
   }, [])
 
@@ -111,6 +128,9 @@ export function CheckoutPage() {
           return match ? match[2] : undefined
         }
 
+        // Get GA4 client ID for server-side tracking
+        const gaClientId = await ga4.getClientId()
+
         const res = await fetch('/api/payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -131,6 +151,9 @@ export function CheckoutPage() {
               fbc: getCookie('_fbc'),
               fbp: getCookie('_fbp'),
               eventId: generateEventId('purchase'),
+            },
+            gaData: {
+              clientId: gaClientId,
             },
           }),
         })
@@ -301,6 +324,28 @@ function CheckoutForm({
       setIsProcessing(false)
       return
     }
+
+    // Store purchase data for client-side tracking on success page
+    // This is needed because stripe.confirmPayment redirects the browser
+    const purchaseData = {
+      value: total / 100,
+      numItems: items.length,
+      contentIds: items.map(item => `${item.designId}-${item.bundleId}`),
+      currency: 'USD',
+      eventId: generateEventId('purchase'),
+      // GA4 items format
+      items: items.map(item => {
+        const bundle = BUNDLES.find(b => b.id === item.bundleId)
+        const design = PRODUCT.designs.find(d => d.id === item.designId)
+        return {
+          itemId: `${item.designId}-${item.bundleId}`,
+          itemName: `${PRODUCT.name} - ${design?.name || 'Design'}`,
+          price: item.price / 100,
+          quantity: item.quantity,
+        }
+      }),
+    }
+    sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
 
     const { error } = await stripe.confirmPayment({
       elements,

@@ -46,6 +46,9 @@ export interface PaymentIntentRequest {
     fbp?: string
     eventId?: string
   }
+  gaData?: {
+    clientId?: string | null
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -61,6 +64,7 @@ export async function POST(req: NextRequest) {
       discountCode,
       discountAmount = 0,
       fbData,
+      gaData,
     } = body
 
     // Calculate subtotal
@@ -123,6 +127,7 @@ export async function POST(req: NextRequest) {
         fb_fbc: fbData?.fbc || '',
         fb_fbp: fbData?.fbp || '',
         fb_event_id: fbData?.eventId || '',
+        ga_client_id: gaData?.clientId || '',
       },
       receipt_email: email,
       shipping: {

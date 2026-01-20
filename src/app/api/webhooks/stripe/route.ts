@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { fbCAPI, generateEventId } from '@/lib/analytics/facebook-capi'
+import { ga4Server } from '@/lib/analytics/ga4-server'
 
 // Lazy initialization to avoid build-time errors
 function getStripe() {
@@ -177,6 +178,35 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, request:
   })
 
   console.log(`Facebook CAPI Purchase event sent for order ${orderNumber}`)
+
+  // Send server-side Purchase event to GA4 Measurement Protocol
+  const gaClientId = metadata.ga_client_id || `server.${Date.now()}`
+
+  await ga4Server.purchase({
+    clientId: gaClientId,
+    transactionId: orderNumber,
+    value: (session.amount_total || 0) / 100,
+    currency: 'USD',
+    items: items.map((item: { designId: string; bundleId: string; bundle_name?: string; price: number; quantity?: number }) => ({
+      itemId: `${item.designId}-${item.bundleId}`,
+      itemName: item.bundle_name || 'Product',
+      price: item.price / 100,
+      quantity: item.quantity || 1,
+    })),
+    userData: {
+      email: customerEmail || undefined,
+      phone: customerPhone,
+      firstName: customerName?.split(' ')[0],
+      lastName: customerName?.split(' ').slice(1).join(' '),
+      street: shippingAddress?.line1,
+      city: shippingAddress?.city,
+      region: shippingAddress?.state,
+      postalCode: shippingAddress?.postal_code,
+      country: shippingAddress?.country,
+    },
+  })
+
+  console.log(`GA4 Measurement Protocol Purchase event sent for order ${orderNumber}`)
 }
 
 async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, request: Request) {
@@ -286,4 +316,32 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, r
   })
 
   console.log(`Facebook CAPI Purchase event sent for order ${orderNumber}`)
+
+  // Send server-side Purchase event to GA4 Measurement Protocol
+  const gaClientId = metadata.ga_client_id || `server.${Date.now()}`
+
+  await ga4Server.purchase({
+    clientId: gaClientId,
+    transactionId: orderNumber,
+    value: paymentIntent.amount / 100,
+    currency: 'USD',
+    items: items.map((item: { design_id: string; bundle_id: string; bundle_name?: string; price: number; quantity?: number }) => ({
+      itemId: `${item.design_id}-${item.bundle_id}`,
+      itemName: item.bundle_name || 'Product',
+      price: item.price / 100,
+      quantity: item.quantity || 1,
+    })),
+    userData: {
+      email: customerEmail,
+      firstName: customerName?.split(' ')[0],
+      lastName: customerName?.split(' ').slice(1).join(' '),
+      street: shippingAddress?.line1,
+      city: shippingAddress?.city,
+      region: shippingAddress?.state,
+      postalCode: shippingAddress?.postal_code,
+      country: shippingAddress?.country,
+    },
+  })
+
+  console.log(`GA4 Measurement Protocol Purchase event sent for order ${orderNumber}`)
 }

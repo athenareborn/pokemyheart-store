@@ -7,6 +7,7 @@ import { CheckCircle, Package, Mail, ArrowRight, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/store/cart'
 import { fbPixel } from '@/lib/analytics/fpixel'
+import { ga4 } from '@/lib/analytics/ga4'
 
 function CheckoutSuccessContent() {
   const { clearCart } = useCartStore()
@@ -21,7 +22,7 @@ function CheckoutSuccessContent() {
     if (hasTracked.current) return
     hasTracked.current = true
 
-    // Track FB Purchase event
+    // Track Purchase events (Facebook + GA4)
     const purchaseDataStr = sessionStorage.getItem('fb_purchase_data')
     if (purchaseDataStr) {
       try {
@@ -30,6 +31,8 @@ function CheckoutSuccessContent() {
         const orderId = searchParams.get('session_id') ||
                         searchParams.get('payment_intent') ||
                         'unknown'
+
+        // Facebook Pixel
         fbPixel.purchase(
           orderId,
           purchaseData.value,
@@ -38,10 +41,25 @@ function CheckoutSuccessContent() {
           purchaseData.currency,
           purchaseData.eventId
         )
+
+        // Google Analytics 4 (client-side redundancy)
+        if (purchaseData.items) {
+          ga4.purchase({
+            transactionId: orderId,
+            value: purchaseData.value,
+            items: purchaseData.items.map((item: { itemId: string; itemName: string; price: number; quantity: number }) => ({
+              itemId: item.itemId,
+              itemName: item.itemName,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+          })
+        }
+
         // Clear stored data after tracking
         sessionStorage.removeItem('fb_purchase_data')
       } catch (e) {
-        console.error('Failed to track FB Purchase:', e)
+        console.error('Failed to track Purchase:', e)
       }
     }
   }, [clearCart, searchParams])

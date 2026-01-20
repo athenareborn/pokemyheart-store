@@ -160,58 +160,85 @@ function ReviewCard({
   review: Review
   isActive: boolean
 }) {
+  const videoUrl = 'video' in review ? (review as { video?: string }).video : undefined
+  const imageUrl = 'image' in review ? (review as { image?: string }).image : undefined
+  const hasMedia = !!videoUrl || !!imageUrl
+
   return (
     <div
       className={cn(
-        'flex-shrink-0 p-4 rounded-xl border transition-all duration-200',
+        'flex-shrink-0 rounded-xl border transition-all duration-200 overflow-hidden',
         isActive
           ? 'bg-white border-brand-200 shadow-sm'
           : 'bg-gray-50 border-gray-100'
       )}
       style={{ width: CARD_WIDTH }}
     >
-      {/* Verified badge */}
-      {review.verified && (
-        <div className="flex items-center gap-1 text-green-600 mb-2">
-          <CheckCircle className="h-3.5 w-3.5" />
-          <span className="text-xs font-medium">Verified Buyer</span>
+      {/* Video/Image media */}
+      {videoUrl && (
+        <video
+          src={videoUrl}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-32 object-cover"
+        />
+      )}
+      {imageUrl && !videoUrl && (
+        <img
+          src={imageUrl}
+          alt={`Review by ${review.author}`}
+          className="w-full h-32 object-cover"
+        />
+      )}
+
+      <div className={cn('p-4', hasMedia && 'pt-3')}>
+        {/* Verified badge */}
+        {review.verified && (
+          <div className="flex items-center gap-1 text-green-600 mb-2">
+            <CheckCircle className="h-3.5 w-3.5" />
+            <span className="text-xs font-medium">Verified Buyer</span>
+          </div>
+        )}
+
+        {/* Rating hearts */}
+        <div className="flex items-center gap-0.5 mb-2">
+          {[...Array(5)].map((_, i) => (
+            <Heart
+              key={i}
+              className={cn(
+                'w-3.5 h-3.5',
+                i < review.rating
+                  ? 'text-yellow-400 fill-yellow-400'
+                  : 'text-gray-300'
+              )}
+            />
+          ))}
         </div>
-      )}
 
-      {/* Rating hearts */}
-      <div className="flex items-center gap-0.5 mb-2">
-        {[...Array(5)].map((_, i) => (
-          <Heart
-            key={i}
-            className={cn(
-              'w-3.5 h-3.5',
-              i < review.rating
-                ? 'text-yellow-400 fill-yellow-400'
-                : 'text-gray-300'
-            )}
-          />
-        ))}
-      </div>
+        {/* Highlighted quote */}
+        {review.highlightQuote && (
+          <p className="text-sm font-medium text-gray-900 mb-2 italic border-l-2 border-brand-300 pl-2">
+            &ldquo;{review.highlightQuote}&rdquo;
+          </p>
+        )}
 
-      {/* Highlighted quote */}
-      {review.highlightQuote && (
-        <p className="text-sm font-medium text-gray-900 mb-2 italic border-l-2 border-brand-300 pl-2">
-          &ldquo;{review.highlightQuote}&rdquo;
+        {/* Full review text (truncated) */}
+        <p className={cn('text-sm text-gray-600 mb-3', hasMedia ? 'line-clamp-2' : 'line-clamp-3')}>
+          {review.body}
         </p>
-      )}
 
-      {/* Full review text (truncated) */}
-      <p className="text-sm text-gray-600 line-clamp-2 mb-3">{review.body}</p>
-
-      {/* Author and date */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-gray-500 font-medium">— {review.author}</p>
-        <p className="text-xs text-gray-400">
-          {new Date(review.date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-          })}
-        </p>
+        {/* Author and date */}
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-gray-500 font-medium">— {review.author}</p>
+          <p className="text-xs text-gray-400">
+            {new Date(review.date).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+            })}
+          </p>
+        </div>
       </div>
     </div>
   )

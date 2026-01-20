@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
+import { ga4 } from '@/lib/analytics/ga4'
 
 interface AddToCartProps {
   designId: string
@@ -24,17 +25,28 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
       setIsAdding(true)
       addItem(designId, bundleId)
 
-      // Track FB AddToCart event
       const bundle = BUNDLES.find(b => b.id === bundleId)
       const design = PRODUCT.designs.find(d => d.id === designId)
+      const price = (bundle?.price || BUNDLES[0].price) / 100
+      const productName = `${PRODUCT.name} - ${design?.name || 'Design'}`
+
+      // Track Facebook AddToCart
       const eventId = generateEventId('atc')
       fbPixel.addToCart(
         `${designId}-${bundleId}`,
-        `${PRODUCT.name} - ${design?.name || 'Design'}`,
-        (bundle?.price || BUNDLES[0].price) / 100,
+        productName,
+        price,
         'USD',
         eventId
       )
+
+      // Track GA4 add_to_cart
+      ga4.addToCart({
+        itemId: `${designId}-${bundleId}`,
+        itemName: productName,
+        price,
+        quantity: 1,
+      })
 
       // Reset animation after a short delay
       setTimeout(() => setIsAdding(false), 600)

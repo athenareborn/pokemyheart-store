@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Heart } from 'lucide-react'
 import { fbPixel } from '@/lib/analytics/fpixel'
+import { ga4 } from '@/lib/analytics/ga4'
 import { PRODUCT } from '@/data/product'
 import { BUNDLES, type BundleId } from '@/data/bundles'
 import { REVIEWS, getAverageRating, getReviewCount } from '@/data/reviews'
@@ -100,15 +101,20 @@ export default function ProductPage() {
     return () => observer.disconnect()
   }, [])
 
-  // Track ViewContent on page load
+  // Track ViewContent on page load (Facebook + GA4)
   useEffect(() => {
     const bundle = BUNDLES.find(b => b.id === selectedBundle)
-    fbPixel.viewContent(
-      PRODUCT.id,
-      PRODUCT.name,
-      (bundle?.price || BUNDLES[0].price) / 100,
-      'USD'
-    )
+    const price = (bundle?.price || BUNDLES[0].price) / 100
+
+    // Facebook Pixel
+    fbPixel.viewContent(PRODUCT.id, PRODUCT.name, price, 'USD')
+
+    // Google Analytics 4
+    ga4.viewItem({
+      itemId: PRODUCT.id,
+      itemName: PRODUCT.name,
+      price,
+    })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle design selection from DesignSelector
@@ -135,9 +141,9 @@ export default function ProductPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 sm:pb-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-12">
-          {/* Left: Image Gallery */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
+          {/* Left: Image Gallery - Sticky on desktop */}
+          <div className="lg:sticky lg:top-24 lg:self-start lg:h-fit">
             <ImageGallery
               images={PRODUCT.designs}
               selectedIndex={selectedDesignIndex}
@@ -146,148 +152,174 @@ export default function ProductPage() {
             />
           </div>
 
-          {/* Right: Product Details */}
-          <div className="space-y-5">
-            {/* Title & Rating */}
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
-                {PRODUCT.name}
-              </h1>
-              <div className="flex items-center gap-1 mt-2">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Heart
-                      key={i}
-                      className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                        i < Math.round(averageRating)
-                          ? 'text-yellow-400 fill-yellow-400'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-600 ml-1">
-                  {averageRating.toFixed(1)} ({reviewCount} reviews)
-                </span>
-              </div>
-            </div>
-
-            {/* Urgency Badge */}
-            <UrgencyBadge stockCount={PRODUCT.stockCount} />
-
-            {/* Taglines - Collapsed on mobile, expanded on desktop */}
-            <div className="space-y-2 sm:space-y-3">
-              {PRODUCT.taglines.map((tagline, index) => (
-                <p key={index} className="text-sm sm:text-base text-gray-700">
-                  <span className="mr-1">{tagline.emoji}</span>
-                  <span className="font-semibold">{tagline.title}</span>{' '}
-                  <span className="text-gray-600 hidden sm:inline">{tagline.description}</span>
-                </p>
-              ))}
-            </div>
-
-            {/* Design Selector */}
-            <DesignSelector
-              designs={PRODUCT.designs}
-              selectedId={selectedDesign.id}
-              onSelect={handleDesignSelect}
-            />
-
-            {/* Bundle Selector */}
-            <BundleSelector
-              selectedId={selectedBundle}
-              onSelect={setSelectedBundle}
-            />
-
-            {/* Add to Cart */}
-            <AddToCart
-              ref={addToCartRef}
-              designId={selectedDesign.id}
-              bundleId={selectedBundle}
-            />
-
-            {/* Mobile Reviews Carousel - right after cart */}
-            <div className="sm:hidden -mx-4 mt-6">
-              <ReviewsCarousel onSeeAll={scrollToAllReviews} />
-            </div>
-          </div>
-        </div>
-
-        {/* Product FAQ */}
-        <div className="mt-12 sm:mt-16">
-          <ProductFAQ />
-        </div>
-
-        {/* Reviews Section */}
-        <div ref={reviewsSectionRef} className="mt-12 sm:mt-16">
-          {/* Mobile: Show button to expand, Desktop: Always show */}
-          <div className={showAllReviews ? 'block' : 'hidden sm:block'}>
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">
-              Customer Reviews ({reviewCount})
-            </h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {REVIEWS.map((review) => (
-                <div
-                  key={review.id}
-                  className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  {/* Verified badge */}
-                  {review.verified && (
-                    <div className="flex items-center gap-1 text-green-600 mb-2">
-                      <CheckCircle className="h-3.5 w-3.5" />
-                      <span className="text-xs font-medium">Verified Buyer</span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-1 mb-2">
+          {/* Right: Product Details + Reviews + FAQ */}
+          <div className="mt-6 lg:mt-0">
+            <div className="space-y-5">
+              {/* Title & Rating */}
+              <div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                  {PRODUCT.name}
+                </h1>
+                <div className="flex items-center gap-1 mt-2">
+                  <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
                       <Heart
                         key={i}
-                        className={`w-4 h-4 ${
-                          i < review.rating
+                        className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                          i < Math.round(averageRating)
                             ? 'text-yellow-400 fill-yellow-400'
                             : 'text-gray-300'
                         }`}
                       />
                     ))}
                   </div>
-
-                  {/* Highlighted quote */}
-                  {review.highlightQuote && (
-                    <p className="text-sm font-medium text-gray-900 mb-2 italic border-l-2 border-brand-300 pl-2">
-                      &ldquo;{review.highlightQuote}&rdquo;
-                    </p>
-                  )}
-
-                  <p className="text-sm text-gray-600 mb-3">{review.body}</p>
-
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-500 font-medium">
-                      — {review.author}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(review.date).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </p>
-                  </div>
+                  <span className="text-sm text-gray-600 ml-1">
+                    {averageRating.toFixed(1)} ({reviewCount} reviews)
+                  </span>
                 </div>
-              ))}
+              </div>
+
+              {/* Urgency Badge */}
+              <UrgencyBadge stockCount={PRODUCT.stockCount} />
+
+              {/* Taglines - Collapsed on mobile, expanded on desktop */}
+              <div className="space-y-2 sm:space-y-3">
+                {PRODUCT.taglines.map((tagline, index) => (
+                  <p key={index} className="text-sm sm:text-base text-gray-700">
+                    <span className="mr-1">{tagline.emoji}</span>
+                    <span className="font-semibold">{tagline.title}</span>{' '}
+                    <span className="text-gray-600 hidden sm:inline">{tagline.description}</span>
+                  </p>
+                ))}
+              </div>
+
+              {/* Design Selector */}
+              <DesignSelector
+                designs={PRODUCT.designs}
+                selectedId={selectedDesign.id}
+                onSelect={handleDesignSelect}
+              />
+
+              {/* Bundle Selector */}
+              <BundleSelector
+                selectedId={selectedBundle}
+                onSelect={setSelectedBundle}
+              />
+
+              {/* Add to Cart */}
+              <AddToCart
+                ref={addToCartRef}
+                designId={selectedDesign.id}
+                bundleId={selectedBundle}
+              />
+
+              {/* Mobile Reviews Carousel - right after cart */}
+              <div className="sm:hidden -mx-4 mt-6">
+                <ReviewsCarousel onSeeAll={scrollToAllReviews} />
+              </div>
+            </div>
+
+            {/* Desktop Reviews Section - Before FAQ */}
+            <div ref={reviewsSectionRef} className="mt-12">
+              {/* Mobile: Show button to expand, Desktop: Always show */}
+              <div className={showAllReviews ? 'block' : 'hidden sm:block'}>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Customer Reviews ({reviewCount})
+                </h3>
+                <div className="columns-1 sm:columns-2 gap-4 space-y-4">
+                  {(showAllReviews ? REVIEWS : REVIEWS.slice(0, 6)).map((review) => {
+                    const videoUrl = 'video' in review ? (review as { video?: string }).video : undefined
+                    const imageUrl = 'image' in review ? (review as { image?: string }).image : undefined
+                    const hasMedia = !!videoUrl || !!imageUrl
+                    return (
+                      <div
+                        key={review.id}
+                        className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden break-inside-avoid"
+                      >
+                        {/* Video/Image media */}
+                        {videoUrl && (
+                          <video
+                            src={videoUrl}
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            className="w-full h-40 object-cover"
+                          />
+                        )}
+                        {imageUrl && !videoUrl && (
+                          <img
+                            src={imageUrl}
+                            alt={`Review by ${review.author}`}
+                            className="w-full h-40 object-cover"
+                          />
+                        )}
+
+                        <div className={hasMedia ? 'p-4 pt-3' : 'p-4'}>
+                          {/* Verified badge */}
+                          {review.verified && (
+                            <div className="flex items-center gap-1 text-green-600 mb-2">
+                              <CheckCircle className="h-3.5 w-3.5" />
+                              <span className="text-xs font-medium">Verified Buyer</span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-1 mb-2">
+                            {[...Array(5)].map((_, i) => (
+                              <Heart
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < review.rating
+                                    ? 'text-yellow-400 fill-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+
+                          {/* Highlighted quote */}
+                          {review.highlightQuote && (
+                            <p className="text-sm font-medium text-gray-900 mb-2 italic border-l-2 border-brand-300 pl-2">
+                              &ldquo;{review.highlightQuote}&rdquo;
+                            </p>
+                          )}
+
+                          <p className="text-sm text-gray-600 mb-3">{review.body}</p>
+
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-gray-500 font-medium">
+                              — {review.author}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {new Date(review.date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Show all reviews button */}
+              {!showAllReviews && (
+                <button
+                  onClick={() => setShowAllReviews(true)}
+                  className="w-full mt-6 py-4 text-center text-brand-500 font-medium border border-brand-200 rounded-xl hover:bg-brand-50 active:bg-brand-100 transition-colors"
+                >
+                  See all {reviewCount} reviews
+                </button>
+              )}
+            </div>
+
+            {/* Product FAQ - After Reviews */}
+            <div className="mt-12">
+              <ProductFAQ />
             </div>
           </div>
-
-          {/* Mobile: Show expand button when collapsed */}
-          {!showAllReviews && (
-            <div className="sm:hidden">
-              <button
-                onClick={() => setShowAllReviews(true)}
-                className="w-full py-4 text-center text-brand-500 font-medium border border-brand-200 rounded-xl hover:bg-brand-50 active:bg-brand-100 transition-colors"
-              >
-                Show all {reviewCount} reviews
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

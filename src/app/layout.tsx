@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { FacebookPixel } from "@/components/analytics/FacebookPixel";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         <FacebookPixel />
+        <GoogleAnalytics />
         <ThemeProvider>
           <AnalyticsProvider>
             {children}
