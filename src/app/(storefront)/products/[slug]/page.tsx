@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Heart } from 'lucide-react'
 import { PRODUCT } from '@/data/product'
-import { type BundleId } from '@/data/bundles'
+import { BUNDLES, type BundleId } from '@/data/bundles'
 import { REVIEWS, getAverageRating, getReviewCount } from '@/data/reviews'
 import { ImageGallery } from '@/components/storefront/product/ImageGallery'
 import { DesignSelector } from '@/components/storefront/product/DesignSelector'
@@ -11,7 +11,62 @@ import { BundleSelector } from '@/components/storefront/product/BundleSelector'
 import { AddToCart } from '@/components/storefront/product/AddToCart'
 import { ProductFAQ } from '@/components/storefront/product/ProductFAQ'
 
+const BASE_URL = 'https://pokemyheart-store.vercel.app'
+
+// Generate JSON-LD structured data for the product
+function generateProductJsonLd() {
+  const averageRating = getAverageRating()
+  const reviewCount = getReviewCount()
+  const lowestPrice = Math.min(...BUNDLES.map(b => b.price))
+  const highestPrice = Math.max(...BUNDLES.map(b => b.price))
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: PRODUCT.name,
+    description: PRODUCT.shortDescription,
+    image: PRODUCT.images.map(img => `${BASE_URL}${img}`),
+    sku: BUNDLES[0].sku,
+    brand: {
+      '@type': 'Brand',
+      name: 'PokeMyHeart',
+    },
+    offers: {
+      '@type': 'AggregateOffer',
+      lowPrice: (lowestPrice / 100).toFixed(2),
+      highPrice: (highestPrice / 100).toFixed(2),
+      priceCurrency: 'USD',
+      availability: PRODUCT.stockCount > 0
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      offerCount: BUNDLES.length,
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: averageRating.toFixed(1),
+      reviewCount: reviewCount,
+      bestRating: 5,
+      worstRating: 1,
+    },
+    review: REVIEWS.slice(0, 5).map(review => ({
+      '@type': 'Review',
+      author: {
+        '@type': 'Person',
+        name: review.author,
+      },
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: review.rating,
+        bestRating: 5,
+        worstRating: 1,
+      },
+      reviewBody: review.body,
+    })),
+  }
+}
+
 export default function ProductPage() {
+  const jsonLd = generateProductJsonLd()
   const [selectedDesign, setSelectedDesign] = useState(PRODUCT.designs[0].id)
   const [selectedBundle, setSelectedBundle] = useState<BundleId>('card-only')
 
@@ -22,8 +77,14 @@ export default function ProductPage() {
   const selectedDesignData = PRODUCT.designs.find(d => d.id === selectedDesign)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-12">
+    <>
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-12">
         {/* Left: Image Gallery - Shows selected design */}
         <div>
           <ImageGallery
@@ -124,5 +185,6 @@ export default function ProductPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

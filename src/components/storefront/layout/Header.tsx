@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingBag, Search, User, Menu, X, Heart } from 'lucide-react'
+import { ShoppingBag, Menu, Heart } from 'lucide-react'
 import { useState } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
@@ -69,12 +69,6 @@ export function Header() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-              <Search className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-              <User className="h-5 w-5" />
-            </Button>
             <Button
               variant="ghost"
               size="icon"
