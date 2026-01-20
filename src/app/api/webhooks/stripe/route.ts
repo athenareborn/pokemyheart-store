@@ -9,9 +9,7 @@ function getStripe() {
   if (!key || key.startsWith('sk_test_placeholder')) {
     throw new Error('Stripe secret key not configured')
   }
-  return new Stripe(key, {
-    apiVersion: '2025-12-15.clover',
-  })
+  return new Stripe(key)
 }
 
 function getWebhookSecret() {
