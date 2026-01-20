@@ -163,7 +163,7 @@ export function OrdersClient({ initialOrders }: OrdersClientProps) {
                       />
                     </TableCell>
                     <TableCell>
-                      <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
+                      <Link href={`/admin/orders/${order.order_number}`} className="font-medium hover:underline">
                         {order.order_number}
                       </Link>
                       <p className="text-xs text-muted-foreground">{formatDate(order.created_at)}</p>
@@ -191,7 +191,7 @@ export function OrdersClient({ initialOrders }: OrdersClientProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link href={`/admin/orders/${order.id}`}>View details</Link>
+                            <Link href={`/admin/orders/${order.order_number}`}>View details</Link>
                           </DropdownMenuItem>
                           {order.status !== 'fulfilled' && (
                             <DropdownMenuItem>Fulfill order</DropdownMenuItem>

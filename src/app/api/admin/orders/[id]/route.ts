@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { sendShippingNotification } from '@/lib/email'
 import type { Order, OrderStatus } from '@/lib/supabase/types'
 
@@ -11,7 +11,7 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const { data: order, error } = await supabase
       .from('orders')
@@ -51,7 +51,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       sendNotification?: boolean
     }
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     // First, get the current order to check its state
     const { data: currentOrder, error: fetchError } = await supabase
