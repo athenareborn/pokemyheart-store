@@ -14,7 +14,7 @@ export const BUNDLES = [
     name: 'Love Pack',
     price: 3795,      // $37.95 in cents
     compareAt: 4995,  // $49.95 in cents
-    description: 'Card + premium display case',
+    description: 'Card + premium display case to show case your love!',
     includes: ['Premium Holographic Card', 'Display Case', 'Display Stand', 'Envelope'],
     badge: 'Most Popular',
     sku: 'PMH-LOVEPACK',
@@ -24,9 +24,9 @@ export const BUNDLES = [
     name: 'Deluxe Love',
     price: 5295,      // $52.95 in cents
     compareAt: 7495,  // $74.95 in cents
-    description: 'The ultimate gift package',
+    description: 'Everything in the Love pack, plus a luxury gift box for a special touch.',
     includes: ['Premium Holographic Card', 'Premium Display Case', 'Premium Stand', 'Luxury Gift Box', 'Tissue Paper', 'Envelope'],
-    badge: 'Best Value',
+    badge: undefined,
     sku: 'PMH-DELUXE',
   },
 ] as const

@@ -1,31 +1,35 @@
 'use client'
 
 import { useState } from 'react'
-import { Star } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import { PRODUCT } from '@/data/product'
-import { BUNDLES, type BundleId } from '@/data/bundles'
+import { type BundleId } from '@/data/bundles'
 import { REVIEWS, getAverageRating, getReviewCount } from '@/data/reviews'
 import { ImageGallery } from '@/components/storefront/product/ImageGallery'
 import { DesignSelector } from '@/components/storefront/product/DesignSelector'
 import { BundleSelector } from '@/components/storefront/product/BundleSelector'
-import { UrgencyBadge } from '@/components/storefront/product/UrgencyBadge'
 import { AddToCart } from '@/components/storefront/product/AddToCart'
 import { ProductFAQ } from '@/components/storefront/product/ProductFAQ'
-import { Separator } from '@/components/ui/separator'
 
 export default function ProductPage() {
   const [selectedDesign, setSelectedDesign] = useState(PRODUCT.designs[0].id)
-  const [selectedBundle, setSelectedBundle] = useState<BundleId>('love-pack')
+  const [selectedBundle, setSelectedBundle] = useState<BundleId>('card-only')
 
   const averageRating = getAverageRating()
   const reviewCount = getReviewCount()
 
+  // Get the selected design object to display its image
+  const selectedDesignData = PRODUCT.designs.find(d => d.id === selectedDesign)
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Left: Image Gallery */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-12">
+        {/* Left: Image Gallery - Shows selected design */}
         <div>
-          <ImageGallery images={PRODUCT.images} productName={PRODUCT.name} />
+          <ImageGallery
+            selectedDesignImage={selectedDesignData?.image || PRODUCT.designs[0].image}
+            productName={PRODUCT.name}
+          />
         </div>
 
         {/* Right: Product Details */}
@@ -35,12 +39,12 @@ export default function ProductPage() {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               {PRODUCT.name}
             </h1>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-1 mt-2">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
-                  <Star
+                  <Heart
                     key={i}
-                    className={`w-4 h-4 ${
+                    className={`w-5 h-5 ${
                       i < Math.round(averageRating)
                         ? 'text-yellow-400 fill-yellow-400'
                         : 'text-gray-300'
@@ -48,19 +52,22 @@ export default function ProductPage() {
                   />
                 ))}
               </div>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 ml-1">
                 {averageRating} ({reviewCount} reviews)
               </span>
             </div>
           </div>
 
-          {/* Urgency Badge */}
-          <UrgencyBadge stockCount={PRODUCT.stockCount} />
-
-          {/* Description */}
-          <p className="text-gray-600">{PRODUCT.description}</p>
-
-          <Separator />
+          {/* Taglines */}
+          <div className="space-y-3">
+            {PRODUCT.taglines.map((tagline, index) => (
+              <p key={index} className="text-gray-700">
+                <span className="mr-1">{tagline.emoji}</span>
+                <span className="font-semibold">{tagline.title}</span>{' '}
+                <span className="text-gray-600">{tagline.description}</span>
+              </p>
+            ))}
+          </div>
 
           {/* Design Selector */}
           <DesignSelector
@@ -69,15 +76,11 @@ export default function ProductPage() {
             onSelect={setSelectedDesign}
           />
 
-          <Separator />
-
           {/* Bundle Selector */}
           <BundleSelector
             selectedId={selectedBundle}
             onSelect={setSelectedBundle}
           />
-
-          <Separator />
 
           {/* Add to Cart */}
           <AddToCart designId={selectedDesign} bundleId={selectedBundle} />
@@ -94,7 +97,7 @@ export default function ProductPage() {
         <h3 className="text-lg font-semibold text-gray-900 mb-6">
           Customer Reviews ({reviewCount})
         </h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {REVIEWS.slice(0, 6).map((review) => (
             <div
               key={review.id}
@@ -102,7 +105,7 @@ export default function ProductPage() {
             >
               <div className="flex items-center gap-1 mb-2">
                 {[...Array(5)].map((_, i) => (
-                  <Star
+                  <Heart
                     key={i}
                     className={`w-4 h-4 ${
                       i < review.rating

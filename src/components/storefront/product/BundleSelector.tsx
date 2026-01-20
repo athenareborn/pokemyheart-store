@@ -1,9 +1,7 @@
 'use client'
 
-import { Check } from 'lucide-react'
 import { cn, formatPrice } from '@/lib/utils'
-import { BUNDLES, type BundleId, calculateSavings } from '@/data/bundles'
-import { Badge } from '@/components/ui/badge'
+import { BUNDLES, type BundleId } from '@/data/bundles'
 
 interface BundleSelectorProps {
   selectedId: BundleId
@@ -12,14 +10,20 @@ interface BundleSelectorProps {
 
 export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
   return (
-    <div className="space-y-3">
-      <label className="block text-sm font-medium text-gray-700">
-        Choose your bundle
-      </label>
+    <div className="space-y-4">
+      {/* Header with decorative lines */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1 h-px bg-red-400" />
+        <h3 className="text-sm font-semibold text-gray-700 tracking-wide">
+          BUNDLE & SAVE
+        </h3>
+        <div className="flex-1 h-px bg-red-400" />
+      </div>
+
+      {/* Bundle options */}
       <div className="space-y-3">
         {BUNDLES.map((bundle) => {
           const isSelected = selectedId === bundle.id
-          const savings = calculateSavings(bundle)
 
           return (
             <button
@@ -27,68 +31,57 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
               onClick={() => onSelect(bundle.id)}
               className={cn(
                 'w-full p-4 rounded-xl border-2 text-left transition-all relative',
+                'bg-red-50',
                 isSelected
-                  ? 'border-pink-500 bg-pink-50'
-                  : 'border-gray-200 hover:border-pink-300 bg-white'
+                  ? 'border-red-500'
+                  : 'border-red-200 hover:border-red-300'
               )}
             >
-              {/* Badge */}
-              {bundle.badge && (
-                <Badge
-                  className={cn(
-                    'absolute -top-2 right-4',
-                    bundle.badge === 'Most Popular'
-                      ? 'bg-pink-500'
-                      : 'bg-green-500'
-                  )}
-                >
-                  {bundle.badge}
-                </Badge>
-              )}
-
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   {/* Radio indicator */}
                   <div
                     className={cn(
-                      'mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0',
+                      'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0',
                       isSelected
-                        ? 'border-pink-500 bg-pink-500'
+                        ? 'border-red-500'
                         : 'border-gray-300'
                     )}
                   >
-                    {isSelected && <Check className="w-3 h-3 text-white" />}
+                    {isSelected && (
+                      <div className="w-3 h-3 rounded-full bg-red-500" />
+                    )}
                   </div>
 
                   <div>
-                    <h4 className="font-semibold text-gray-900">{bundle.name}</h4>
-                    <p className="text-sm text-gray-500 mt-0.5">{bundle.description}</p>
-                    <ul className="mt-2 space-y-1">
-                      {bundle.includes.map((item, i) => (
-                        <li key={i} className="text-xs text-gray-600 flex items-center gap-1">
-                          <Check className="w-3 h-3 text-green-500" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
+                    <h4 className="text-lg font-bold text-gray-900">{bundle.name}</h4>
+                    <p className="text-sm text-gray-600">{bundle.description}</p>
                   </div>
                 </div>
 
-                {/* Pricing */}
-                <div className="text-right flex-shrink-0">
-                  <div className="text-lg font-bold text-gray-900">
-                    {formatPrice(bundle.price)}
-                  </div>
-                  <div className="text-sm text-gray-400 line-through">
-                    {formatPrice(bundle.compareAt)}
-                  </div>
-                  {savings > 0 && (
-                    <div className="text-sm font-medium text-green-600">
-                      Save {formatPrice(savings)}
-                    </div>
-                  )}
+                {/* Price */}
+                <div className="text-xl font-bold text-gray-900 flex-shrink-0">
+                  {formatPrice(bundle.price)}
                 </div>
               </div>
+
+              {/* Most Popular badge */}
+              {bundle.badge === 'Most Popular' && (
+                <div className="absolute -bottom-4 right-4">
+                  <div className="bg-red-500 text-white text-xs font-bold px-3 py-2 rounded-full shadow-md text-center leading-tight">
+                    <div className="flex items-center justify-center gap-0.5">
+                      <span className="text-yellow-300">+</span>
+                      <span>Most</span>
+                      <span className="text-yellow-300">+</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-0.5">
+                      <span className="text-yellow-300">+</span>
+                      <span>Popular</span>
+                      <span className="text-yellow-300">+</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </button>
           )
         })}
