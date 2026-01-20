@@ -31,28 +31,46 @@ export function Header() {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px]">
-              <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-                <Image
-                  src="/images/logo.png"
-                  alt="Pokemyheart"
-                  width={140}
-                  height={35}
-                  className="h-9 w-auto"
-                />
-              </Link>
-              <nav className="flex flex-col gap-4 mt-8">
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="text-lg font-medium text-gray-900 hover:text-brand-500 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
+            <SheetContent side="left" className="w-[280px] p-0">
+              <div className="flex flex-col h-full">
+                {/* Header */}
+                <div className="p-6 pb-4 border-b border-gray-100">
+                  <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+                    <Image
+                      src="/images/logo.png"
+                      alt="Pokemyheart"
+                      width={130}
+                      height={32}
+                      className="h-8 w-auto"
+                    />
                   </Link>
-                ))}
-              </nav>
+                </div>
+
+                {/* Navigation */}
+                <nav className="flex-1 py-4">
+                  {NAV_LINKS.map((link, index) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`block px-6 py-3.5 text-base font-medium transition-colors ${
+                        index === 0
+                          ? 'text-brand-600 bg-brand-50 border-l-2 border-brand-500'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-brand-600 border-l-2 border-transparent'
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
+
+                {/* Footer */}
+                <div className="p-6 pt-4 border-t border-gray-100 bg-gray-50">
+                  <p className="text-xs text-gray-500 text-center">
+                    Made with love for collectors
+                  </p>
+                </div>
+              </div>
             </SheetContent>
           </Sheet>
 

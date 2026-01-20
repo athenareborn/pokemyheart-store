@@ -25,11 +25,11 @@ export const PRODUCT = {
 
   // Design variants
   designs: [
-    { id: 'design-1', name: 'Design 1', image: '/images/cards/cardd1.png', thumbnail: '/images/cards/cardd1.png' },
-    { id: 'design-2', name: 'Design 2', image: '/images/cards/cardd2.png', thumbnail: '/images/cards/cardd2.png' },
-    { id: 'design-3', name: 'Design 3', image: '/images/cards/cardd3.png', thumbnail: '/images/cards/cardd3.png' },
-    { id: 'design-4', name: 'Design 4', image: '/images/cards/cardd4.png', thumbnail: '/images/cards/cardd4.png' },
-    { id: 'design-5', name: 'Design 5', image: '/images/cards/cardd5.png', thumbnail: '/images/cards/cardd5.png' },
+    { id: 'design-1', name: 'Eternal Love', image: '/images/cards/cardd1.png', thumbnail: '/images/cards/cardd1.png' },
+    { id: 'design-2', name: 'Forever Yours', image: '/images/cards/cardd2.png', thumbnail: '/images/cards/cardd2.png' },
+    { id: 'design-3', name: 'My Heart', image: '/images/cards/cardd3.png', thumbnail: '/images/cards/cardd3.png' },
+    { id: 'design-4', name: 'True Love', image: '/images/cards/cardd4.png', thumbnail: '/images/cards/cardd4.png' },
+    { id: 'design-5', name: 'Soulmate', image: '/images/cards/cardd5.png', thumbnail: '/images/cards/cardd5.png' },
   ],
 
   // Gallery images (6 images as per spec)

@@ -5,6 +5,7 @@ import { X, CheckCircle, Flame } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCartStore } from '@/lib/store/cart'
+import { BUNDLES } from '@/data/bundles'
 
 // Diverse, realistic first names
 const FIRST_NAMES = [
@@ -23,24 +24,11 @@ const LOCATIONS = [
   'Las Vegas, NV', 'San Antonio, TX', 'Orlando, FL', 'Charlotte, NC'
 ]
 
-// Actual products with conversion-optimized details
-const PRODUCTS = [
-  {
-    name: 'Love Pack',
-    badge: 'Most Popular',
-    design: ['Eternal Love', 'Forever Yours', 'My Heart', 'True Love', 'Soulmate']
-  },
-  {
-    name: 'Deluxe Love',
-    badge: 'Premium',
-    design: ['Eternal Love', 'Forever Yours', 'My Heart', 'True Love', 'Soulmate']
-  },
-  {
-    name: 'Card Only',
-    badge: null,
-    design: ['Eternal Love', 'Forever Yours', 'My Heart', 'True Love', 'Soulmate']
-  },
-]
+// Actual products linked to real bundles (single source of truth)
+const PRODUCTS = BUNDLES.map(bundle => ({
+  name: bundle.name,
+  badge: bundle.badge || null,
+}))
 
 // Realistic time stamps (avoid "just now" - too suspicious)
 const TIME_AGO = [
@@ -48,12 +36,15 @@ const TIME_AGO = [
   '9 min ago', '12 min ago', '15 min ago'
 ]
 
-// Weighted random - Love Pack appears more often (social proof for bestseller)
+// Weighted random - Valentine's Pack (Most Popular) appears more often
 function getWeightedProduct() {
   const rand = Math.random()
-  if (rand < 0.55) return PRODUCTS[0] // 55% Love Pack (Most Popular)
-  if (rand < 0.80) return PRODUCTS[1] // 25% Deluxe Love
-  return PRODUCTS[2] // 20% Card Only
+  // Find the "Most Popular" bundle (usually love-pack)
+  const popularIndex = PRODUCTS.findIndex(p => p.badge === 'Most Popular')
+
+  if (rand < 0.55) return PRODUCTS[popularIndex !== -1 ? popularIndex : 0] // 55% Most Popular
+  if (rand < 0.80) return PRODUCTS[PRODUCTS.length - 1] // 25% Premium/Deluxe
+  return PRODUCTS[0] // 20% Basic
 }
 
 function getRandomElement<T>(arr: T[]): T {
@@ -69,7 +60,6 @@ function getRandomPurchase() {
     location: getRandomElement(LOCATIONS),
     product: product.name,
     badge: product.badge,
-    design: getRandomElement(product.design),
     timeAgo: getRandomElement(TIME_AGO),
     quantity: showQuantity ? 2 : 1,
   }
@@ -189,11 +179,6 @@ export function RecentPurchaseToast() {
                     <span className="font-medium">{purchase.quantity}x </span>
                   )}
                   <span className="font-semibold text-gray-900">{purchase.product}</span>
-                </p>
-
-                {/* Design name */}
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {purchase.design} Design
                 </p>
 
                 {/* Footer with time and badge */}

@@ -277,14 +277,9 @@ export default function ProductPage() {
                             ))}
                           </div>
 
-                          {/* Highlighted quote */}
-                          {review.highlightQuote && (
-                            <p className="text-sm font-medium text-gray-900 mb-2 italic border-l-2 border-brand-300 pl-2">
-                              &ldquo;{review.highlightQuote}&rdquo;
-                            </p>
-                          )}
-
-                          <p className="text-sm text-gray-600 mb-3">{review.body}</p>
+                          <p className="text-sm text-gray-700 mb-3 leading-relaxed">
+                            &ldquo;{review.body}&rdquo;
+                          </p>
 
                           <div className="flex items-center justify-between">
                             <p className="text-xs text-gray-500 font-medium">
