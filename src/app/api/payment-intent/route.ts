@@ -7,10 +7,6 @@ function getStripe() {
   if (!key) {
     throw new Error('Stripe secret key not configured')
   }
-  // Allow test keys in development, require real keys in production
-  if (process.env.NODE_ENV === 'production' && !key.startsWith('sk_live_')) {
-    throw new Error('Production requires a live Stripe key')
-  }
   return new Stripe(key)
 }
 

@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Heart, Mail, Instagram, Facebook, Twitter } from 'lucide-react'
+import Image from 'next/image'
+import { Mail, Instagram, Facebook, Twitter } from 'lucide-react'
 
 const FOOTER_LINKS = {
   shop: [
@@ -25,9 +26,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2">
-              <Heart className="h-8 w-8 text-brand-500 fill-brand-500" />
-              <span className="text-xl font-bold text-white">Pokemyheart</span>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/images/logo.png"
+                alt="Pokemyheart"
+                width={150}
+                height={38}
+                className="h-9 w-auto brightness-0 invert"
+              />
             </Link>
             <p className="text-sm text-gray-400">
               Premium holographic cards that say &quot;I Choose You&quot; - the perfect Valentine&apos;s gift.

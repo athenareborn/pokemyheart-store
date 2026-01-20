@@ -39,9 +39,9 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
                 <Image
                   src="/images/most-popular-badge.png"
                   alt="Most Popular"
-                  width={85}
-                  height={68}
-                  className="absolute -top-5 -right-4 z-10 drop-shadow-md"
+                  width={95}
+                  height={76}
+                  className="absolute -top-6 -right-5 z-10 drop-shadow-md"
                 />
               )}
               <button
@@ -83,15 +83,15 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
                   {/* Price */}
                   <div className="text-right flex-shrink-0">
                     {savingsPercent > 0 && bundle.id !== 'card-only' && (
-                      <div className="text-sm text-gray-400 line-through">
+                      <div className="text-xs text-gray-400 line-through leading-none">
                         {formatPrice(bundle.compareAt)}
                       </div>
                     )}
-                    <div className="text-lg font-bold text-gray-900">
+                    <div className="text-lg font-bold text-gray-900 leading-tight">
                       {formatPrice(bundle.price)}
                     </div>
                     {savingsPercent > 0 && bundle.id !== 'card-only' && (
-                      <div className="text-xs text-emerald-600 font-medium">
+                      <div className="text-xs text-emerald-600 font-medium leading-none">
                         Save {savingsPercent}%
                       </div>
                     )}

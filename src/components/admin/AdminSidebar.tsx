@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
@@ -11,7 +12,6 @@ import {
   ShoppingBag,
   PanelLeftClose,
   PanelLeft,
-  Store,
   ExternalLink,
   ListTodo,
   Rocket,
@@ -58,11 +58,22 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
         {/* Header */}
         <div className="h-14 flex items-center border-b border-border px-3 justify-between">
           <Link href="/admin" className={cn('flex items-center gap-2', collapsed && 'justify-center')}>
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-              <Store className="h-4 w-4 text-primary-foreground" />
-            </div>
-            {!collapsed && (
-              <span className="font-semibold text-sm text-foreground">PokeMyHeart</span>
+            {collapsed ? (
+              <Image
+                src="/images/logo.png"
+                alt="Pokemyheart"
+                width={32}
+                height={32}
+                className="w-8 h-8 object-contain"
+              />
+            ) : (
+              <Image
+                src="/images/logo.png"
+                alt="Pokemyheart"
+                width={120}
+                height={30}
+                className="h-7 w-auto"
+              />
             )}
           </Link>
           <Tooltip>

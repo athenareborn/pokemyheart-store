@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingBag, Menu, Heart } from 'lucide-react'
+import Image from 'next/image'
+import { ShoppingBag, Menu } from 'lucide-react'
 import { useState } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,15 @@ export function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px]">
+              <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+                <Image
+                  src="/images/logo.png"
+                  alt="Pokemyheart"
+                  width={140}
+                  height={35}
+                  className="h-9 w-auto"
+                />
+              </Link>
               <nav className="flex flex-col gap-4 mt-8">
                 {NAV_LINKS.map((link) => (
                   <Link
@@ -47,11 +57,15 @@ export function Header() {
           </Sheet>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <Heart className="h-8 w-8 text-brand-500 fill-brand-500" />
-            <span className="text-xl font-bold text-gray-900 hidden sm:block">
-              Pokemyheart
-            </span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/images/logo.png"
+              alt="Pokemyheart"
+              width={160}
+              height={40}
+              className="h-10 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}

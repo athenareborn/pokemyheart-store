@@ -499,14 +499,18 @@ export function getReviewCount(): number {
   return REVIEWS.length
 }
 
-// Get reviews sorted by impact (gift reactions first, then quality, then holo)
-// Also prioritizes reviews with media
+// Get reviews sorted: video first, then images, then gift-tagged
 export function getHighlightedReviews(limit?: number): Review[] {
   const sorted = [...REVIEWS].sort((a, b) => {
-    // Media reviews get highest priority
-    const aHasMedia = ('video' in a || 'image' in a) ? 0 : 5
-    const bHasMedia = ('video' in b || 'image' in b) ? 0 : 5
-    if (aHasMedia !== bHasMedia) return aHasMedia - bHasMedia
+    // Video gets highest priority (0)
+    const aHasVideo = 'video' in a ? 0 : 10
+    const bHasVideo = 'video' in b ? 0 : 10
+    if (aHasVideo !== bHasVideo) return aHasVideo - bHasVideo
+
+    // Then images (5)
+    const aHasImage = 'image' in a ? 0 : 5
+    const bHasImage = 'image' in b ? 0 : 5
+    if (aHasImage !== bHasImage) return aHasImage - bHasImage
 
     // Then gift-tagged reviews
     const aTags = a.tags as readonly string[]
