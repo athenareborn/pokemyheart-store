@@ -5,7 +5,7 @@
 -- NEWSLETTER SUBSCRIBERS TABLE
 -- ============================================
 CREATE TABLE newsletter_subscribers (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'unsubscribed')),
   subscribed_at TIMESTAMPTZ DEFAULT NOW(),
