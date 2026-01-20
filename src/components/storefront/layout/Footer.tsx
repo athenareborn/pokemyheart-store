@@ -9,8 +9,8 @@ const FOOTER_LINKS = {
   ],
   support: [
     { href: '/faq', label: 'FAQ' },
-    { href: '/shipping', label: 'Shipping & Delivery' },
-    { href: '/returns', label: 'Returns & Refunds' },
+    { href: '/shipping', label: 'Shipping Policy' },
+    { href: '/refunds', label: 'Refund Policy' },
   ],
   legal: [
     { href: '/privacy', label: 'Privacy Policy' },

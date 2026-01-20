@@ -203,6 +203,18 @@ export default function ContactPage() {
                       >
                         hello@pokemyheart.com
                       </a>
+                      <p className="text-sm text-gray-500 mt-1">
+                        For general inquiries
+                      </p>
+                      <a
+                        href="mailto:support@pokemyheart.com"
+                        className="text-pink-500 hover:text-pink-600 transition-colors text-sm"
+                      >
+                        support@pokemyheart.com
+                      </a>
+                      <p className="text-sm text-gray-500">
+                        For order-related questions
+                      </p>
                     </div>
                   </div>
 
@@ -215,8 +227,25 @@ export default function ContactPage() {
                       <p className="text-gray-600">
                         We typically respond within 24-48 hours
                       </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Monday - Friday, 9am - 5pm EST
+                      </p>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Business Info */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h3 className="font-semibold text-gray-900 mb-3">
+                  Business Information
+                </h3>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p className="font-medium text-gray-900">PokeMyHeart</p>
+                  <p>United States</p>
+                  <p className="pt-2 text-xs text-gray-500">
+                    Online retailer of premium collectible cards and gifts.
+                  </p>
                 </div>
               </div>
 
