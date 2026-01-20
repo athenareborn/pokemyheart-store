@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-interface FunnelData {
+export interface FunnelData {
   visitors: number
   productViews: number
   addToCarts: number

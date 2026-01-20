@@ -5,9 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatPrice } from '@/lib/utils'
 
+type BundleItem = { name: string; sales: number; revenue: number }
+type DesignItem = { name: string; revenue: number }
+
 interface TopProductsChartProps {
-  bundles: Array<{ name: string; sales: number; revenue: number }>
-  designs: Array<{ name: string; revenue: number }>
+  bundles: BundleItem[]
+  designs: DesignItem[]
 }
 
 export function TopProductsChart({ bundles, designs }: TopProductsChartProps) {
@@ -16,8 +19,6 @@ export function TopProductsChart({ bundles, designs }: TopProductsChartProps) {
   const maxRevenue = view === 'bundles'
     ? Math.max(...bundles.map(b => b.revenue), 1)
     : Math.max(...designs.map(d => d.revenue), 1)
-
-  const items = view === 'bundles' ? bundles : designs
 
   return (
     <Card>
@@ -43,39 +44,65 @@ export function TopProductsChart({ bundles, designs }: TopProductsChartProps) {
         </div>
       </CardHeader>
       <CardContent className="pt-0 pb-4">
-        {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">No data yet</p>
-        ) : (
-          <div className="space-y-3">
-            {items.slice(0, 5).map((item, index) => {
-              const revenue = 'revenue' in item ? item.revenue : 0
-              const percentage = (revenue / maxRevenue) * 100
-
-              return (
-                <div key={item.name}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium truncate max-w-[60%]">
-                      {index + 1}. {item.name}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      {'sales' in item && (
+        {view === 'bundles' ? (
+          bundles.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No data yet</p>
+          ) : (
+            <div className="space-y-3">
+              {bundles.slice(0, 5).map((item, index) => {
+                const percentage = (item.revenue / maxRevenue) * 100
+                return (
+                  <div key={item.name}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium truncate max-w-[60%]">
+                        {index + 1}. {item.name}
+                      </span>
+                      <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">
                           {item.sales} sold
                         </span>
-                      )}
-                      <span className="text-sm font-semibold">{formatPrice(revenue)}</span>
+                        <span className="text-sm font-semibold">{formatPrice(item.revenue)}</span>
+                      </div>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary/60 rounded-full transition-all duration-500"
+                        style={{ width: `${percentage}%` }}
+                      />
                     </div>
                   </div>
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary/60 rounded-full transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    />
+                )
+              })}
+            </div>
+          )
+        ) : (
+          designs.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No data yet</p>
+          ) : (
+            <div className="space-y-3">
+              {designs.slice(0, 5).map((item, index) => {
+                const percentage = (item.revenue / maxRevenue) * 100
+                return (
+                  <div key={item.name}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium truncate max-w-[60%]">
+                        {index + 1}. {item.name}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold">{formatPrice(item.revenue)}</span>
+                      </div>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary/60 rounded-full transition-all duration-500"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )
         )}
       </CardContent>
     </Card>

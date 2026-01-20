@@ -1,10 +1,11 @@
 import Link from 'next/link'
-import { DollarSign, Package, TrendingUp, ExternalLink, Play, MousePointerClick, BarChart3 } from 'lucide-react'
+import { DollarSign, Package, TrendingUp, Users, Percent, ExternalLink, Play, MousePointerClick, BarChart3 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatCard } from '@/components/admin'
+import { RevenueChart, FunnelChart, TopProductsChart, LocationChart } from '@/components/admin/charts'
 import { formatPrice } from '@/lib/utils'
-import { getAnalyticsOverview, getTodayMetrics, type TimePeriod } from '@/lib/db/analytics'
+import { getAnalyticsOverview, type TimePeriod } from '@/lib/db/analytics'
 
 interface AnalyticsPageProps {
   searchParams: Promise<{ period?: string }>
@@ -14,10 +15,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
   const params = await searchParams
   const period = (params.period || '7d') as TimePeriod
 
-  const [metrics, todayMetrics] = await Promise.all([
-    getBasicMetrics(period),
-    getTodayMetrics(),
-  ])
+  const analytics = await getAnalyticsOverview(period)
 
   const periodLabel = period === '24h' ? 'Last 24 hours' :
     period === '7d' ? 'Last 7 days' :
@@ -49,55 +47,69 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
         </div>
       </div>
 
-      {/* Revenue Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Key Metrics */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
           title="Revenue"
-          value={formatPrice(metrics.revenue)}
-          change={metrics.revenueChange !== 0 ? {
-            value: `${metrics.revenueChange > 0 ? '+' : ''}${metrics.revenueChange}%`,
-            trend: metrics.revenueChange > 0 ? 'up' : metrics.revenueChange < 0 ? 'down' : 'neutral'
+          value={formatPrice(analytics.revenue)}
+          change={analytics.revenueChange !== 0 ? {
+            value: `${analytics.revenueChange > 0 ? '+' : ''}${analytics.revenueChange}%`,
+            trend: analytics.revenueChange > 0 ? 'up' : analytics.revenueChange < 0 ? 'down' : 'neutral'
           } : undefined}
           icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Orders"
-          value={metrics.orderCount.toString()}
-          change={metrics.orderCountChange !== 0 ? {
-            value: `${metrics.orderCountChange > 0 ? '+' : ''}${metrics.orderCountChange}%`,
-            trend: metrics.orderCountChange > 0 ? 'up' : metrics.orderCountChange < 0 ? 'down' : 'neutral'
+          value={analytics.orderCount.toString()}
+          change={analytics.orderCountChange !== 0 ? {
+            value: `${analytics.orderCountChange > 0 ? '+' : ''}${analytics.orderCountChange}%`,
+            trend: analytics.orderCountChange > 0 ? 'up' : analytics.orderCountChange < 0 ? 'down' : 'neutral'
           } : undefined}
           icon={<Package className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
-          title="Avg Order Value"
-          value={formatPrice(metrics.averageOrderValue)}
-          change={metrics.aovChange !== 0 ? {
-            value: `${metrics.aovChange > 0 ? '+' : ''}${metrics.aovChange}%`,
-            trend: metrics.aovChange > 0 ? 'up' : metrics.aovChange < 0 ? 'down' : 'neutral'
+          title="AOV"
+          value={formatPrice(analytics.averageOrderValue)}
+          change={analytics.aovChange !== 0 ? {
+            value: `${analytics.aovChange > 0 ? '+' : ''}${analytics.aovChange}%`,
+            trend: analytics.aovChange > 0 ? 'up' : analytics.aovChange < 0 ? 'down' : 'neutral'
           } : undefined}
           icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
         />
+        <StatCard
+          title="Visitors"
+          value={analytics.visitors.toString()}
+          change={analytics.visitorsChange !== 0 ? {
+            value: `${analytics.visitorsChange > 0 ? '+' : ''}${analytics.visitorsChange}%`,
+            trend: analytics.visitorsChange > 0 ? 'up' : analytics.visitorsChange < 0 ? 'down' : 'neutral'
+          } : undefined}
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          title="Conversion"
+          value={`${analytics.conversionRate}%`}
+          change={analytics.conversionRateChange !== 0 ? {
+            value: `${analytics.conversionRateChange > 0 ? '+' : ''}${analytics.conversionRateChange}%`,
+            trend: analytics.conversionRateChange > 0 ? 'up' : analytics.conversionRateChange < 0 ? 'down' : 'neutral'
+          } : undefined}
+          icon={<Percent className="h-4 w-4 text-muted-foreground" />}
+        />
       </div>
 
-      {/* Today's Snapshot */}
-      <Card>
-        <CardHeader className="py-4">
-          <CardTitle className="text-base font-medium">Today</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0 pb-4">
-          <div className="flex gap-8">
-            <div>
-              <p className="text-sm text-muted-foreground">Orders</p>
-              <p className="text-xl font-semibold">{todayMetrics.ordersToday}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Revenue</p>
-              <p className="text-xl font-semibold">{formatPrice(todayMetrics.revenueToday)}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Revenue Chart */}
+      <RevenueChart data={analytics.revenueByDay} />
+
+      {/* Funnel + Top Products */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <FunnelChart data={analytics.funnel} />
+        <TopProductsChart
+          bundles={analytics.salesByBundle}
+          designs={analytics.salesByDesign}
+        />
+      </div>
+
+      {/* Locations */}
+      <LocationChart data={analytics.topLocations} />
 
       {/* PostHog Integration */}
       {process.env.NEXT_PUBLIC_POSTHOG_KEY && (
@@ -105,23 +117,14 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
           <CardHeader className="py-4">
             <CardTitle className="text-base font-medium flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              Advanced Analytics
+              Session Recordings & Heatmaps
             </CardTitle>
             <CardDescription>
-              Funnels, session recordings, and heatmaps powered by PostHog
+              Watch real user sessions and see where they click
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0 pb-4">
-            <div className="grid gap-4 sm:grid-cols-3 mb-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-background rounded-md">
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Funnels</p>
-                  <p className="text-xs text-muted-foreground">View → Cart → Checkout → Purchase</p>
-                </div>
-              </div>
+            <div className="grid gap-4 sm:grid-cols-2 mb-4">
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-background rounded-md">
                   <Play className="h-4 w-4 text-muted-foreground" />
@@ -147,21 +150,6 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
                 <ExternalLink className="h-3.5 w-3.5 ml-2" />
               </a>
             </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* No PostHog Warning */}
-      {!process.env.NEXT_PUBLIC_POSTHOG_KEY && (
-        <Card className="border-amber-200 bg-amber-50">
-          <CardContent className="py-4">
-            <div className="flex items-center gap-3">
-              <BarChart3 className="h-5 w-5 text-amber-600" />
-              <div>
-                <p className="text-sm font-medium text-amber-900">PostHog not configured</p>
-                <p className="text-xs text-amber-700">Add NEXT_PUBLIC_POSTHOG_KEY to enable funnels, session recordings, and heatmaps</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       )}
