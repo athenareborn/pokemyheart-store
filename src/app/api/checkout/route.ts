@@ -17,10 +17,10 @@ function getStripe(): Stripe {
 }
 
 function getSiteUrl(): string {
-  if (!process.env.NEXT_PUBLIC_getSiteUrl()) {
-    throw new Error('NEXT_PUBLIC_getSiteUrl() environment variable is required')
+  if (!process.env.NEXT_PUBLIC_SITE_URL) {
+    throw new Error('NEXT_PUBLIC_SITE_URL environment variable is required')
   }
-  return process.env.NEXT_PUBLIC_getSiteUrl()
+  return process.env.NEXT_PUBLIC_SITE_URL
 }
 
 // Valid bundle IDs for price verification
