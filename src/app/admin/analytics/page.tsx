@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { DollarSign, Package, TrendingUp, Users, Percent, ExternalLink, Play, MousePointerClick, BarChart3 } from 'lucide-react'
+import { DollarSign, Package, TrendingUp, Users, Percent, ExternalLink, Play, MousePointerClick, BarChart3, ShoppingCart, Eye } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatCard } from '@/components/admin'
-import { RevenueChart, FunnelChart, TopProductsChart, LocationChart } from '@/components/admin/charts'
+import { RevenueChart, FunnelChart, TopProductsChart, LocationChart, VisitorsChart, ConversionRates } from '@/components/admin/charts'
 import { formatPrice } from '@/lib/utils'
 import { getAnalyticsOverview, type TimePeriod } from '@/lib/db/analytics'
 
@@ -24,6 +24,12 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
   const posthogUrl = process.env.NEXT_PUBLIC_POSTHOG_HOST === 'https://eu.i.posthog.com'
     ? 'https://eu.posthog.com'
     : 'https://us.posthog.com'
+
+  // Calculate additional Shopify-style metrics
+  const totalSessions = analytics.funnel.visitors
+  const atcRate = analytics.funnel.productViews > 0
+    ? ((analytics.funnel.addToCarts / analytics.funnel.productViews) * 100).toFixed(1)
+    : '0.0'
 
   return (
     <div className="space-y-6">
@@ -47,10 +53,10 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
         </div>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      {/* Key Metrics - Row 1: Revenue */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Revenue"
+          title="Total Sales"
           value={formatPrice(analytics.revenue)}
           change={analytics.revenueChange !== 0 ? {
             value: `${analytics.revenueChange > 0 ? '+' : ''}${analytics.revenueChange}%`,
@@ -68,7 +74,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
           icon={<Package className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
-          title="AOV"
+          title="Avg Order Value"
           value={formatPrice(analytics.averageOrderValue)}
           change={analytics.aovChange !== 0 ? {
             value: `${analytics.aovChange > 0 ? '+' : ''}${analytics.aovChange}%`,
@@ -77,16 +83,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
           icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
-          title="Visitors"
-          value={analytics.visitors.toString()}
-          change={analytics.visitorsChange !== 0 ? {
-            value: `${analytics.visitorsChange > 0 ? '+' : ''}${analytics.visitorsChange}%`,
-            trend: analytics.visitorsChange > 0 ? 'up' : analytics.visitorsChange < 0 ? 'down' : 'neutral'
-          } : undefined}
-          icon={<Users className="h-4 w-4 text-muted-foreground" />}
-        />
-        <StatCard
-          title="Conversion"
+          title="Conversion Rate"
           value={`${analytics.conversionRate}%`}
           change={analytics.conversionRateChange !== 0 ? {
             value: `${analytics.conversionRateChange > 0 ? '+' : ''}${analytics.conversionRateChange}%`,
@@ -96,20 +93,58 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
         />
       </div>
 
+      {/* Key Metrics - Row 2: Traffic */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Sessions"
+          value={totalSessions.toString()}
+          change={analytics.visitorsChange !== 0 ? {
+            value: `${analytics.visitorsChange > 0 ? '+' : ''}${analytics.visitorsChange}%`,
+            trend: analytics.visitorsChange > 0 ? 'up' : analytics.visitorsChange < 0 ? 'down' : 'neutral'
+          } : undefined}
+          icon={<Eye className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          title="Unique Visitors"
+          value={analytics.visitors.toString()}
+          change={analytics.visitorsChange !== 0 ? {
+            value: `${analytics.visitorsChange > 0 ? '+' : ''}${analytics.visitorsChange}%`,
+            trend: analytics.visitorsChange > 0 ? 'up' : analytics.visitorsChange < 0 ? 'down' : 'neutral'
+          } : undefined}
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          title="Add to Cart Rate"
+          value={`${atcRate}%`}
+          icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          title="Product Views"
+          value={analytics.funnel.productViews.toString()}
+          icon={<Eye className="h-4 w-4 text-muted-foreground" />}
+        />
+      </div>
+
       {/* Revenue Chart */}
       <RevenueChart data={analytics.revenueByDay} />
 
-      {/* Funnel + Top Products */}
+      {/* Sessions & Visitors Chart */}
+      <VisitorsChart data={analytics.visitorsByDay} />
+
+      {/* Conversion Rates + Funnel */}
       <div className="grid gap-4 lg:grid-cols-2">
+        <ConversionRates funnel={analytics.funnel} />
         <FunnelChart data={analytics.funnel} />
+      </div>
+
+      {/* Top Products + Locations */}
+      <div className="grid gap-4 lg:grid-cols-2">
         <TopProductsChart
           bundles={analytics.salesByBundle}
           designs={analytics.salesByDesign}
         />
+        <LocationChart data={analytics.topLocations} />
       </div>
-
-      {/* Locations */}
-      <LocationChart data={analytics.topLocations} />
 
       {/* PostHog Integration */}
       {process.env.NEXT_PUBLIC_POSTHOG_KEY && (
