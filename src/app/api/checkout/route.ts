@@ -1,51 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
-
-// Lazy initialization to avoid build-time errors
-function getStripe() {
-  const key = process.env.STRIPE_SECRET_KEY
-  if (!key || key.startsWith('sk_test_placeholder')) {
-    throw new Error('Stripe secret key not configured')
-  }
-  return new Stripe(key, {
-    timeout: 30000, // 30 second timeout
-    maxNetworkRetries: 3,
-  })
-}
 
 export async function POST(req: NextRequest) {
   try {
+    const key = process.env.STRIPE_SECRET_KEY
+    if (!key || key.startsWith('sk_test_placeholder')) {
+      throw new Error('Stripe secret key not configured')
+    }
+
     const body = await req.json()
     const { items, successUrl, cancelUrl } = body
 
-    // Create line items for Stripe with metadata
+    // Build line items for Stripe
     const lineItems = items.map((item: {
       name: string
       description: string
       price: number
       quantity: number
-      image?: string
-      designId?: string
-      designName?: string
-      bundleId?: string
-      bundleName?: string
-      bundleSku?: string
     }) => ({
       price_data: {
         currency: 'usd',
         product_data: {
           name: item.name,
           description: item.description,
-          images: item.image ? [item.image] : [],
-          metadata: {
-            designId: item.designId || '',
-            designName: item.designName || '',
-            bundleId: item.bundleId || '',
-            bundleName: item.bundleName || '',
-            sku: item.bundleSku || '',
-          },
         },
-        unit_amount: item.price, // Already in cents
+        unit_amount: item.price,
       },
       quantity: item.quantity,
     }))
@@ -61,86 +39,71 @@ export async function POST(req: NextRequest) {
       bundleSku?: string
       quantity: number
       price: number
-      image?: string
     }) => ({
-      name: item.name,
-      description: item.description,
-      designId: item.designId,
-      designName: item.designName,
-      bundleId: item.bundleId,
-      bundleName: item.bundleName,
-      sku: item.bundleSku,
+      bundle_name: item.bundleName || item.name,
+      design_name: item.designName || item.description,
       quantity: item.quantity,
       price: item.price,
-      image: item.image,
     }))
 
-    // Calculate subtotal (sum of all item prices * quantities)
+    // Calculate subtotal
     const subtotal = items.reduce((sum: number, item: { price: number; quantity: number }) =>
       sum + (item.price * item.quantity), 0
     )
 
-    // Create Stripe Checkout Session
-    const stripe = getStripe()
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: lineItems,
-      success_url: successUrl || `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_SITE_URL}/products/i-choose-you-the-ultimate-valentines-gift`,
-      shipping_address_collection: {
-        allowed_countries: ['US', 'CA', 'GB', 'AU'],
-      },
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: {
-              amount: 495, // $4.95
-              currency: 'usd',
-            },
-            display_name: 'Standard Shipping',
-            delivery_estimate: {
-              minimum: {
-                unit: 'business_day',
-                value: 5,
-              },
-              maximum: {
-                unit: 'business_day',
-                value: 7,
-              },
-            },
-          },
-        },
-        {
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: {
-              amount: 995, // $9.95
-              currency: 'usd',
-            },
-            display_name: 'Express Shipping',
-            delivery_estimate: {
-              minimum: {
-                unit: 'business_day',
-                value: 1,
-              },
-              maximum: {
-                unit: 'business_day',
-                value: 3,
-              },
-            },
-          },
-        },
-      ],
-      allow_promotion_codes: true,
-      metadata: {
-        source: 'pokemyheart-store',
-        items: JSON.stringify(orderItemsSummary),
-        subtotal: String(subtotal),
-        shipping: '495', // Default to standard shipping, actual amount determined by customer selection
-      },
+    // Create checkout session via fetch
+    const params = new URLSearchParams()
+    params.append('mode', 'payment')
+    params.append('success_url', successUrl || 'https://pokemyheart-store.vercel.app/checkout/success?session_id={CHECKOUT_SESSION_ID}')
+    params.append('cancel_url', cancelUrl || 'https://pokemyheart-store.vercel.app')
+
+    // Add line items
+    lineItems.forEach((item: { price_data: { currency: string; product_data: { name: string; description: string }; unit_amount: number }; quantity: number }, index: number) => {
+      params.append(`line_items[${index}][price_data][currency]`, item.price_data.currency)
+      params.append(`line_items[${index}][price_data][product_data][name]`, item.price_data.product_data.name)
+      params.append(`line_items[${index}][price_data][product_data][description]`, item.price_data.product_data.description)
+      params.append(`line_items[${index}][price_data][unit_amount]`, String(item.price_data.unit_amount))
+      params.append(`line_items[${index}][quantity]`, String(item.quantity))
     })
+
+    // Add shipping
+    params.append('shipping_address_collection[allowed_countries][0]', 'US')
+    params.append('shipping_address_collection[allowed_countries][1]', 'CA')
+    params.append('shipping_address_collection[allowed_countries][2]', 'GB')
+    params.append('shipping_address_collection[allowed_countries][3]', 'AU')
+
+    // Standard shipping
+    params.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount')
+    params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', '495')
+    params.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'usd')
+    params.append('shipping_options[0][shipping_rate_data][display_name]', 'Standard Shipping (5-7 days)')
+
+    // Express shipping
+    params.append('shipping_options[1][shipping_rate_data][type]', 'fixed_amount')
+    params.append('shipping_options[1][shipping_rate_data][fixed_amount][amount]', '995')
+    params.append('shipping_options[1][shipping_rate_data][fixed_amount][currency]', 'usd')
+    params.append('shipping_options[1][shipping_rate_data][display_name]', 'Express Shipping (1-3 days)')
+
+    // Add metadata
+    params.append('metadata[source]', 'pokemyheart-store')
+    params.append('metadata[items]', JSON.stringify(orderItemsSummary))
+    params.append('metadata[subtotal]', String(subtotal))
+    params.append('metadata[shipping]', '495')
+
+    const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    })
+
+    const session = await response.json()
+
+    if (!response.ok) {
+      throw new Error(session.error?.message || 'Failed to create checkout session')
+    }
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
