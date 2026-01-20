@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Heart } from 'lucide-react'
+import { fbPixel } from '@/lib/analytics/fpixel'
 import { PRODUCT } from '@/data/product'
 import { BUNDLES, type BundleId } from '@/data/bundles'
 import { REVIEWS, getAverageRating, getReviewCount } from '@/data/reviews'
@@ -75,6 +76,17 @@ export default function ProductPage() {
 
   // Get the selected design object to display its image
   const selectedDesignData = PRODUCT.designs.find(d => d.id === selectedDesign)
+
+  // Track ViewContent on page load
+  useEffect(() => {
+    const bundle = BUNDLES.find(b => b.id === selectedBundle)
+    fbPixel.viewContent(
+      PRODUCT.id,
+      PRODUCT.name,
+      (bundle?.price || BUNDLES[0].price) / 100,
+      'USD'
+    )
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>

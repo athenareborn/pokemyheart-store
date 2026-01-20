@@ -1,18 +1,47 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { CheckCircle, Package, Mail, ArrowRight, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/store/cart'
+import { fbPixel } from '@/lib/analytics/fpixel'
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessContent() {
   const { clearCart } = useCartStore()
+  const searchParams = useSearchParams()
+  const hasTracked = useRef(false)
 
-  // Clear cart on successful checkout
+  // Clear cart and track FB Purchase on successful checkout
   useEffect(() => {
     clearCart()
-  }, [clearCart])
+
+    // Prevent double tracking (React StrictMode calls useEffect twice)
+    if (hasTracked.current) return
+    hasTracked.current = true
+
+    // Track FB Purchase event
+    const purchaseDataStr = sessionStorage.getItem('fb_purchase_data')
+    if (purchaseDataStr) {
+      try {
+        const purchaseData = JSON.parse(purchaseDataStr)
+        const sessionId = searchParams.get('session_id') || 'unknown'
+        fbPixel.purchase(
+          sessionId,
+          purchaseData.value,
+          purchaseData.numItems,
+          purchaseData.contentIds,
+          purchaseData.currency,
+          purchaseData.eventId
+        )
+        // Clear stored data after tracking
+        sessionStorage.removeItem('fb_purchase_data')
+      } catch (e) {
+        console.error('Failed to track FB Purchase:', e)
+      }
+    }
+  }, [clearCart, searchParams])
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4 py-16">
@@ -80,5 +109,17 @@ export default function CheckoutSuccessPage() {
         </Button>
       </div>
     </div>
+  )
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
+      </div>
+    }>
+      <CheckoutSuccessContent />
+    </Suspense>
   )
 }

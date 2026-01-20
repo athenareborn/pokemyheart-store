@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { items, successUrl, cancelUrl } = body
+    const { items, successUrl, cancelUrl, fbData } = body
 
     // Build line items for Stripe
     const lineItems = items.map((item: {
@@ -90,6 +90,11 @@ export async function POST(req: NextRequest) {
     params.append('metadata[subtotal]', String(subtotal))
     params.append('metadata[shipping]', '495')
 
+    // Facebook attribution data
+    if (fbData?.fbc) params.append('metadata[fb_fbc]', fbData.fbc)
+    if (fbData?.fbp) params.append('metadata[fb_fbp]', fbData.fbp)
+    if (fbData?.eventId) params.append('metadata[fb_event_id]', fbData.eventId)
+
     const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: {
@@ -105,7 +110,10 @@ export async function POST(req: NextRequest) {
       throw new Error(session.error?.message || 'Failed to create checkout session')
     }
 
-    return NextResponse.json({ url: session.url })
+    return NextResponse.json({
+      url: session.url,
+      fbEventId: fbData?.eventId, // Return for client-side deduplication
+    })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('Checkout error:', errorMessage, error)

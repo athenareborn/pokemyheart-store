@@ -1,4 +1,58 @@
-export type OrderStatus = 'unfulfilled' | 'processing' | 'fulfilled' | 'cancelled'
+export type OrderStatus = 'unfulfilled' | 'processing' | 'fulfilled' | 'shipped' | 'cancelled'
+
+// Product Types
+export type ProductStatus = 'active' | 'draft'
+
+export interface ProductDesign {
+  id: string
+  name: string
+  image: string
+}
+
+export interface Product {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  short_description: string | null
+  price: number
+  compare_at_price: number | null
+  images: string[]
+  designs: ProductDesign[]
+  stock: number
+  status: ProductStatus
+  sku: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ProductInsert {
+  name: string
+  slug: string
+  description?: string | null
+  short_description?: string | null
+  price: number
+  compare_at_price?: number | null
+  images?: string[]
+  designs?: ProductDesign[]
+  stock?: number
+  status?: ProductStatus
+  sku?: string | null
+}
+
+export interface ProductUpdate {
+  name?: string
+  slug?: string
+  description?: string | null
+  short_description?: string | null
+  price?: number
+  compare_at_price?: number | null
+  images?: string[]
+  designs?: ProductDesign[]
+  stock?: number
+  status?: ProductStatus
+  sku?: string | null
+}
 
 export interface Order {
   id: string

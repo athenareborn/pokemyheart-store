@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { fbCAPI, generateEventId } from '@/lib/analytics/facebook-capi'
 
 // Lazy initialization to avoid build-time errors
 function getStripe() {
@@ -43,13 +44,14 @@ export async function POST(request: Request) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
-    await handleCheckoutComplete(session)
+    // Pass request for IP/UserAgent extraction
+    await handleCheckoutComplete(session, request)
   }
 
   return NextResponse.json({ received: true })
 }
 
-async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
+async function handleCheckoutComplete(session: Stripe.Checkout.Session, request: Request) {
   const supabase = await createClient()
 
   // Extract order data from session metadata
@@ -129,4 +131,44 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   }
 
   console.log(`Order ${orderNumber} created successfully`)
+
+  // Send server-side Purchase event to Facebook CAPI
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pokemyheart.com'
+
+  // Use same eventId from client for deduplication, or generate new one
+  const eventId = metadata.fb_event_id || generateEventId('purchase')
+
+  const contentIds = items.map((item: { bundleId: string; designId: string }) =>
+    `${item.designId}-${item.bundleId}`
+  )
+
+  // Get IP and UserAgent from request headers
+  const headersList = await headers()
+  const clientIp = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                   headersList.get('x-real-ip') ||
+                   undefined
+  const userAgent = headersList.get('user-agent') || undefined
+
+  // Get phone if collected (from Stripe customer details)
+  const customerPhone = session.customer_details?.phone || undefined
+
+  await fbCAPI.purchase({
+    eventId,
+    orderUrl: `${siteUrl}/checkout/success?session_id=${session.id}`,
+    email: customerEmail || '',
+    firstName: customerName?.split(' ')[0],
+    lastName: customerName?.split(' ').slice(1).join(' '),
+    phone: customerPhone,
+    value: (session.amount_total || 0) / 100,
+    currency: 'USD',
+    contentIds,
+    numItems: items.length,
+    orderId: orderNumber,
+    ip: clientIp,
+    userAgent: userAgent,
+    fbc: metadata.fb_fbc || undefined,  // Facebook Click ID
+    fbp: metadata.fb_fbp || undefined,  // Facebook Browser ID
+  })
+
+  console.log(`Facebook CAPI Purchase event sent for order ${orderNumber}`)
 }

@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button'
 import { CartItem } from './CartItem'
 import { CountdownTimer } from './CountdownTimer'
 import { FreeShippingBar } from './FreeShippingBar'
+import { fbPixel } from '@/lib/analytics/fpixel'
+import { generateEventId } from '@/lib/analytics/facebook-capi'
 
 export function CartDrawer() {
   const [isCheckingOut, setIsCheckingOut] = useState(false)
@@ -48,6 +50,18 @@ export function CartDrawer() {
 
   const handleCheckout = async () => {
     setIsCheckingOut(true)
+
+    // Track FB InitiateCheckout event
+    const eventId = generateEventId('ic')
+    const contentIds = items.map(item => `${item.designId}-${item.bundleId}`)
+    fbPixel.initiateCheckout(
+      getTotal() / 100,
+      items.length,
+      contentIds,
+      'USD',
+      eventId
+    )
+
     try {
       const checkoutItems = items.map(item => {
         const bundle = BUNDLES.find(b => b.id === item.bundleId)
@@ -66,14 +80,36 @@ export function CartDrawer() {
         }
       })
 
+      // Get Facebook cookies for attribution
+      const getCookie = (name: string) => {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+        return match ? match[2] : undefined
+      }
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: checkoutItems }),
+        body: JSON.stringify({
+          items: checkoutItems,
+          fbData: {
+            fbc: getCookie('_fbc'),
+            fbp: getCookie('_fbp'),
+            eventId: generateEventId('purchase'), // Same ID for client + server dedup
+          }
+        }),
       })
 
       const data = await response.json()
       if (data.url) {
+        // Store checkout data for FB Purchase tracking on success page
+        // Use same eventId we sent to checkout for deduplication
+        sessionStorage.setItem('fb_purchase_data', JSON.stringify({
+          eventId: data.fbEventId, // Server returns the eventId we sent
+          value: getTotal() / 100,
+          numItems: items.length,
+          contentIds: contentIds,
+          currency: 'USD',
+        }))
         window.location.href = data.url
       } else {
         console.error('No checkout URL returned')

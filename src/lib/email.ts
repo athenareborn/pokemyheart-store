@@ -1,6 +1,18 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy initialization to avoid build-time errors when API key is missing
+let resend: Resend | null = null
+
+function getResend() {
+  if (!resend) {
+    const apiKey = process.env.RESEND_API_KEY
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY is not configured')
+    }
+    resend = new Resend(apiKey)
+  }
+  return resend
+}
 
 interface OrderEmailData {
   orderNumber: string
@@ -52,7 +64,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
     </p>
   ` : '<p style="color: #666;">Address not available</p>'
 
-  const { data: result, error } = await resend.emails.send({
+  const { data: result, error } = await getResend().emails.send({
     from: 'PokeMyHeart <orders@pokemyheart.com>',
     to: customerEmail,
     subject: `Order Confirmed - ${orderNumber}`,
@@ -141,7 +153,7 @@ export async function sendShippingNotification(data: {
 }) {
   const { orderNumber, customerEmail, customerName, trackingNumber, carrier = 'USPS' } = data
 
-  const { data: result, error } = await resend.emails.send({
+  const { data: result, error } = await getResend().emails.send({
     from: 'PokeMyHeart <orders@pokemyheart.com>',
     to: customerEmail,
     subject: `Your order ${orderNumber} has shipped!`,

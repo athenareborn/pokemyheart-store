@@ -2,10 +2,13 @@
 
 import { ShoppingBag, Heart } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
-import type { BundleId } from '@/data/bundles'
+import { BUNDLES, type BundleId } from '@/data/bundles'
+import { PRODUCT } from '@/data/product'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { fbPixel } from '@/lib/analytics/fpixel'
+import { generateEventId } from '@/lib/analytics/facebook-capi'
 
 interface AddToCartProps {
   designId: string
@@ -19,6 +22,18 @@ export function AddToCart({ designId, bundleId }: AddToCartProps) {
   const handleAddToCart = () => {
     setIsAdding(true)
     addItem(designId, bundleId)
+
+    // Track FB AddToCart event
+    const bundle = BUNDLES.find(b => b.id === bundleId)
+    const design = PRODUCT.designs.find(d => d.id === designId)
+    const eventId = generateEventId('atc')
+    fbPixel.addToCart(
+      `${designId}-${bundleId}`,
+      `${PRODUCT.name} - ${design?.name || 'Design'}`,
+      (bundle?.price || BUNDLES[0].price) / 100,
+      'USD',
+      eventId
+    )
 
     // Reset animation after a short delay
     setTimeout(() => setIsAdding(false), 600)
