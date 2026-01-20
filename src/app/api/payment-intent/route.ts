@@ -2,14 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { BUNDLES } from '@/data/bundles'
 
-// Validate environment variable exists
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY environment variable is required')
+// Lazy Stripe initialization to avoid build-time errors
+let stripe: Stripe | null = null
+function getStripe(): Stripe {
+  if (!stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is required')
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-12-15.clover',
+    })
+  }
+  return stripe
 }
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-12-15.clover',
-})
 
 // Valid bundle IDs and prices for verification
 const VALID_BUNDLE_IDS = new Set<string>(BUNDLES.map(b => b.id))
@@ -97,7 +102,7 @@ export async function POST(req: NextRequest) {
     const totalAmount = amount + shipping
 
     // Create PaymentIntent for standard checkout
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await getStripe().paymentIntents.create({
       amount: totalAmount,
       currency: 'usd',
       automatic_payment_methods: {
