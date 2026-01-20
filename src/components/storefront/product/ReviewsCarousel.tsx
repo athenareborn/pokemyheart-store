@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
-import { motion, PanInfo } from 'framer-motion'
-import { Heart, CheckCircle, ChevronRight } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { motion, AnimatePresence, PanInfo } from 'framer-motion'
+import { Heart, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   getHighlightedReviews,
@@ -16,54 +16,58 @@ interface ReviewsCarouselProps {
   className?: string
 }
 
-const CARD_WIDTH = 260
-const CARD_GAP = 12
-
 export function ReviewsCarousel({ onSeeAll, className }: ReviewsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [direction, setDirection] = useState(0)
 
-  const reviews = getHighlightedReviews(8)
+  const reviews = getHighlightedReviews(5) // Show only 5 best reviews
   const averageRating = getAverageRating()
   const reviewCount = getReviewCount()
+
+  const goToNext = useCallback(() => {
+    if (currentIndex < reviews.length - 1) {
+      setDirection(1)
+      setCurrentIndex((prev) => prev + 1)
+    }
+  }, [currentIndex, reviews.length])
+
+  const goToPrev = useCallback(() => {
+    if (currentIndex > 0) {
+      setDirection(-1)
+      setCurrentIndex((prev) => prev - 1)
+    }
+  }, [currentIndex])
 
   const handleDragEnd = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       const swipeThreshold = 50
-      const velocityThreshold = 500
+      const velocityThreshold = 300
 
-      if (
-        (info.offset.x < -swipeThreshold ||
-          info.velocity.x < -velocityThreshold) &&
-        currentIndex < reviews.length - 1
-      ) {
-        setCurrentIndex((prev) => Math.min(prev + 1, reviews.length - 1))
-      } else if (
-        (info.offset.x > swipeThreshold ||
-          info.velocity.x > velocityThreshold) &&
-        currentIndex > 0
-      ) {
-        setCurrentIndex((prev) => Math.max(prev - 1, 0))
+      if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
+        goToNext()
+      } else if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
+        goToPrev()
       }
     },
-    [currentIndex, reviews.length]
+    [goToNext, goToPrev]
   )
 
+  const currentReview = reviews[currentIndex]
+  const videoUrl = 'video' in currentReview ? (currentReview as { video?: string }).video : undefined
+  const imageUrl = 'image' in currentReview ? (currentReview as { image?: string }).image : undefined
+
   return (
-    <div className={cn('space-y-3', className)}>
-      {/* Header with summary stats */}
-      <div className="flex items-center justify-between px-4">
+    <div className={cn('', className)}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 mb-4">
         <div>
-          <h3 className="text-base font-semibold text-gray-900">
-            Customer Reviews
-          </h3>
-          <div className="flex items-center gap-1.5 mt-0.5">
+          <div className="flex items-center gap-2">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <Heart
                   key={i}
                   className={cn(
-                    'w-3.5 h-3.5',
+                    'w-4 h-4',
                     i < Math.round(averageRating)
                       ? 'text-yellow-400 fill-yellow-400'
                       : 'text-gray-300'
@@ -71,174 +75,163 @@ export function ReviewsCarousel({ onSeeAll, className }: ReviewsCarouselProps) {
                 />
               ))}
             </div>
-            <span className="text-xs text-gray-600">
-              {averageRating.toFixed(1)} ({reviewCount})
+            <span className="text-sm font-semibold text-gray-900">
+              {averageRating.toFixed(1)}
             </span>
           </div>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Based on {reviewCount} reviews
+          </p>
         </div>
 
         <button
           onClick={onSeeAll}
-          className="text-sm font-medium text-brand-500 flex items-center gap-0.5 hover:text-brand-600 active:text-brand-700"
+          className="text-sm font-medium text-brand-600 hover:text-brand-700 active:text-brand-800"
         >
           See all
-          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Carousel Container */}
-      <div className="relative overflow-hidden" ref={containerRef}>
-        <motion.div
-          className="flex gap-3 px-4 cursor-grab active:cursor-grabbing"
-          drag="x"
-          dragConstraints={{
-            left: -(reviews.length - 1) * (CARD_WIDTH + CARD_GAP),
-            right: 0,
-          }}
-          dragElastic={0.1}
-          onDragEnd={handleDragEnd}
-          animate={{ x: -currentIndex * (CARD_WIDTH + CARD_GAP) }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        >
-          {reviews.map((review, index) => (
-            <ReviewCard
-              key={review.id}
-              review={review}
-              isActive={index === currentIndex}
-            />
-          ))}
-
-          {/* "See All" final card */}
-          <div
-            className="flex-shrink-0 bg-brand-50 rounded-xl p-4 flex flex-col items-center justify-center border border-brand-100"
-            style={{ width: CARD_WIDTH }}
-          >
-            <div className="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center mb-3">
-              <Heart className="w-6 h-6 text-brand-500 fill-brand-200" />
-            </div>
-            <p className="text-sm font-medium text-gray-900 mb-1">
-              {reviewCount - 8}+ more reviews
-            </p>
-            <button
-              onClick={onSeeAll}
-              className="text-sm text-brand-500 font-medium hover:text-brand-600"
+      {/* Main Review Card - Full Width */}
+      <div className="px-4">
+        <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          {/* Video/Image */}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={currentIndex}
+              initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+              transition={{ duration: 0.2 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.1}
+              onDragEnd={handleDragEnd}
+              className="cursor-grab active:cursor-grabbing"
             >
-              View all reviews
-            </button>
-          </div>
-        </motion.div>
-
-        {/* Visual overflow hint - gradient fade on right edge */}
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none" />
-      </div>
-
-      {/* Pagination dots */}
-      <div className="flex justify-center gap-1.5 pt-1">
-        {reviews.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={cn(
-              'h-1.5 rounded-full transition-all duration-200',
-              index === currentIndex
-                ? 'w-4 bg-brand-500'
-                : 'w-1.5 bg-gray-300 hover:bg-gray-400'
-            )}
-            aria-label={`Go to review ${index + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// Individual Review Card Component
-function ReviewCard({
-  review,
-  isActive,
-}: {
-  review: Review
-  isActive: boolean
-}) {
-  const videoUrl = 'video' in review ? (review as { video?: string }).video : undefined
-  const imageUrl = 'image' in review ? (review as { image?: string }).image : undefined
-  const hasMedia = !!videoUrl || !!imageUrl
-
-  return (
-    <div
-      className={cn(
-        'flex-shrink-0 rounded-xl border transition-all duration-200 overflow-hidden',
-        isActive
-          ? 'bg-white border-brand-200 shadow-sm'
-          : 'bg-gray-50 border-gray-100'
-      )}
-      style={{ width: CARD_WIDTH }}
-    >
-      {/* Video/Image media */}
-      {videoUrl && (
-        <video
-          src={videoUrl}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="w-full h-32 object-cover"
-        />
-      )}
-      {imageUrl && !videoUrl && (
-        <img
-          src={imageUrl}
-          alt={`Review by ${review.author}`}
-          className="w-full h-32 object-cover"
-        />
-      )}
-
-      <div className={cn('p-4', hasMedia && 'pt-3')}>
-        {/* Verified badge */}
-        {review.verified && (
-          <div className="flex items-center gap-1 text-green-600 mb-2">
-            <CheckCircle className="h-3.5 w-3.5" />
-            <span className="text-xs font-medium">Verified Buyer</span>
-          </div>
-        )}
-
-        {/* Rating hearts */}
-        <div className="flex items-center gap-0.5 mb-2">
-          {[...Array(5)].map((_, i) => (
-            <Heart
-              key={i}
-              className={cn(
-                'w-3.5 h-3.5',
-                i < review.rating
-                  ? 'text-yellow-400 fill-yellow-400'
-                  : 'text-gray-300'
+              {videoUrl && (
+                <video
+                  src={videoUrl}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-48 object-cover"
+                />
               )}
+              {imageUrl && !videoUrl && (
+                <img
+                  src={imageUrl}
+                  alt={`Review by ${currentReview.author}`}
+                  className="w-full h-48 object-cover"
+                />
+              )}
+
+              {/* Review Content */}
+              <div className="p-5">
+                {/* Verified + Rating row */}
+                <div className="flex items-center justify-between mb-3">
+                  {currentReview.verified && (
+                    <div className="flex items-center gap-1.5 text-green-600">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-xs font-semibold">Verified Purchase</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Heart
+                        key={i}
+                        className={cn(
+                          'w-3.5 h-3.5',
+                          i < currentReview.rating
+                            ? 'text-yellow-400 fill-yellow-400'
+                            : 'text-gray-300'
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quote */}
+                {currentReview.highlightQuote && (
+                  <p className="text-lg font-semibold text-gray-900 mb-2 leading-snug">
+                    &ldquo;{currentReview.highlightQuote}&rdquo;
+                  </p>
+                )}
+
+                {/* Full text */}
+                <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                  {currentReview.body}
+                </p>
+
+                {/* Author */}
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <p className="text-sm font-medium text-gray-900">
+                    {currentReview.author}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {new Date(currentReview.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Navigation arrows */}
+          {currentIndex > 0 && (
+            <button
+              onClick={goToPrev}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center hover:bg-white transition-colors"
+              aria-label="Previous review"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-700" />
+            </button>
+          )}
+          {currentIndex < reviews.length - 1 && (
+            <button
+              onClick={goToNext}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center hover:bg-white transition-colors"
+              aria-label="Next review"
+            >
+              <ChevronRight className="w-5 h-5 text-gray-700" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom: Dots + See All CTA */}
+      <div className="mt-4 px-4">
+        {/* Pagination dots */}
+        <div className="flex justify-center gap-2 mb-4">
+          {reviews.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setDirection(index > currentIndex ? 1 : -1)
+                setCurrentIndex(index)
+              }}
+              className={cn(
+                'h-2 rounded-full transition-all duration-200',
+                index === currentIndex
+                  ? 'w-6 bg-brand-500'
+                  : 'w-2 bg-gray-300 hover:bg-gray-400'
+              )}
+              aria-label={`Go to review ${index + 1}`}
             />
           ))}
         </div>
 
-        {/* Highlighted quote */}
-        {review.highlightQuote && (
-          <p className="text-sm font-medium text-gray-900 mb-2 italic border-l-2 border-brand-300 pl-2">
-            &ldquo;{review.highlightQuote}&rdquo;
-          </p>
-        )}
-
-        {/* Full review text (truncated) */}
-        <p className={cn('text-sm text-gray-600 mb-3', hasMedia ? 'line-clamp-2' : 'line-clamp-3')}>
-          {review.body}
-        </p>
-
-        {/* Author and date */}
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-500 font-medium">— {review.author}</p>
-          <p className="text-xs text-gray-400">
-            {new Date(review.date).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-            })}
-          </p>
-        </div>
+        {/* See all reviews button */}
+        <button
+          onClick={onSeeAll}
+          className="w-full py-3 text-center text-sm font-semibold text-brand-600 bg-brand-50 rounded-xl hover:bg-brand-100 active:bg-brand-200 transition-colors"
+        >
+          See all {reviewCount} reviews
+        </button>
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 'use client'
 
 import { forwardRef, useState } from 'react'
-import { ShoppingBag, Heart, Shield, Truck, Clock, Award, CreditCard } from 'lucide-react'
+import { ShoppingBag, Shield, Truck, Clock, Award, CreditCard } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { BUNDLES, type BundleId } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
 import { ga4 } from '@/lib/analytics/ga4'
+import { ExpressCheckout } from './ExpressCheckout'
 
 interface AddToCartProps {
   designId: string
@@ -54,28 +55,32 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
 
     return (
       <div ref={ref} className="space-y-4">
-        {/* Main CTA Buttons */}
-        <div className="space-y-3">
-          <Button
-            size="lg"
-            className={cn(
-              'w-full text-lg py-6 bg-brand-500 hover:bg-brand-600 text-white transition-all font-semibold',
-              isAdding && 'scale-95'
-            )}
-            onClick={handleAddToCart}
-          >
-            <ShoppingBag className={cn('mr-2 h-5 w-5', isAdding && 'animate-bounce')} />
-            {isAdding ? 'Added!' : 'Add to Cart'}
-          </Button>
+        {/* Main CTA Button */}
+        <Button
+          size="lg"
+          className={cn(
+            'w-full text-lg py-6 bg-brand-500 hover:bg-brand-600 text-white transition-all font-semibold',
+            isAdding && 'scale-95'
+          )}
+          onClick={handleAddToCart}
+        >
+          <ShoppingBag className={cn('mr-2 h-5 w-5', isAdding && 'animate-bounce')} />
+          {isAdding ? 'Added!' : 'Add to Cart'}
+        </Button>
 
-          <Button
-            size="lg"
-            variant="outline"
-            className="w-full text-lg py-6 border-brand-200 text-brand-600 hover:bg-brand-50"
-          >
-            <Heart className="mr-2 h-5 w-5" />
-            Add to Wishlist
-          </Button>
+        {/* Express Checkout (Apple Pay / Google Pay) */}
+        <div className="space-y-3">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-white px-3 text-xs text-gray-500">
+                or checkout with
+              </span>
+            </div>
+          </div>
+          <ExpressCheckout designId={designId} bundleId={bundleId} />
         </div>
 
         {/* Primary Trust Badge - Money Back Guarantee */}

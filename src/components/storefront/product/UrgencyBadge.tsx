@@ -1,6 +1,6 @@
 'use client'
 
-import { Flame, Gift, Sparkles } from 'lucide-react'
+import { Flame, Gift } from 'lucide-react'
 
 interface UrgencyBadgeProps {
   stockCount: number
@@ -16,10 +16,10 @@ export function UrgencyBadge({ stockCount }: UrgencyBadgeProps) {
   return (
     <div className="space-y-2">
       {/* Stock urgency */}
-      <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2.5 rounded-xl border border-red-100">
-        <Flame className="h-5 w-5 animate-pulse text-orange-500" />
-        <span className="font-medium text-sm">
-          Selling Fast! Only <span className="font-bold">{stockCount}</span> left in stock
+      <div className="inline-flex items-center gap-1.5 text-orange-600">
+        <Flame className="h-4 w-4 animate-pulse" />
+        <span className="text-sm font-bold">
+          Selling Fast! Only {stockCount} left
         </span>
       </div>
 
@@ -38,11 +38,6 @@ export function UrgencyBadge({ stockCount }: UrgencyBadgeProps) {
         </div>
       )}
 
-      {/* Limited edition badge */}
-      <div className="inline-flex items-center gap-2 text-purple-700 bg-purple-50 px-3 py-1.5 rounded-lg">
-        <Sparkles className="h-4 w-4" />
-        <span className="text-xs font-semibold">Limited Edition Collectible</span>
-      </div>
     </div>
   )
 }
