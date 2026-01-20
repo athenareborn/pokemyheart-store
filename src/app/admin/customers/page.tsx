@@ -1,11 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Mail, Package, DollarSign } from 'lucide-react'
+import { Search, Package, DollarSign } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { StatCard } from '@/components/admin'
+import { formatPrice } from '@/lib/utils'
 
 // Mock data - will be replaced with real data from Supabase
 const CUSTOMERS = [
@@ -17,10 +27,6 @@ const CUSTOMERS = [
   { id: '6', name: 'Ryan Parker', email: 'ryan@example.com', orders: 1, totalSpent: 5295, acceptsMarketing: false, createdAt: '2025-02-07' },
   { id: '7', name: 'Emily Foster', email: 'emily@example.com', orders: 1, totalSpent: 3795, acceptsMarketing: true, createdAt: '2025-02-06' },
 ]
-
-function formatPrice(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
 
 export default function CustomersPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -38,106 +44,90 @@ export default function CustomersPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
-        <p className="text-gray-600 mt-1">View and manage your customer base</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Customers</h1>
+        <p className="text-sm text-muted-foreground">View and manage your customer base</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Customers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{totalCustomers}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Email Subscribers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{subscribedCustomers}</div>
-            <p className="text-sm text-gray-500">{Math.round((subscribedCustomers / totalCustomers) * 100)}% of customers</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{formatPrice(totalRevenue)}</div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard
+          title="Total Customers"
+          value={totalCustomers.toString()}
+          icon={<Package className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          title="Email Subscribers"
+          value={subscribedCustomers.toString()}
+          change={{ value: `${Math.round((subscribedCustomers / totalCustomers) * 100)}% of customers`, trend: 'neutral' }}
+          icon={<Package className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard
+          title="Total Revenue"
+          value={formatPrice(totalRevenue)}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+        />
       </div>
 
       {/* Search */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search by name or email..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search by name or email..."
+          className="pl-9"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
 
       {/* Customers Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Customers</CardTitle>
+          <CardTitle className="text-base font-medium">All Customers</CardTitle>
           <CardDescription>{filteredCustomers.length} customers</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Customer</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Orders</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Total Spent</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Marketing</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCustomers.map((customer) => (
-                  <tr key={customer.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4">
-                      <div>
-                        <div className="font-medium text-gray-900">{customer.name}</div>
-                        <div className="text-sm text-gray-500">{customer.email}</div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2 text-gray-700">
-                        <Package className="h-4 w-4" />
-                        {customer.orders}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2 font-medium text-gray-900">
-                        <DollarSign className="h-4 w-4" />
-                        {formatPrice(customer.totalSpent)}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      {customer.acceptsMarketing ? (
-                        <Badge className="bg-green-100 text-green-700">Subscribed</Badge>
-                      ) : (
-                        <Badge className="bg-gray-100 text-gray-700">Not subscribed</Badge>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-gray-500">{customer.createdAt}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Customer</TableHead>
+                <TableHead>Orders</TableHead>
+                <TableHead>Total Spent</TableHead>
+                <TableHead>Marketing</TableHead>
+                <TableHead>Joined</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredCustomers.map((customer) => (
+                <TableRow key={customer.id}>
+                  <TableCell>
+                    <div>
+                      <p className="font-medium">{customer.name}</p>
+                      <p className="text-sm text-muted-foreground">{customer.email}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                      {customer.orders}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2 font-medium">
+                      {formatPrice(customer.totalSpent)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {customer.acceptsMarketing ? (
+                      <Badge variant="default">Subscribed</Badge>
+                    ) : (
+                      <Badge variant="secondary">Not subscribed</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{customer.createdAt}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

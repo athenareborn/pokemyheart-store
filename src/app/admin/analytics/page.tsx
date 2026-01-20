@@ -44,8 +44,8 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Analytics</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Track your store performance and insights</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
+          <p className="text-sm text-muted-foreground">Track your store performance and insights</p>
         </div>
         <div className="flex items-center gap-2">
           <Tabs defaultValue="7d">
@@ -69,25 +69,25 @@ export default function AnalyticsPage() {
           title="Total Revenue"
           value={formatPrice(201350)}
           change={{ value: '+18.2%', trend: 'up' }}
-          icon={<DollarSign className="h-4 w-4 text-slate-600" />}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Total Orders"
           value="50"
           change={{ value: '+12 orders', trend: 'up' }}
-          icon={<ShoppingBag className="h-4 w-4 text-slate-600" />}
+          icon={<ShoppingBag className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Conversion Rate"
           value="3.8%"
           change={{ value: '+0.6%', trend: 'up' }}
-          icon={<TrendingUp className="h-4 w-4 text-slate-600" />}
+          icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Total Visitors"
           value="1,320"
           change={{ value: '+245', trend: 'up' }}
-          icon={<Users className="h-4 w-4 text-slate-600" />}
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
 
@@ -99,11 +99,11 @@ export default function AnalyticsPage() {
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span className="text-slate-600">This period</span>
+                <span className="text-muted-foreground">This period</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-slate-200" />
-                <span className="text-slate-600">Last period</span>
+                <div className="w-3 h-3 rounded-full bg-muted" />
+                <span className="text-muted-foreground">Last period</span>
               </div>
             </div>
           </div>
@@ -111,19 +111,19 @@ export default function AnalyticsPage() {
         <CardContent>
           <div className="flex items-end justify-between mb-4">
             <div>
-              <p className="text-3xl font-semibold text-slate-900">{formatPrice(201350)}</p>
+              <p className="text-3xl font-semibold">{formatPrice(201350)}</p>
               <div className="flex items-center gap-1 mt-1">
                 <ArrowUpRight className="h-4 w-4 text-emerald-500" />
                 <span className="text-sm text-emerald-600 font-medium">+18.2%</span>
-                <span className="text-sm text-slate-400">vs last period</span>
+                <span className="text-sm text-muted-foreground">vs last period</span>
               </div>
             </div>
             <Sparkline data={REVENUE_DATA} width={200} height={60} color="#10b981" />
           </div>
 
           {/* Daily breakdown bars */}
-          <div className="mt-6 pt-6 border-t border-slate-100">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-4">Daily Breakdown</p>
+          <div className="mt-6 pt-6 border-t border-border">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">Daily Breakdown</p>
             <div className="flex items-end justify-between gap-2 h-32">
               {DAILY_STATS.map((day) => (
                 <div key={day.day} className="flex-1 flex flex-col items-center gap-2">
@@ -131,7 +131,7 @@ export default function AnalyticsPage() {
                     className="w-full bg-emerald-500 rounded-t transition-all hover:bg-emerald-600"
                     style={{ height: `${(day.revenue / maxRevenue) * 100}%` }}
                   />
-                  <span className="text-xs text-slate-500">{day.day}</span>
+                  <span className="text-xs text-muted-foreground">{day.day}</span>
                 </div>
               ))}
             </div>
@@ -152,12 +152,12 @@ export default function AnalyticsPage() {
                 <div key={bundle.name}>
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <p className="text-sm font-medium text-slate-900">{bundle.name}</p>
-                      <p className="text-xs text-slate-500">{bundle.sales} orders</p>
+                      <p className="text-sm font-medium">{bundle.name}</p>
+                      <p className="text-xs text-muted-foreground">{bundle.sales} orders</p>
                     </div>
-                    <p className="text-sm font-semibold text-slate-900">{formatPrice(bundle.revenue)}</p>
+                    <p className="text-sm font-semibold">{formatPrice(bundle.revenue)}</p>
                   </div>
-                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-pink-500 to-rose-500 rounded-full"
                       style={{ width: `${bundle.percentage}%` }}
@@ -178,17 +178,17 @@ export default function AnalyticsPage() {
             <div className="space-y-3">
               {TOP_LOCATIONS.map((loc, index) => (
                 <div key={loc.location} className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">
+                  <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                     {index + 1}
                   </span>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-slate-900">{loc.location}</p>
-                      <p className="text-sm text-slate-600">{loc.orders} orders</p>
+                      <p className="text-sm font-medium">{loc.location}</p>
+                      <p className="text-sm text-muted-foreground">{loc.orders} orders</p>
                     </div>
-                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1">
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
                       <div
-                        className="h-full bg-slate-400 rounded-full"
+                        className="h-full bg-muted-foreground/50 rounded-full"
                         style={{ width: `${loc.percentage}%` }}
                       />
                     </div>
@@ -204,12 +204,12 @@ export default function AnalyticsPage() {
       <div className="grid lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Visitors</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Visitors</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-2xl font-semibold text-slate-900">1,320</p>
+                <p className="text-2xl font-semibold">1,320</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowUpRight className="h-3 w-3 text-emerald-500" />
                   <span className="text-xs text-emerald-600">+22.8%</span>
@@ -222,18 +222,18 @@ export default function AnalyticsPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Add to Cart Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Add to Cart Rate</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-2xl font-semibold text-slate-900">8.4%</p>
+                <p className="text-2xl font-semibold">8.4%</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowUpRight className="h-3 w-3 text-emerald-500" />
                   <span className="text-xs text-emerald-600">+1.2%</span>
                 </div>
               </div>
-              <div className="text-right text-xs text-slate-500">
+              <div className="text-right text-xs text-muted-foreground">
                 <p>111 added to cart</p>
                 <p>of 1,320 visitors</p>
               </div>
@@ -243,18 +243,18 @@ export default function AnalyticsPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Checkout Conversion</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Checkout Conversion</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-2xl font-semibold text-slate-900">45.0%</p>
+                <p className="text-2xl font-semibold">45.0%</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <ArrowDownRight className="h-3 w-3 text-red-500" />
-                  <span className="text-xs text-red-600">-2.1%</span>
+                  <ArrowDownRight className="h-3 w-3 text-destructive" />
+                  <span className="text-xs text-destructive">-2.1%</span>
                 </div>
               </div>
-              <div className="text-right text-xs text-slate-500">
+              <div className="text-right text-xs text-muted-foreground">
                 <p>50 completed</p>
                 <p>of 111 checkouts</p>
               </div>

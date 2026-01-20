@@ -1,9 +1,10 @@
 'use client'
 
-import { Bell, Search, Plus, ChevronDown } from 'lucide-react'
+import { Bell, Search, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Separator } from '@/components/ui/separator'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,85 +23,60 @@ export function AdminHeader({ sidebarCollapsed }: AdminHeaderProps) {
   return (
     <header
       className={cn(
-        'fixed top-0 right-0 h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4 z-20 transition-all duration-300',
-        sidebarCollapsed ? 'left-[56px]' : 'left-[240px]'
+        'fixed top-0 right-0 h-14 bg-background border-b border-border flex items-center justify-between px-6 z-30 transition-all duration-200 ease-in-out',
+        sidebarCollapsed ? 'left-16' : 'left-60'
       )}
     >
       {/* Search */}
-      <div className="flex items-center gap-4 flex-1 max-w-md">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+      <div className="flex-1 max-w-md">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search orders, customers..."
-            className="pl-9 bg-slate-50 border-slate-200 focus:bg-white h-9"
+            placeholder="Search..."
+            className="pl-9 h-9 w-full bg-muted/50 border-0 focus-visible:ring-1"
           />
-          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex h-5 items-center gap-1 rounded border border-slate-200 bg-slate-100 px-1.5 font-mono text-[10px] text-slate-500">
-            ⌘K
-          </kbd>
         </div>
       </div>
 
       {/* Right Actions */}
       <div className="flex items-center gap-2">
-        {/* Quick Actions */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm" className="bg-slate-900 hover:bg-slate-800 h-8">
-              <Plus className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Quick action</span>
-              <ChevronDown className="h-3 w-3 ml-1" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem>Create order</DropdownMenuItem>
-            <DropdownMenuItem>Add product</DropdownMenuItem>
-            <DropdownMenuItem>Add customer</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Export data</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 relative">
-              <Bell className="h-4 w-4 text-slate-600" />
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-rose-500 rounded-full text-[10px] text-white flex items-center justify-center font-medium">
-                2
-              </span>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-4 w-4" />
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-primary rounded-full" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <DropdownMenuLabel>Notifications</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-              <span className="font-medium">New order #PMH-008</span>
-              <span className="text-xs text-slate-500">Laura C. ordered Deluxe Love bundle</span>
-              <span className="text-xs text-slate-400">2 minutes ago</span>
+            <DropdownMenuItem className="flex flex-col items-start gap-1 py-3 cursor-pointer">
+              <span className="font-medium text-sm">New order received</span>
+              <span className="text-xs text-muted-foreground">Jessica M. ordered Deluxe Love</span>
+              <span className="text-xs text-muted-foreground">2 minutes ago</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-              <span className="font-medium">Low stock alert</span>
-              <span className="text-xs text-slate-500">Only 8 items remaining</span>
-              <span className="text-xs text-slate-400">1 hour ago</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-center text-sm text-slate-500">
-              View all notifications
+            <DropdownMenuItem className="flex flex-col items-start gap-1 py-3 cursor-pointer">
+              <span className="font-medium text-sm">Low stock alert</span>
+              <span className="text-xs text-muted-foreground">Only 8 items remaining</span>
+              <span className="text-xs text-muted-foreground">1 hour ago</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
+        <Separator orientation="vertical" className="h-6" />
+
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 gap-2 pl-2 pr-1">
-              <Avatar className="h-6 w-6">
-                <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-500 text-white text-xs">
-                  AT
+            <Button variant="ghost" className="gap-2 px-2">
+              <Avatar className="h-7 w-7">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                  A
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden sm:inline text-sm font-medium">Admin</span>
-              <ChevronDown className="h-3 w-3 text-slate-400" />
+              <span className="text-sm font-medium hidden sm:inline">Admin</span>
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -109,7 +85,7 @@ export function AdminHeader({ sidebarCollapsed }: AdminHeaderProps) {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">Log out</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive">Log out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

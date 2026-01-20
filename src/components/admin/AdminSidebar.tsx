@@ -9,8 +9,8 @@ import {
   BarChart3,
   Settings,
   ShoppingBag,
-  ChevronLeft,
-  ChevronRight,
+  PanelLeftClose,
+  PanelLeft,
   Store,
   ExternalLink,
 } from 'lucide-react'
@@ -25,10 +25,13 @@ import {
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/orders', label: 'Orders', icon: Package, badge: 3 },
+  { href: '/admin/orders', label: 'Orders', icon: Package, badge: 2 },
   { href: '/admin/products', label: 'Products', icon: ShoppingBag },
   { href: '/admin/customers', label: 'Customers', icon: Users },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+]
+
+const BOTTOM_NAV = [
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -44,32 +47,37 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          'fixed left-0 top-0 bottom-0 z-30 flex flex-col bg-slate-900 text-white transition-all duration-300',
-          collapsed ? 'w-[56px]' : 'w-[240px]'
+          'fixed left-0 top-0 bottom-0 z-40 flex flex-col bg-white border-r border-border transition-all duration-200 ease-in-out',
+          collapsed ? 'w-16' : 'w-60'
         )}
       >
-        {/* Logo */}
+        {/* Header */}
         <div className={cn(
-          'flex items-center h-14 border-b border-slate-800 px-3',
+          'h-14 flex items-center border-b border-border px-3',
           collapsed ? 'justify-center' : 'justify-between'
         )}>
-          {!collapsed && (
-            <Link href="/admin" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
-                <Store className="h-4 w-4 text-white" />
-              </div>
-              <span className="font-semibold text-sm">PokeMyHeart</span>
-            </Link>
-          )}
-          {collapsed && (
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
-              <Store className="h-4 w-4 text-white" />
+          <Link href="/admin" className={cn('flex items-center gap-2', collapsed && 'justify-center')}>
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+              <Store className="h-4 w-4 text-primary-foreground" />
             </div>
+            {!collapsed && (
+              <span className="font-semibold text-sm text-foreground">PokeMyHeart</span>
+            )}
+          </Link>
+          {!collapsed && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggle}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </Button>
           )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href ||
               (item.href !== '/admin' && pathname.startsWith(item.href))
@@ -79,24 +87,25 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
                 href={item.href}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors relative',
+                  collapsed && 'justify-center px-2',
                   isActive
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                    ? 'bg-secondary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                 )}
               >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
+                <item.icon className="h-4 w-4 flex-shrink-0" />
                 {!collapsed && (
                   <>
-                    <span>{item.label}</span>
+                    <span className="flex-1">{item.label}</span>
                     {item.badge && (
-                      <span className="ml-auto bg-rose-500 text-white text-xs font-medium px-1.5 py-0.5 rounded-full">
+                      <span className="bg-primary text-primary-foreground text-xs font-medium px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                         {item.badge}
                       </span>
                     )}
                   </>
                 )}
                 {collapsed && item.badge && (
-                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-xs font-medium w-4 h-4 flex items-center justify-center rounded-full">
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-medium w-4 h-4 flex items-center justify-center rounded-full">
                     {item.badge}
                   </span>
                 )}
@@ -109,7 +118,7 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
                   <TooltipTrigger asChild>
                     {linkContent}
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="bg-slate-800 text-white border-slate-700">
+                  <TooltipContent side="right">
                     {item.label}
                   </TooltipContent>
                 </Tooltip>
@@ -120,48 +129,76 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
           })}
         </nav>
 
-        {/* Footer */}
-        <div className="border-t border-slate-800 p-2">
+        {/* Bottom Section */}
+        <div className="border-t border-border p-3 space-y-1">
+          {BOTTOM_NAV.map((item) => {
+            const isActive = pathname.startsWith(item.href)
+
+            const linkContent = (
+              <Link
+                href={item.href}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  collapsed && 'justify-center px-2',
+                  isActive
+                    ? 'bg-secondary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                )}
+              >
+                <item.icon className="h-4 w-4 flex-shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            )
+
+            if (collapsed) {
+              return (
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>
+                    {linkContent}
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    {item.label}
+                  </TooltipContent>
+                </Tooltip>
+              )
+            }
+
+            return <div key={item.href}>{linkContent}</div>
+          })}
+
+          {/* View Store Link */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
                 href="/"
                 target="_blank"
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors',
-                  collapsed && 'justify-center'
+                  'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors',
+                  collapsed && 'justify-center px-2'
                 )}
               >
-                <ExternalLink className="h-5 w-5 flex-shrink-0" />
+                <ExternalLink className="h-4 w-4 flex-shrink-0" />
                 {!collapsed && <span>View Store</span>}
               </Link>
             </TooltipTrigger>
             {collapsed && (
-              <TooltipContent side="right" className="bg-slate-800 text-white border-slate-700">
+              <TooltipContent side="right">
                 View Store
               </TooltipContent>
             )}
           </Tooltip>
 
-          {/* Collapse Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onToggle}
-            className={cn(
-              'w-full mt-1 text-slate-400 hover:text-white hover:bg-slate-800/50',
-              collapsed && 'px-0'
-            )}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                <span>Collapse</span>
-              </>
-            )}
-          </Button>
+          {/* Collapse Toggle (when collapsed) */}
+          {collapsed && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggle}
+              className="w-full justify-center text-muted-foreground hover:text-foreground"
+            >
+              <PanelLeft className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </aside>
     </TooltipProvider>

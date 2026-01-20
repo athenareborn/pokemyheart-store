@@ -105,15 +105,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-slate-900">Order {order.id}</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">Order {order.id}</h1>
               <StatusBadge status={order.status} size="md" />
             </div>
-            <p className="text-sm text-slate-500 mt-0.5">{order.created_at}</p>
+            <p className="text-sm text-muted-foreground">{order.created_at}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {order.status === 'unfulfilled' && (
-            <Button className="bg-slate-900 hover:bg-slate-800">
+            <Button className="bg-primary hover:bg-primary/90">
               <Truck className="h-4 w-4 mr-2" />
               Fulfill order
             </Button>
@@ -132,7 +132,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refund order
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600">Cancel order</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive">Cancel order</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -152,33 +152,33 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             <CardContent>
               {order.items.map((item, index) => (
                 <div key={index} className="flex items-start gap-4 py-3">
-                  <div className="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="w-16 h-16 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-slate-900">{item.name}</p>
-                    <p className="text-sm text-slate-500">{item.variant}</p>
-                    <p className="text-sm text-slate-400">Qty: {item.quantity}</p>
+                    <p className="font-medium text-foreground">{item.name}</p>
+                    <p className="text-sm text-muted-foreground">{item.variant}</p>
+                    <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-slate-900">{formatPrice(item.price)}</p>
+                    <p className="font-medium text-foreground">{formatPrice(item.price)}</p>
                   </div>
                 </div>
               ))}
               <Separator className="my-3" />
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Subtotal</span>
-                  <span className="text-slate-900">{formatPrice(order.subtotal)}</span>
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-foreground">{formatPrice(order.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Shipping</span>
-                  <span className="text-slate-900">{order.shipping_cost === 0 ? 'Free' : formatPrice(order.shipping_cost)}</span>
+                  <span className="text-muted-foreground">Shipping</span>
+                  <span className="text-foreground">{order.shipping_cost === 0 ? 'Free' : formatPrice(order.shipping_cost)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-medium">
-                  <span className="text-slate-900">Total</span>
-                  <span className="text-slate-900">{formatPrice(order.total)}</span>
+                  <span className="text-foreground">Total</span>
+                  <span className="text-foreground">{formatPrice(order.total)}</span>
                 </div>
               </div>
             </CardContent>
@@ -197,15 +197,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 {order.timeline.map((event, index) => (
                   <div key={index} className="flex gap-4">
                     <div className="flex flex-col items-center">
-                      <div className={`w-2.5 h-2.5 rounded-full ${index === 0 ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                      <div className={`w-2.5 h-2.5 rounded-full ${index === 0 ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
                       {index < order.timeline.length - 1 && (
-                        <div className="w-0.5 h-full bg-slate-200 my-1" />
+                        <div className="w-0.5 h-full bg-border my-1" />
                       )}
                     </div>
                     <div className="flex-1 pb-4">
-                      <p className="text-sm font-medium text-slate-900">{event.event}</p>
-                      <p className="text-xs text-slate-500">{event.description}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{event.time}</p>
+                      <p className="text-sm font-medium text-foreground">{event.event}</p>
+                      <p className="text-xs text-muted-foreground">{event.description}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{event.time}</p>
                     </div>
                   </div>
                 ))}
@@ -223,16 +223,16 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <p className="font-medium text-slate-900">{order.customer.name}</p>
+                <p className="font-medium text-foreground">{order.customer.name}</p>
               </div>
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <Mail className="h-4 w-4 text-slate-400" />
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Mail className="h-4 w-4 text-muted-foreground" />
                 <a href={`mailto:${order.customer.email}`} className="hover:text-pink-600">
                   {order.customer.email}
                 </a>
               </div>
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <Phone className="h-4 w-4 text-slate-400" />
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Phone className="h-4 w-4 text-muted-foreground" />
                 {order.customer.phone}
               </div>
             </CardContent>
@@ -247,16 +247,16 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-sm text-slate-600 space-y-0.5">
+              <div className="text-sm text-muted-foreground space-y-0.5">
                 <p>{order.customer.name}</p>
                 <p>{order.shipping.address}</p>
                 <p>{order.shipping.city}, {order.shipping.state} {order.shipping.zip}</p>
                 <p>{order.shipping.country}</p>
               </div>
               {order.tracking && (
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Tracking</p>
-                  <p className="text-sm font-mono text-slate-900">{order.tracking}</p>
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Tracking</p>
+                  <p className="text-sm font-mono text-foreground">{order.tracking}</p>
                 </div>
               )}
             </CardContent>
@@ -272,15 +272,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <div className="text-sm text-slate-600">
+                <div className="text-sm text-muted-foreground">
                   <p>{order.payment.method} •••• {order.payment.last4}</p>
                 </div>
                 <StatusBadge status={order.payment.status === 'paid' ? 'fulfilled' : 'pending'} />
               </div>
-              <div className="mt-3 pt-3 border-t border-slate-100">
+              <div className="mt-3 pt-3 border-t border-border">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Amount paid</span>
-                  <span className="font-medium text-slate-900">{formatPrice(order.total)}</span>
+                  <span className="text-muted-foreground">Amount paid</span>
+                  <span className="font-medium text-foreground">{formatPrice(order.total)}</span>
                 </div>
               </div>
             </CardContent>

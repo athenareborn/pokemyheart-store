@@ -12,7 +12,6 @@ export default function AdminLayout({
 }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
-  // Persist sidebar state
   useEffect(() => {
     const saved = localStorage.getItem('admin-sidebar-collapsed')
     if (saved !== null) {
@@ -27,15 +26,14 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-muted/40">
       <AdminSidebar collapsed={sidebarCollapsed} onToggle={handleToggle} />
       <AdminHeader sidebarCollapsed={sidebarCollapsed} />
 
-      {/* Main Content */}
       <main
         className={cn(
-          'pt-14 min-h-screen transition-all duration-300',
-          sidebarCollapsed ? 'pl-[56px]' : 'pl-[240px]'
+          'pt-14 min-h-screen transition-all duration-200 ease-in-out',
+          sidebarCollapsed ? 'pl-16' : 'pl-60'
         )}
       >
         <div className="p-6">

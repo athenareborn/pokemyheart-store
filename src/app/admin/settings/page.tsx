@@ -32,12 +32,12 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Settings</h1>
-        <p className="text-sm text-slate-500 mt-0.5">Manage your store settings and preferences</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+        <p className="text-sm text-muted-foreground">Manage your store settings and preferences</p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="bg-slate-100">
+        <TabsList className="bg-muted">
           <TabsTrigger value="general" className="gap-2">
             <Store className="h-4 w-4" />
             General
@@ -70,14 +70,14 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Store Name</label>
+                  <label className="text-sm font-medium text-foreground">Store Name</label>
                   <Input
                     value={storeSettings.name}
                     onChange={(e) => setStoreSettings({...storeSettings, name: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Contact Email</label>
+                  <label className="text-sm font-medium text-foreground">Contact Email</label>
                   <Input
                     type="email"
                     value={storeSettings.email}
@@ -87,14 +87,14 @@ export default function SettingsPage() {
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Phone Number</label>
+                  <label className="text-sm font-medium text-foreground">Phone Number</label>
                   <Input
                     value={storeSettings.phone}
                     onChange={(e) => setStoreSettings({...storeSettings, phone: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Business Address</label>
+                  <label className="text-sm font-medium text-foreground">Business Address</label>
                   <Input
                     value={storeSettings.address}
                     onChange={(e) => setStoreSettings({...storeSettings, address: e.target.value})}
@@ -102,7 +102,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Store Description</label>
+                <label className="text-sm font-medium text-foreground">Store Description</label>
                 <Textarea
                   value={storeSettings.description}
                   onChange={(e) => setStoreSettings({...storeSettings, description: e.target.value})}
@@ -110,7 +110,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="flex justify-end">
-                <Button className="bg-slate-900 hover:bg-slate-800">
+                <Button className="bg-primary hover:bg-primary/90">
                   <Save className="h-4 w-4 mr-2" />
                   Save Changes
                 </Button>
@@ -128,20 +128,20 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div>
-                    <p className="font-medium text-slate-900">Standard Shipping</p>
-                    <p className="text-sm text-slate-500">5-7 business days</p>
+                    <p className="font-medium text-foreground">Standard Shipping</p>
+                    <p className="text-sm text-muted-foreground">5-7 business days</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <Input className="w-24" defaultValue="$4.95" />
                     <Switch defaultChecked />
                   </div>
                 </div>
-                <div className="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div>
-                    <p className="font-medium text-slate-900">Express Shipping</p>
-                    <p className="text-sm text-slate-500">1-3 business days</p>
+                    <p className="font-medium text-foreground">Express Shipping</p>
+                    <p className="text-sm text-muted-foreground">1-3 business days</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <Input className="w-24" defaultValue="$9.95" />
@@ -150,8 +150,8 @@ export default function SettingsPage() {
                 </div>
                 <div className="flex items-center justify-between p-4 border border-emerald-200 bg-emerald-50 rounded-lg">
                   <div>
-                    <p className="font-medium text-slate-900">Free Shipping Threshold</p>
-                    <p className="text-sm text-slate-500">Orders above this amount get free shipping</p>
+                    <p className="font-medium text-foreground">Free Shipping Threshold</p>
+                    <p className="text-sm text-muted-foreground">Orders above this amount get free shipping</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <Input className="w-24" defaultValue="$35.00" />
@@ -161,7 +161,7 @@ export default function SettingsPage() {
               </div>
               <Separator />
               <div>
-                <p className="text-sm font-medium text-slate-700 mb-2">Shipping Zones</p>
+                <p className="text-sm font-medium text-foreground mb-2">Shipping Zones</p>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="outline">United States</Badge>
                   <Badge variant="outline">Canada</Badge>
@@ -182,14 +182,14 @@ export default function SettingsPage() {
               <CardDescription>Manage your payment processing settings</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+              <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-[#635BFF] rounded-lg flex items-center justify-center">
                     <span className="text-white font-bold text-lg">S</span>
                   </div>
                   <div>
-                    <p className="font-medium text-slate-900">Stripe</p>
-                    <p className="text-sm text-slate-500">Connected • Test mode</p>
+                    <p className="font-medium text-foreground">Stripe</p>
+                    <p className="text-sm text-muted-foreground">Connected • Test mode</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -204,22 +204,22 @@ export default function SettingsPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">Accept credit cards</p>
-                    <p className="text-xs text-slate-500">Visa, Mastercard, American Express</p>
+                    <p className="text-sm font-medium text-foreground">Accept credit cards</p>
+                    <p className="text-xs text-muted-foreground">Visa, Mastercard, American Express</p>
                   </div>
                   <Switch defaultChecked />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">Apple Pay</p>
-                    <p className="text-xs text-slate-500">Allow customers to pay with Apple Pay</p>
+                    <p className="text-sm font-medium text-foreground">Apple Pay</p>
+                    <p className="text-xs text-muted-foreground">Allow customers to pay with Apple Pay</p>
                   </div>
                   <Switch defaultChecked />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">Google Pay</p>
-                    <p className="text-xs text-slate-500">Allow customers to pay with Google Pay</p>
+                    <p className="text-sm font-medium text-foreground">Google Pay</p>
+                    <p className="text-xs text-muted-foreground">Allow customers to pay with Google Pay</p>
                   </div>
                   <Switch defaultChecked />
                 </div>
@@ -239,8 +239,8 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">Order confirmations</p>
-                    <p className="text-xs text-slate-500">Receive an email when a new order is placed</p>
+                    <p className="text-sm font-medium text-foreground">Order confirmations</p>
+                    <p className="text-xs text-muted-foreground">Receive an email when a new order is placed</p>
                   </div>
                   <Switch
                     checked={notifications.orderConfirmation}
@@ -250,8 +250,8 @@ export default function SettingsPage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">Shipping updates</p>
-                    <p className="text-xs text-slate-500">Get notified when orders are shipped or delivered</p>
+                    <p className="text-sm font-medium text-foreground">Shipping updates</p>
+                    <p className="text-xs text-muted-foreground">Get notified when orders are shipped or delivered</p>
                   </div>
                   <Switch
                     checked={notifications.shippingUpdates}
@@ -261,8 +261,8 @@ export default function SettingsPage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">Low stock alerts</p>
-                    <p className="text-xs text-slate-500">Get notified when product stock is running low</p>
+                    <p className="text-sm font-medium text-foreground">Low stock alerts</p>
+                    <p className="text-xs text-muted-foreground">Get notified when product stock is running low</p>
                   </div>
                   <Switch
                     checked={notifications.lowStock}
@@ -272,8 +272,8 @@ export default function SettingsPage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">New customer signups</p>
-                    <p className="text-xs text-slate-500">Get notified when a new customer registers</p>
+                    <p className="text-sm font-medium text-foreground">New customer signups</p>
+                    <p className="text-xs text-muted-foreground">Get notified when a new customer registers</p>
                   </div>
                   <Switch
                     checked={notifications.newCustomer}
@@ -283,8 +283,8 @@ export default function SettingsPage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">Weekly performance report</p>
-                    <p className="text-xs text-slate-500">Receive a weekly summary of your store&apos;s performance</p>
+                    <p className="text-sm font-medium text-foreground">Weekly performance report</p>
+                    <p className="text-xs text-muted-foreground">Receive a weekly summary of your store&apos;s performance</p>
                   </div>
                   <Switch
                     checked={notifications.weeklyReport}
@@ -305,21 +305,21 @@ export default function SettingsPage() {
                   <CardTitle className="text-base">Team Members</CardTitle>
                   <CardDescription>Manage who has access to your admin</CardDescription>
                 </div>
-                <Button className="bg-slate-900 hover:bg-slate-800">
+                <Button className="bg-primary hover:bg-primary/90">
                   Invite member
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white font-medium">
                       AT
                     </div>
                     <div>
-                      <p className="font-medium text-slate-900">Admin User</p>
-                      <p className="text-sm text-slate-500">admin@pokemyheart.com</p>
+                      <p className="font-medium text-foreground">Admin User</p>
+                      <p className="text-sm text-muted-foreground">admin@pokemyheart.com</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

@@ -1,5 +1,3 @@
-'use client'
-
 import { Package, UserPlus, CreditCard, Truck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -18,29 +16,29 @@ interface ActivityFeedProps {
   className?: string
 }
 
-const activityIcons: Record<ActivityType, { icon: React.ElementType; bg: string; color: string }> = {
-  order: { icon: Package, bg: 'bg-blue-100', color: 'text-blue-600' },
-  customer: { icon: UserPlus, bg: 'bg-emerald-100', color: 'text-emerald-600' },
-  payment: { icon: CreditCard, bg: 'bg-purple-100', color: 'text-purple-600' },
-  fulfillment: { icon: Truck, bg: 'bg-amber-100', color: 'text-amber-600' },
+const activityIcons: Record<ActivityType, { icon: React.ElementType; className: string }> = {
+  order: { icon: Package, className: 'text-blue-600 bg-blue-100' },
+  customer: { icon: UserPlus, className: 'text-emerald-600 bg-emerald-100' },
+  payment: { icon: CreditCard, className: 'text-purple-600 bg-purple-100' },
+  fulfillment: { icon: Truck, className: 'text-amber-600 bg-amber-100' },
 }
 
 export function ActivityFeed({ activities, className }: ActivityFeedProps) {
   return (
     <div className={cn('space-y-4', className)}>
-      {activities.map((activity, index) => {
+      {activities.map((activity) => {
         const config = activityIcons[activity.type]
         const Icon = config.icon
 
         return (
           <div key={activity.id} className="flex gap-3">
-            <div className={cn('p-2 rounded-lg h-fit', config.bg)}>
-              <Icon className={cn('h-4 w-4', config.color)} />
+            <div className={cn('p-2 rounded-md h-fit', config.className)}>
+              <Icon className="h-4 w-4" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-900">{activity.title}</p>
-              <p className="text-xs text-slate-500 truncate">{activity.description}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{activity.time}</p>
+            <div className="flex-1 min-w-0 space-y-0.5">
+              <p className="text-sm font-medium">{activity.title}</p>
+              <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
+              <p className="text-xs text-muted-foreground">{activity.time}</p>
             </div>
           </div>
         )
