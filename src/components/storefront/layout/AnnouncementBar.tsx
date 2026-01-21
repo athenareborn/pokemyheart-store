@@ -2,34 +2,27 @@
 
 import Link from 'next/link'
 
-const ANNOUNCEMENTS = [
-  'ORDER NOW FOR FREE SHIPPING ON $35+ TODAY ONLY',
-  "VALENTINE'S DAY SPECIAL - LIMITED STOCK REMAINING",
-  'PREMIUM HOLOGRAPHIC CARDS - HANDCRAFTED WITH LOVE',
-]
-
 export function AnnouncementBar() {
-  // Create the scrolling text with heart separators
-  const scrollText = ANNOUNCEMENTS.map(text => `💖 ${text}`).join('    ')
-  // Duplicate for seamless loop
-  const fullText = `${scrollText}    ${scrollText}    ${scrollText}    `
-
   return (
-    <div className="bg-gray-900 text-white py-2.5 relative overflow-hidden">
-      {/* Scrolling marquee */}
-      <div className="flex items-center">
-        <div className="flex whitespace-nowrap animate-marquee">
-          <span className="text-sm font-semibold tracking-wide">
-            {fullText}
-          </span>
+    <div className="bg-black relative overflow-hidden">
+      <div className="h-11 flex items-center">
+        <div className="animate-marquee flex items-center gap-8 whitespace-nowrap pr-8">
+          {[...Array(6)].map((_, i) => (
+            <span key={i} className="flex items-center gap-8">
+              <span className="text-pink-400">💖</span>
+              <span className="text-white text-sm font-medium uppercase tracking-wider">
+                Order now for free shipping on $35+ today only
+              </span>
+            </span>
+          ))}
         </div>
       </div>
 
-      {/* Shop now button - fixed on right */}
-      <div className="absolute right-0 top-0 bottom-0 flex items-center pr-4 pl-8 bg-gradient-to-l from-gray-900 via-gray-900 to-transparent">
+      {/* Button */}
+      <div className="absolute right-0 top-0 bottom-0 flex items-center pr-4 pl-16 bg-gradient-to-l from-black from-70% to-transparent">
         <Link
           href="/products/i-choose-you-the-ultimate-valentines-gift"
-          className="bg-brand-500 hover:bg-brand-600 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors shadow-lg"
+          className="bg-pink-400 hover:bg-pink-500 text-white text-sm font-semibold px-5 py-2 rounded transition-colors"
         >
           Shop now!
         </Link>
