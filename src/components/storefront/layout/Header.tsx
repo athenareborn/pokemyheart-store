@@ -24,8 +24,8 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo + Mobile menu button */}
-          <div className="flex items-center gap-2">
+          {/* Logo + Nav */}
+          <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center">
               <Image
                 src="/images/logo.png"
@@ -37,7 +37,20 @@ export function Header() {
               />
             </Link>
 
-            {/* Mobile menu button - right of logo */}
+            {/* Desktop Navigation - right after logo */}
+            <nav className="hidden lg:flex items-center gap-6">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm font-medium text-gray-700 hover:text-brand-500 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Mobile menu button */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild className="lg:hidden">
                 <Button variant="ghost" size="icon">
@@ -87,19 +100,6 @@ export function Header() {
               </SheetContent>
             </Sheet>
           </div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-gray-700 hover:text-brand-500 transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
