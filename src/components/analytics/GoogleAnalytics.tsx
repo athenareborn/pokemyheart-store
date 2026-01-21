@@ -12,14 +12,6 @@ import { useEffect, Suspense } from 'react'
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
-// Declare gtag for TypeScript
-declare global {
-  interface Window {
-    gtag: (...args: unknown[]) => void
-    dataLayer: unknown[]
-  }
-}
-
 /**
  * Tracks page views on route change
  */
