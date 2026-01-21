@@ -17,7 +17,7 @@ export const useThemeStore = create<ThemeState>()(
       setThemeMode: (mode) => set({ themeMode: mode }),
     }),
     {
-      name: 'pokemyheart-theme',
+      name: 'ultrararelove-theme',
     }
   )
 )

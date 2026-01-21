@@ -3,8 +3,8 @@ import { ArrowRight, Heart, Sparkles, Users, Palette } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export const metadata = {
-  title: 'About Us | PokeMyHeart',
-  description: 'Discover the story behind PokeMyHeart - premium holographic Valentine\'s cards for gamers and anime fans.',
+  title: 'About Us | UltraRareLove',
+  description: 'Discover the story behind UltraRareLove - premium holographic Valentine\'s cards for gamers and anime fans.',
 }
 
 export default function AboutPage() {
@@ -38,7 +38,7 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-4 text-gray-600">
                 <p>
-                  PokeMyHeart started with a simple idea: why should expressing love feel generic when the people we love are anything but? As lifelong gamers and anime enthusiasts, we noticed a gap in the market for meaningful, high-quality gifts that resonate with our community.
+                  UltraRareLove started with a simple idea: why should expressing love feel generic when the people we love are anything but? As lifelong gamers and anime enthusiasts, we noticed a gap in the market for meaningful, high-quality gifts that resonate with our community.
                 </p>
                 <p>
                   Traditional Valentine&apos;s cards felt impersonal. We wanted something that captured the excitement of pulling a rare card, the nostalgia of our favorite characters, and the genuine emotion of telling someone they&apos;re special.

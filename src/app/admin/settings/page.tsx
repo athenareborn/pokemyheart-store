@@ -14,8 +14,8 @@ import { useThemeStore, type ThemeMode } from '@/lib/store/theme'
 
 export default function SettingsPage() {
   const [storeSettings, setStoreSettings] = useState({
-    name: 'PokeMyHeart',
-    email: 'hello@pokemyheart.com',
+    name: 'UltraRareLove',
+    email: 'hello@ultrararelove.com',
     phone: '+1 (555) 123-4567',
     address: '123 Love Lane, Valentine City, VC 12345',
     description: 'Premium holographic Valentine\'s cards that capture your love in a collectible that lasts forever.',
@@ -384,7 +384,7 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <p className="font-medium text-foreground">Admin User</p>
-                      <p className="text-sm text-muted-foreground">admin@pokemyheart.com</p>
+                      <p className="text-sm text-muted-foreground">admin@ultrararelove.com</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

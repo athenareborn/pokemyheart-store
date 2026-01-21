@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { Truck, Globe, Clock, Package, MapPin } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Shipping Policy - PokeMyHeart',
-  description: 'Shipping Policy for PokeMyHeart. Learn about shipping rates, delivery times, and international shipping.',
+  title: 'Shipping Policy - UltraRareLove',
+  description: 'Shipping Policy for UltraRareLove. Learn about shipping rates, delivery times, and international shipping.',
 }
 
 export default function ShippingPolicyPage() {
@@ -141,7 +141,7 @@ export default function ShippingPolicyPage() {
             <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
               <li>Clicking the tracking link in your shipping confirmation email</li>
               <li>Visiting the carrier&apos;s website and entering your tracking number</li>
-              <li>Contacting us at support@pokemyheart.com with your order number</li>
+              <li>Contacting us at support@ultrararelove.com with your order number</li>
             </ul>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">Shipping Address</h2>
@@ -149,7 +149,7 @@ export default function ShippingPolicyPage() {
               Please ensure your shipping address is complete and accurate when placing your order. We are not
               responsible for packages delivered to incorrect addresses provided by the customer. If you need to
               change your shipping address after placing an order, please contact us immediately at
-              support@pokemyheart.com before your order ships.
+              support@ultrararelove.com before your order ships.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">Lost or Stolen Packages</h2>
@@ -185,8 +185,8 @@ export default function ShippingPolicyPage() {
             </p>
             <div className="bg-brand-50 p-6 rounded-xl mb-6">
               <p className="text-gray-900 font-semibold mb-1">Email Us</p>
-              <a href="mailto:support@pokemyheart.com" className="text-brand-500 hover:text-brand-600">
-                support@pokemyheart.com
+              <a href="mailto:support@ultrararelove.com" className="text-brand-500 hover:text-brand-600">
+                support@ultrararelove.com
               </a>
             </div>
 

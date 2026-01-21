@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
     // Create checkout session via fetch
     const params = new URLSearchParams()
     params.append('mode', 'payment')
-    params.append('success_url', successUrl || 'https://pokemyheart-store.vercel.app/checkout/success?session_id={CHECKOUT_SESSION_ID}')
-    params.append('cancel_url', cancelUrl || 'https://pokemyheart-store.vercel.app')
+    params.append('success_url', successUrl || 'https://ultrararelove.com/checkout/success?session_id={CHECKOUT_SESSION_ID}')
+    params.append('cancel_url', cancelUrl || 'https://ultrararelove.com')
 
     // Add line items
     lineItems.forEach((item: { price_data: { currency: string; product_data: { name: string; description: string }; unit_amount: number }; quantity: number }, index: number) => {
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Add metadata
-    params.append('metadata[source]', 'pokemyheart-store')
+    params.append('metadata[source]', 'ultrararelove-store')
     params.append('metadata[items]', JSON.stringify(orderItemsSummary))
     params.append('metadata[subtotal]', String(subtotal))
     params.append('metadata[shipping]', qualifiesForFreeShipping ? '0' : '495')

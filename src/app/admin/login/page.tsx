@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
             <Heart className="h-6 w-6 text-white" />
           </div>
           <CardTitle className="text-2xl">Admin Login</CardTitle>
-          <CardDescription>Sign in to access the PokeMyHeart admin panel</CardDescription>
+          <CardDescription>Sign in to access the UltraRareLove admin panel</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
               <label className="text-sm font-medium">Email</label>
               <Input
                 type="email"
-                placeholder="admin@pokemyheart.com"
+                placeholder="admin@ultrararelove.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

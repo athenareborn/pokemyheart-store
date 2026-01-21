@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { RefreshCw, Package, Clock, Mail } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Refund Policy - PokeMyHeart',
-  description: 'Refund and Return Policy for PokeMyHeart. Learn about our 30-day return policy, refund process, and how to return items.',
+  title: 'Refund Policy - UltraRareLove',
+  description: 'Refund and Return Policy for UltraRareLove. Learn about our 30-day return policy, refund process, and how to return items.',
 }
 
 export default function RefundPolicyPage() {
@@ -53,7 +53,7 @@ export default function RefundPolicyPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-8">
-              We want you to be completely satisfied with your PokeMyHeart purchase. If you&apos;re not happy with your
+              We want you to be completely satisfied with your UltraRareLove purchase. If you&apos;re not happy with your
               order for any reason, we&apos;re here to help.
             </p>
 
@@ -79,7 +79,7 @@ export default function RefundPolicyPage() {
             <div className="bg-gray-50 p-6 rounded-xl mb-6">
               <ol className="list-decimal pl-6 text-gray-600 space-y-4">
                 <li>
-                  <strong>Contact Us:</strong> Email support@pokemyheart.com with your order number and reason for return.
+                  <strong>Contact Us:</strong> Email support@ultrararelove.com with your order number and reason for return.
                   We&apos;ll respond within 24-48 hours with return instructions.
                 </li>
                 <li>
@@ -115,7 +115,7 @@ export default function RefundPolicyPage() {
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">Damaged or Defective Items</h2>
             <p className="text-gray-600 mb-6">
               If your item arrives damaged or defective, please contact us within 48 hours of delivery.
-              Email support@pokemyheart.com with:
+              Email support@ultrararelove.com with:
             </p>
             <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
               <li>Your order number</li>
@@ -128,7 +128,7 @@ export default function RefundPolicyPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">Wrong Item Received</h2>
             <p className="text-gray-600 mb-6">
-              If you received the wrong item, please contact us immediately at support@pokemyheart.com. We&apos;ll ship
+              If you received the wrong item, please contact us immediately at support@ultrararelove.com. We&apos;ll ship
               the correct item right away and provide a prepaid return label for the incorrect item.
             </p>
 
@@ -152,8 +152,8 @@ export default function RefundPolicyPage() {
               <Mail className="w-6 h-6 text-brand-500 flex-shrink-0 mt-1" />
               <div>
                 <p className="text-gray-900 font-semibold">Email Us</p>
-                <a href="mailto:support@pokemyheart.com" className="text-brand-500 hover:text-brand-600">
-                  support@pokemyheart.com
+                <a href="mailto:support@ultrararelove.com" className="text-brand-500 hover:text-brand-600">
+                  support@ultrararelove.com
                 </a>
                 <p className="text-sm text-gray-600 mt-1">We respond within 24-48 hours</p>
               </div>

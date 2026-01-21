@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
         enabled: true,
       },
       metadata: {
-        source: 'pokemyheart-store',
+        source: 'ultrararelove-store',
         items: JSON.stringify(orderItemsSummary),
         subtotal: String(subtotal),
         shipping: String(shippingCost),

@@ -1,7 +1,7 @@
 import { CheckoutPage } from '@/components/storefront/checkout/CheckoutPage'
 
 export const metadata = {
-  title: 'Checkout - PokeMyHeart',
+  title: 'Checkout - UltraRareLove',
   description: 'Complete your purchase securely',
 }
 

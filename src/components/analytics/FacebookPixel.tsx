@@ -6,19 +6,6 @@ import { useEffect, Suspense } from 'react'
 
 const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID
 
-// Declare fbq for TypeScript
-declare global {
-  interface Window {
-    fbq: (
-      type: 'track' | 'init' | 'trackCustom',
-      eventNameOrPixelId: string,
-      paramsOrUserData?: Record<string, unknown>,
-      options?: { eventID?: string }
-    ) => void
-    _fbq: typeof window.fbq
-  }
-}
-
 function FacebookPixelPageView() {
   const pathname = usePathname()
   const searchParams = useSearchParams()

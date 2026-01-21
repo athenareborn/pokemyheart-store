@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
         enabled: true,
       },
       metadata: {
-        source: 'pokemyheart-store',
+        source: 'ultrararelove-store',
         checkout_type: 'express',
         items: JSON.stringify([orderItem]),
         subtotal: String(subtotal),

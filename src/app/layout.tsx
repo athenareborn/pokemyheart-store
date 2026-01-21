@@ -13,21 +13,21 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Pokemyheart - Premium Valentine's Cards",
-    template: "%s | Pokemyheart",
+    default: "UltraRareLove - Premium Valentine's Cards",
+    template: "%s | UltraRareLove",
   },
   description: "Premium holographic Valentine's cards that say 'I Choose You' - the perfect gift for your special someone.",
   keywords: ["valentine's card", "holographic card", "gift", "love", "collectible"],
   openGraph: {
-    title: "Pokemyheart - Premium Valentine's Cards",
+    title: "UltraRareLove - Premium Valentine's Cards",
     description: "Premium holographic Valentine's cards that say 'I Choose You'",
     type: "website",
     locale: "en_US",
-    siteName: "Pokemyheart",
+    siteName: "UltraRareLove",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pokemyheart - Premium Valentine's Cards",
+    title: "UltraRareLove - Premium Valentine's Cards",
     description: "Premium holographic Valentine's cards that say 'I Choose You'",
   },
   robots: {

@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 import { PRODUCT } from '@/data/product'
 
-const BASE_URL = 'https://pokemyheart-store.vercel.app'
+const BASE_URL = 'https://ultrararelove.com'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const currentDate = new Date()

@@ -142,7 +142,7 @@ export const useCheckoutStore = create<CheckoutState>()(
         }),
     }),
     {
-      name: 'pokemyheart-checkout',
+      name: 'ultrararelove-checkout',
       partialize: (state) => ({
         email: state.email,
         shippingAddress: state.shippingAddress,

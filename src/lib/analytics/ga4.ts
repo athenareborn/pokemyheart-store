@@ -12,14 +12,6 @@
 
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
-// Declare gtag for TypeScript
-declare global {
-  interface Window {
-    gtag: (...args: unknown[]) => void
-    dataLayer: unknown[]
-  }
-}
-
 // ============================================
 // TYPES
 // ============================================
@@ -105,7 +97,7 @@ export const ga4 = {
    */
   pageView: (url: string) => {
     if (!isGtagAvailable() || !GA_MEASUREMENT_ID) return
-    window.gtag('config', GA_MEASUREMENT_ID, {
+    window.gtag!('config', GA_MEASUREMENT_ID, {
       page_path: url,
     })
   },
@@ -117,7 +109,7 @@ export const ga4 = {
    */
   viewItem: (params: ViewItemParams) => {
     if (!isGtagAvailable()) return
-    window.gtag('event', 'view_item', {
+    window.gtag!('event', 'view_item', {
       currency: params.currency || 'USD',
       value: params.price,
       items: [{
@@ -135,7 +127,7 @@ export const ga4 = {
    */
   addToCart: (params: AddToCartParams) => {
     if (!isGtagAvailable()) return
-    window.gtag('event', 'add_to_cart', {
+    window.gtag!('event', 'add_to_cart', {
       currency: params.currency || 'USD',
       value: params.price * params.quantity,
       items: [{
@@ -154,7 +146,7 @@ export const ga4 = {
    */
   beginCheckout: (params: BeginCheckoutParams) => {
     if (!isGtagAvailable()) return
-    window.gtag('event', 'begin_checkout', {
+    window.gtag!('event', 'begin_checkout', {
       currency: params.currency || 'USD',
       value: params.value,
       items: mapItemsToGA4(params.items),
@@ -168,7 +160,7 @@ export const ga4 = {
    */
   purchase: (params: PurchaseParams) => {
     if (!isGtagAvailable()) return
-    window.gtag('event', 'purchase', {
+    window.gtag!('event', 'purchase', {
       transaction_id: params.transactionId,
       currency: params.currency || 'USD',
       value: params.value,
@@ -207,7 +199,7 @@ export const ga4 = {
       userData.address = address
     }
 
-    window.gtag('set', 'user_data', userData)
+    window.gtag!('set', 'user_data', userData)
   },
 
   /**
@@ -225,7 +217,7 @@ export const ga4 = {
       let resolved = false
 
       // Try to get client ID via gtag
-      window.gtag('get', GA_MEASUREMENT_ID, 'client_id', (clientId: string) => {
+      window.gtag!('get', GA_MEASUREMENT_ID, 'client_id', (clientId: string) => {
         if (!resolved) {
           resolved = true
           resolve(clientId || null)
@@ -262,6 +254,6 @@ export const ga4 = {
    */
   event: (eventName: string, params: Record<string, unknown> = {}) => {
     if (!isGtagAvailable()) return
-    window.gtag('event', eventName, params)
+    window.gtag!('event', eventName, params)
   },
 }

@@ -2,8 +2,8 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service - PokeMyHeart',
-  description: 'Terms of Service for PokeMyHeart. Read our terms and conditions for using our website and purchasing products.',
+  title: 'Terms of Service - UltraRareLove',
+  description: 'Terms of Service for UltraRareLove. Read our terms and conditions for using our website and purchasing products.',
 }
 
 export default function TermsOfServicePage() {
@@ -26,7 +26,7 @@ export default function TermsOfServicePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-8">
-              Welcome to PokeMyHeart. By accessing our website at pokemyheart.com and/or making a purchase,
+              Welcome to UltraRareLove. By accessing our website at ultrararelove.com and/or making a purchase,
               you agree to be bound by these Terms of Service. Please read them carefully before using our services.
             </p>
 
@@ -80,7 +80,7 @@ export default function TermsOfServicePage() {
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">7. Intellectual Property</h2>
             <p className="text-gray-600 mb-6">
               All content on this website, including but not limited to text, graphics, logos, images, product designs,
-              and software, is the property of PokeMyHeart or its content suppliers and is protected by copyright,
+              and software, is the property of UltraRareLove or its content suppliers and is protected by copyright,
               trademark, and other intellectual property laws. You may not reproduce, distribute, modify, or create
               derivative works without our written permission.
             </p>
@@ -104,14 +104,14 @@ export default function TermsOfServicePage() {
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">10. Limitation of Liability</h2>
             <p className="text-gray-600 mb-6">
-              To the fullest extent permitted by law, PokeMyHeart shall not be liable for any indirect, incidental,
+              To the fullest extent permitted by law, UltraRareLove shall not be liable for any indirect, incidental,
               special, consequential, or punitive damages arising from your use of our website or products. Our total
               liability shall not exceed the amount you paid for the product(s) in question.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">11. Indemnification</h2>
             <p className="text-gray-600 mb-6">
-              You agree to indemnify and hold harmless PokeMyHeart, its officers, directors, employees, and agents
+              You agree to indemnify and hold harmless UltraRareLove, its officers, directors, employees, and agents
               from any claims, damages, losses, or expenses arising from your violation of these Terms or your use
               of our website.
             </p>
@@ -140,9 +140,9 @@ export default function TermsOfServicePage() {
               For questions about these Terms of Service, please contact us:
             </p>
             <div className="bg-gray-50 p-6 rounded-xl mb-6">
-              <p className="text-gray-900 font-semibold mb-2">PokeMyHeart</p>
-              <p className="text-gray-600">Email: legal@pokemyheart.com</p>
-              <p className="text-gray-600">General Inquiries: hello@pokemyheart.com</p>
+              <p className="text-gray-900 font-semibold mb-2">UltraRareLove</p>
+              <p className="text-gray-600">Email: legal@ultrararelove.com</p>
+              <p className="text-gray-600">General Inquiries: hello@ultrararelove.com</p>
             </div>
 
             <div className="mt-10 pt-8 border-t border-gray-200">

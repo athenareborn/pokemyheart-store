@@ -65,7 +65,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
   ` : '<p style="color: #666;">Address not available</p>'
 
   const { data: result, error } = await getResend().emails.send({
-    from: 'PokeMyHeart <orders@pokemyheart.com>',
+    from: 'UltraRareLove <orders@ultrararelove.com>',
     to: customerEmail,
     subject: `Order Confirmed - ${orderNumber}`,
     html: `
@@ -128,8 +128,8 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
           </div>
 
           <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #e5e5e5; text-align: center; color: #6b7280; font-size: 14px;">
-            <p>Questions? Reply to this email or contact us at hello@pokemyheart.com</p>
-            <p style="margin-top: 16px;">Made with ❤️ by PokeMyHeart</p>
+            <p>Questions? Reply to this email or contact us at hello@ultrararelove.com</p>
+            <p style="margin-top: 16px;">Made with ❤️ by UltraRareLove</p>
           </div>
         </body>
       </html>
@@ -154,7 +154,7 @@ export async function sendShippingNotification(data: {
   const { orderNumber, customerEmail, customerName, trackingNumber, carrier = 'USPS' } = data
 
   const { data: result, error } = await getResend().emails.send({
-    from: 'PokeMyHeart <orders@pokemyheart.com>',
+    from: 'UltraRareLove <orders@ultrararelove.com>',
     to: customerEmail,
     subject: `Your order ${orderNumber} has shipped!`,
     html: `
@@ -190,8 +190,8 @@ export async function sendShippingNotification(data: {
           </p>
 
           <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #e5e5e5; text-align: center; color: #6b7280; font-size: 14px;">
-            <p>Questions? Reply to this email or contact us at hello@pokemyheart.com</p>
-            <p style="margin-top: 16px;">Made with ❤️ by PokeMyHeart</p>
+            <p>Questions? Reply to this email or contact us at hello@ultrararelove.com</p>
+            <p style="margin-top: 16px;">Made with ❤️ by UltraRareLove</p>
           </div>
         </body>
       </html>

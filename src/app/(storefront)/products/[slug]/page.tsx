@@ -17,7 +17,7 @@ import { UrgencyBadge } from '@/components/storefront/product/UrgencyBadge'
 import { ReviewsCarousel } from '@/components/storefront/product/ReviewsCarousel'
 import { CheckCircle } from 'lucide-react'
 
-const BASE_URL = 'https://pokemyheart-store.vercel.app'
+const BASE_URL = 'https://ultrararelove.com'
 
 // Generate JSON-LD structured data for the product
 function generateProductJsonLd() {
@@ -35,7 +35,7 @@ function generateProductJsonLd() {
     sku: BUNDLES[0].sku,
     brand: {
       '@type': 'Brand',
-      name: 'PokeMyHeart',
+      name: 'UltraRareLove',
     },
     offers: {
       '@type': 'AggregateOffer',

@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin', '/api'],
       },
     ],
-    sitemap: 'https://pokemyheart-store.vercel.app/sitemap.xml',
+    sitemap: 'https://ultrararelove.com/sitemap.xml',
   }
 }

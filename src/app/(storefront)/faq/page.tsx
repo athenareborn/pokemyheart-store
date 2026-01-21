@@ -10,8 +10,8 @@ import {
 import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = {
-  title: 'FAQ - PokeMyHeart',
-  description: 'Frequently asked questions about PokeMyHeart products, shipping, returns, and more.',
+  title: 'FAQ - UltraRareLove',
+  description: 'Frequently asked questions about UltraRareLove products, shipping, returns, and more.',
 }
 
 const faqCategories = [
@@ -43,7 +43,7 @@ const faqCategories = [
       {
         question: 'Can I change my shipping address after placing an order?',
         answer:
-          'If your order hasn\'t shipped yet, please contact us immediately at support@pokemyheart.com. We\'ll do our best to update your shipping address. Once an order has shipped, address changes are not possible.',
+          'If your order hasn\'t shipped yet, please contact us immediately at support@ultrararelove.com. We\'ll do our best to update your shipping address. Once an order has shipped, address changes are not possible.',
       },
     ],
   },
@@ -92,12 +92,12 @@ const faqCategories = [
       {
         question: 'What if my item arrives damaged?',
         answer:
-          'We\'re so sorry if your item arrived damaged! Please contact us within 48 hours of delivery with photos of the damage, and we\'ll send a replacement right away at no cost to you. Email support@pokemyheart.com with your order number and photos.',
+          'We\'re so sorry if your item arrived damaged! Please contact us within 48 hours of delivery with photos of the damage, and we\'ll send a replacement right away at no cost to you. Email support@ultrararelove.com with your order number and photos.',
       },
       {
         question: 'I received the wrong item. What should I do?',
         answer:
-          'We apologize for the mix-up! Please contact us at support@pokemyheart.com with your order number and a photo of what you received. We\'ll ship the correct item immediately and provide a prepaid return label for the incorrect item.',
+          'We apologize for the mix-up! Please contact us at support@ultrararelove.com with your order number and a photo of what you received. We\'ll ship the correct item immediately and provide a prepaid return label for the incorrect item.',
       },
       {
         question: 'How long does it take to process a refund?',
@@ -139,7 +139,7 @@ const faqCategories = [
       {
         question: 'Can I get an invoice for my order?',
         answer:
-          'Yes! An invoice is automatically sent to your email after purchase. If you need a duplicate or a specific format for business purposes, please contact support@pokemyheart.com with your order number.',
+          'Yes! An invoice is automatically sent to your email after purchase. If you need a duplicate or a specific format for business purposes, please contact support@ultrararelove.com with your order number.',
       },
     ],
   },
@@ -224,7 +224,7 @@ export default function FAQPage() {
               className="bg-brand-500 hover:bg-brand-600 text-white"
               asChild
             >
-              <Link href="mailto:support@pokemyheart.com">
+              <Link href="mailto:support@ultrararelove.com">
                 Contact Support
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>

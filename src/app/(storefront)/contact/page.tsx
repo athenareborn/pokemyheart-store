@@ -198,19 +198,19 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Email Us</h3>
                       <a
-                        href="mailto:hello@pokemyheart.com"
+                        href="mailto:hello@ultrararelove.com"
                         className="text-brand-500 hover:text-brand-600 transition-colors"
                       >
-                        hello@pokemyheart.com
+                        hello@ultrararelove.com
                       </a>
                       <p className="text-sm text-gray-500 mt-1">
                         For general inquiries
                       </p>
                       <a
-                        href="mailto:support@pokemyheart.com"
+                        href="mailto:support@ultrararelove.com"
                         className="text-brand-500 hover:text-brand-600 transition-colors text-sm"
                       >
-                        support@pokemyheart.com
+                        support@ultrararelove.com
                       </a>
                       <p className="text-sm text-gray-500">
                         For order-related questions
@@ -241,7 +241,7 @@ export default function ContactPage() {
                   Business Information
                 </h3>
                 <div className="text-sm text-gray-600 space-y-1">
-                  <p className="font-medium text-gray-900">PokeMyHeart</p>
+                  <p className="font-medium text-gray-900">UltraRareLove</p>
                   <p>United States</p>
                   <p className="pt-2 text-xs text-gray-500">
                     Online retailer of premium collectible cards and gifts.

@@ -140,7 +140,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, request:
   console.log(`Order ${orderNumber} created successfully`)
 
   // Send server-side Purchase event to Facebook CAPI
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pokemyheart.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ultrararelove.com'
 
   // Use same eventId from client for deduplication, or generate new one
   const eventId = metadata.fb_event_id || generateEventId('purchase')
@@ -214,7 +214,7 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, r
 
   // Extract order data from payment intent metadata
   const metadata = paymentIntent.metadata
-  if (!metadata || metadata.source !== 'pokemyheart-store') {
+  if (!metadata || metadata.source !== 'ultrararelove-store') {
     // Not from our custom checkout, skip
     return
   }
@@ -285,7 +285,7 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, r
   console.log(`Order ${orderNumber} created from Payment Intent`)
 
   // Send server-side Purchase event to Facebook CAPI
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pokemyheart.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ultrararelove.com'
   const eventId = metadata.fb_event_id || generateEventId('purchase')
 
   const contentIds = items.map((item: { bundle_id: string; design_id: string }) =>

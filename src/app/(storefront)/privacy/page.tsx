@@ -2,8 +2,8 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - PokeMyHeart',
-  description: 'Privacy Policy for PokeMyHeart. Learn how we collect, use, and protect your personal information.',
+  title: 'Privacy Policy - UltraRareLove',
+  description: 'Privacy Policy for UltraRareLove. Learn how we collect, use, and protect your personal information.',
 }
 
 export default function PrivacyPolicyPage() {
@@ -26,9 +26,9 @@ export default function PrivacyPolicyPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-8">
-              At PokeMyHeart (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), we are committed to protecting your privacy.
+              At UltraRareLove (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), we are committed to protecting your privacy.
               This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you
-              visit our website pokemyheart.com and make purchases from our store.
+              visit our website ultrararelove.com and make purchases from our store.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-4">1. Information We Collect</h2>
@@ -134,9 +134,9 @@ export default function PrivacyPolicyPage() {
               If you have questions about this Privacy Policy or wish to exercise your rights, please contact us:
             </p>
             <div className="bg-gray-50 p-6 rounded-xl mb-6">
-              <p className="text-gray-900 font-semibold mb-2">PokeMyHeart</p>
-              <p className="text-gray-600">Email: privacy@pokemyheart.com</p>
-              <p className="text-gray-600">General Inquiries: hello@pokemyheart.com</p>
+              <p className="text-gray-900 font-semibold mb-2">UltraRareLove</p>
+              <p className="text-gray-600">Email: privacy@ultrararelove.com</p>
+              <p className="text-gray-600">General Inquiries: hello@ultrararelove.com</p>
             </div>
 
             <div className="mt-10 pt-8 border-t border-gray-200">
