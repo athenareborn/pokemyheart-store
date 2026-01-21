@@ -24,67 +24,69 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Mobile menu button */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] p-0">
-              <div className="flex flex-col h-full">
-                {/* Header */}
-                <div className="p-6 pb-4 border-b border-gray-100">
-                  <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-                    <Image
-                      src="/images/logo.png"
-                      alt="UltraRareLove"
-                      width={130}
-                      height={32}
-                      className="h-8 w-auto"
-                    />
-                  </Link>
-                </div>
+          {/* Logo + Mobile menu button */}
+          <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/images/logo.png"
+                alt="UltraRareLove"
+                width={160}
+                height={40}
+                className="h-10 w-auto"
+                priority
+              />
+            </Link>
 
-                {/* Navigation */}
-                <nav className="flex-1 py-4">
-                  {NAV_LINKS.map((link, index) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={`block px-6 py-3.5 text-base font-medium transition-colors ${
-                        index === 0
-                          ? 'text-brand-600 bg-brand-50 border-l-2 border-brand-500'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-brand-600 border-l-2 border-transparent'
-                      }`}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {link.label}
+            {/* Mobile menu button - right of logo */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="lg:hidden">
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[280px] p-0">
+                <div className="flex flex-col h-full">
+                  {/* Header */}
+                  <div className="p-6 pb-4 border-b border-gray-100">
+                    <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+                      <Image
+                        src="/images/logo.png"
+                        alt="UltraRareLove"
+                        width={130}
+                        height={32}
+                        className="h-8 w-auto"
+                      />
                     </Link>
-                  ))}
-                </nav>
+                  </div>
 
-                {/* Footer */}
-                <div className="p-6 pt-4 border-t border-gray-100 bg-gray-50">
-                  <p className="text-xs text-gray-500 text-center">
-                    Made with love for collectors
-                  </p>
+                  {/* Navigation */}
+                  <nav className="flex-1 py-4">
+                    {NAV_LINKS.map((link, index) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={`block px-6 py-3.5 text-base font-medium transition-colors ${
+                          index === 0
+                            ? 'text-brand-600 bg-brand-50 border-l-2 border-brand-500'
+                            : 'text-gray-700 hover:bg-gray-50 hover:text-brand-600 border-l-2 border-transparent'
+                        }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </nav>
+
+                  {/* Footer */}
+                  <div className="p-6 pt-4 border-t border-gray-100 bg-gray-50">
+                    <p className="text-xs text-gray-500 text-center">
+                      Made with love for collectors
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/images/logo.png"
-              alt="UltraRareLove"
-              width={160}
-              height={40}
-              className="h-10 w-auto"
-              priority
-            />
-          </Link>
+              </SheetContent>
+            </Sheet>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">

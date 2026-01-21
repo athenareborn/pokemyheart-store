@@ -15,11 +15,11 @@ export function UrgencyBadge({ stockCount }: UrgencyBadgeProps) {
 
   return (
     <div className="space-y-2">
-      {/* Stock urgency */}
-      <div className="inline-flex items-center gap-1.5 text-orange-600">
-        <Flame className="h-4 w-4 animate-pulse" />
-        <span className="text-sm font-bold">
-          Selling Fast! Only {stockCount} left
+      {/* Stock urgency - flashing animation */}
+      <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-full shadow-lg animate-pulse">
+        <Flame className="h-5 w-5 animate-bounce" />
+        <span className="text-sm font-bold tracking-wide">
+          🔥 Selling Fast! Only {stockCount} left
         </span>
       </div>
 

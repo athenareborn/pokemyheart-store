@@ -32,7 +32,7 @@ export function Footer() {
                 alt="UltraRareLove"
                 width={150}
                 height={38}
-                className="h-9 w-auto brightness-0 invert"
+                className="h-9 w-auto"
               />
             </Link>
             <p className="text-sm text-gray-400">

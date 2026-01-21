@@ -23,7 +23,7 @@ export function DesignSelector({ designs, selectedId, onSelect }: DesignSelector
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-2 sm:gap-3">
+      <div className="flex gap-2">
         {designs.map((design, index) => {
           const isSelected = selectedId === design.id
 
@@ -32,11 +32,11 @@ export function DesignSelector({ designs, selectedId, onSelect }: DesignSelector
               key={design.id}
               onClick={() => onSelect(design.id)}
               className={cn(
-                'relative rounded-xl overflow-hidden transition-all',
-                'w-[calc(20%-6px)] sm:w-[calc(20%-10px)] aspect-[3/4]',
+                'relative rounded-lg overflow-hidden transition-all flex-1',
+                'aspect-[3/4] min-w-0',
                 'border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
                 isSelected
-                  ? 'border-brand-500 shadow-lg shadow-brand-200/50'
+                  ? 'border-brand-500 shadow-md shadow-brand-200/50'
                   : 'border-gray-200 hover:border-brand-300'
               )}
               aria-label={`Select design ${index + 1}`}
@@ -47,7 +47,7 @@ export function DesignSelector({ designs, selectedId, onSelect }: DesignSelector
                 alt={`Design ${index + 1}`}
                 fill
                 className="object-cover"
-                sizes="(max-width: 640px) 60px, 80px"
+                sizes="60px"
               />
 
               {/* Selection indicator overlay */}

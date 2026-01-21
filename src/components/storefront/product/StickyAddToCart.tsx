@@ -10,7 +10,9 @@ import { useCartStore } from '@/lib/store/cart'
 import { PRODUCT } from '@/data/product'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
+import { ga4 } from '@/lib/analytics/ga4'
 import { cn } from '@/lib/utils'
+import { ExpressCheckout } from './ExpressCheckout'
 
 interface StickyAddToCartProps {
   designId: string
@@ -33,14 +35,25 @@ export function StickyAddToCart({ designId, bundleId, isVisible, onScrollToTop }
 
     // Track FB AddToCart event
     const design = PRODUCT.designs.find(d => d.id === designId)
+    const price = (bundle?.price || BUNDLES[0].price) / 100
+    const productName = `${PRODUCT.name} - ${design?.name || 'Design'}`
+
     const eventId = generateEventId('atc')
     fbPixel.addToCart(
       `${designId}-${bundleId}`,
-      `${PRODUCT.name} - ${design?.name || 'Design'}`,
-      (bundle?.price || BUNDLES[0].price) / 100,
+      productName,
+      price,
       'USD',
       eventId
     )
+
+    // Track GA4 add_to_cart
+    ga4.addToCart({
+      itemId: `${designId}-${bundleId}`,
+      itemName: productName,
+      price,
+      quantity: 1,
+    })
 
     setTimeout(() => setIsAdding(false), 600)
   }
@@ -57,31 +70,33 @@ export function StickyAddToCart({ designId, bundleId, isVisible, onScrollToTop }
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
           <div className="px-4 pt-3 pb-3">
-            <div className="flex items-center justify-between gap-3">
-              {/* Price section */}
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-gray-900">
-                    {formatPrice(bundle?.price || 0)}
-                  </span>
-                  {savings > 0 && (
-                    <span className="text-sm text-gray-400 line-through">
-                      {formatPrice(bundle?.compareAt || 0)}
-                    </span>
-                  )}
-                </div>
+            {/* Price and savings */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-bold text-gray-900">
+                  {formatPrice(bundle?.price || 0)}
+                </span>
                 {savings > 0 && (
-                  <span className="text-xs text-green-600 font-semibold">
-                    You save {formatPrice(savings)} ({savingsPercent}% off)
+                  <span className="text-sm text-gray-400 line-through">
+                    {formatPrice(bundle?.compareAt || 0)}
                   </span>
                 )}
               </div>
+              {savings > 0 && (
+                <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-1 rounded">
+                  Save {savingsPercent}%
+                </span>
+              )}
+            </div>
 
+            {/* Buttons row */}
+            <div className="flex items-center gap-3">
               {/* Add to Cart button */}
               <Button
                 size="lg"
+                variant="outline"
                 className={cn(
-                  'flex-shrink-0 bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 text-base font-semibold transition-all',
+                  'flex-1 border-2 border-brand-500 text-brand-600 hover:bg-brand-50 px-4 py-3 text-base font-semibold transition-all',
                   isAdding && 'scale-95'
                 )}
                 onClick={handleAddToCart}
@@ -89,6 +104,11 @@ export function StickyAddToCart({ designId, bundleId, isVisible, onScrollToTop }
                 <ShoppingBag className={cn('mr-2 h-5 w-5', isAdding && 'animate-bounce')} />
                 {isAdding ? 'Added!' : 'Add to Cart'}
               </Button>
+
+              {/* Express Checkout / Buy Now button */}
+              <div className="flex-1">
+                <ExpressCheckout designId={designId} bundleId={bundleId} compact />
+              </div>
             </div>
 
             {/* Scroll to top button */}
