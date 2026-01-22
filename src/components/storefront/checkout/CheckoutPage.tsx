@@ -1,52 +1,50 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ShoppingBag, Loader2, AlertCircle } from 'lucide-react'
+import { Elements } from '@stripe/react-stripe-js'
+import { ArrowLeft, ShoppingBag, Loader2 } from 'lucide-react'
+import { getStripe } from '@/lib/stripe/client'
 import { useCartStore } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
+import { CheckoutForm } from './CheckoutForm'
+import { CheckoutOrderSummary } from './CheckoutOrderSummary'
 
-/**
- * Checkout Page - Redirects to Stripe Hosted Checkout
- *
- * This page automatically creates a Stripe Checkout Session and redirects
- * to Stripe's full-page hosted checkout (checkout.stripe.com).
- */
+const stripePromise = getStripe()
+
 export function CheckoutPage() {
   const router = useRouter()
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [isRedirecting, setIsRedirecting] = useState(false)
-  const hasInitiated = useRef(false)
+  const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard')
 
-  const { items, isCartEmpty, getTotal } = useCartStore()
+  const { items, isCartEmpty, getSubtotal, isFreeShipping } = useCartStore()
 
-  // Redirect if cart empty
+  // Get FB cookies for attribution
+  const getCookie = useCallback((name: string) => {
+    if (typeof document === 'undefined') return undefined
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+    return match ? match[2] : undefined
+  }, [])
+
+  // Track InitiateCheckout and create PaymentIntent
   useEffect(() => {
-    if (isCartEmpty()) {
-      router.push('/products/i-choose-you-the-ultimate-valentines-gift')
-    }
-  }, [isCartEmpty, router])
+    if (items.length === 0) return
 
-  // Track InitiateCheckout and redirect to Stripe
-  useEffect(() => {
-    if (items.length === 0 || hasInitiated.current) return
-    hasInitiated.current = true
-
-    const initiateCheckout = async () => {
-      setIsRedirecting(true)
-
-      // Track InitiateCheckout (Facebook + GA4)
+    const initCheckout = async () => {
+      // Track InitiateCheckout
       const eventId = generateEventId('ic')
+      const total = getSubtotal()
       const contentIds = items.map(item => `${item.designId}-${item.bundleId}`)
-      fbPixel.initiateCheckout(getTotal() / 100, items.length, contentIds, 'USD', eventId)
 
+      fbPixel.initiateCheckout(total / 100, items.length, contentIds, 'USD', eventId)
       ga4.beginCheckout({
-        value: getTotal() / 100,
+        value: total / 100,
         items: items.map(item => {
           const bundle = BUNDLES.find(b => b.id === item.bundleId)
           const design = PRODUCT.designs.find(d => d.id === item.designId)
@@ -59,27 +57,7 @@ export function CheckoutPage() {
         }),
       })
 
-      // Store purchase data for client-side tracking on success page
-      const purchaseData = {
-        value: getTotal() / 100,
-        numItems: items.length,
-        contentIds,
-        currency: 'USD',
-        eventId: generateEventId('purchase'),
-        items: items.map(item => {
-          const bundle = BUNDLES.find(b => b.id === item.bundleId)
-          const design = PRODUCT.designs.find(d => d.id === item.designId)
-          return {
-            itemId: `${item.designId}-${item.bundleId}`,
-            itemName: `${PRODUCT.name} - ${design?.name || 'Design'}`,
-            price: item.price / 100,
-            quantity: item.quantity,
-          }
-        }),
-      }
-      sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
-
-      // Create Stripe Checkout Session
+      // Create PaymentIntent
       try {
         const checkoutItems = items.map(item => {
           const bundle = BUNDLES.find(b => b.id === item.bundleId)
@@ -97,23 +75,32 @@ export function CheckoutPage() {
           }
         })
 
-        // Get FB attribution cookies
-        const getCookie = (name: string) => {
-          const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
-          return match ? match[2] : undefined
-        }
+        const qualifiesForFreeShipping = isFreeShipping()
+        const shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
 
-        const res = await fetch('/api/checkout', {
+        const res = await fetch('/api/payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             items: checkoutItems,
-            successUrl: `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancelUrl: window.location.origin,
+            email: '', // Will be updated on form submit
+            shippingAddress: {
+              firstName: '',
+              lastName: '',
+              address1: '',
+              city: '',
+              state: '',
+              postalCode: '',
+              country: 'US',
+            },
+            shippingMethod: 'standard',
             fbData: {
               fbc: getCookie('_fbc'),
               fbp: getCookie('_fbp'),
-              eventId: purchaseData.eventId,
+              eventId,
+            },
+            gaData: {
+              clientId: null,
             },
           }),
         })
@@ -121,23 +108,24 @@ export function CheckoutPage() {
         const data = await res.json()
 
         if (!res.ok) {
-          throw new Error(data.details || data.error || 'Failed to create checkout')
+          throw new Error(data.details || 'Failed to initialize checkout')
         }
 
-        // Redirect to Stripe hosted checkout
-        if (data.url) {
-          window.location.href = data.url
-        } else {
-          throw new Error('No checkout URL returned')
-        }
+        setClientSecret(data.clientSecret)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to initialize checkout')
-        setIsRedirecting(false)
       }
     }
 
-    initiateCheckout()
-  }, [items, getTotal])
+    initCheckout()
+  }, [items, getSubtotal, isFreeShipping, getCookie])
+
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (isCartEmpty()) {
+      router.push('/products/i-choose-you-the-ultimate-valentines-gift')
+    }
+  }, [isCartEmpty, router])
 
   // Empty cart state
   if (isCartEmpty()) {
@@ -160,17 +148,14 @@ export function CheckoutPage() {
   if (error) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-        <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+          <span className="text-2xl">!</span>
+        </div>
         <h1 className="text-2xl font-semibold text-gray-900 mb-2">Checkout Error</h1>
         <p className="text-red-500 mb-6">{error}</p>
         <div className="flex gap-4">
           <button
-            onClick={() => {
-              hasInitiated.current = false
-              setError(null)
-              setIsRedirecting(true)
-              window.location.reload()
-            }}
+            onClick={() => window.location.reload()}
             className="px-6 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600"
           >
             Try Again
@@ -186,14 +171,71 @@ export function CheckoutPage() {
     )
   }
 
-  // Loading/redirecting state
+  // Loading state while creating PaymentIntent
+  if (!clientSecret) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-500 mb-4" />
+        <p className="text-gray-500">Preparing checkout...</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-      <Loader2 className="w-12 h-12 animate-spin text-brand-500 mb-4" />
-      <h1 className="text-xl font-semibold text-gray-900 mb-2">
-        {isRedirecting ? 'Redirecting to checkout...' : 'Preparing checkout...'}
-      </h1>
-      <p className="text-gray-500">Please wait, you&apos;ll be redirected to our secure payment page.</p>
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link
+            href="/products/i-choose-you-the-ultimate-valentines-gift"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm">Back to shop</span>
+          </Link>
+
+          <Link href="/" className="font-bold text-xl text-brand-500">
+            UltraRareLove
+          </Link>
+
+          <div className="w-20" /> {/* Spacer for centering */}
+        </div>
+      </header>
+
+      {/* Main content */}
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-12">
+          {/* Left: Form */}
+          <div className="order-2 lg:order-1">
+            <Elements
+              stripe={stripePromise}
+              options={{
+                clientSecret,
+                appearance: {
+                  theme: 'stripe',
+                  variables: {
+                    colorPrimary: '#ec4899',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    borderRadius: '8px',
+                  },
+                },
+              }}
+            >
+              <CheckoutForm
+                onShippingMethodChange={setShippingMethod}
+                clientSecret={clientSecret}
+              />
+            </Elements>
+          </div>
+
+          {/* Right: Order Summary */}
+          <div className="order-1 lg:order-2 mb-8 lg:mb-0">
+            <div className="lg:sticky lg:top-8">
+              <CheckoutOrderSummary shippingMethod={shippingMethod} />
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   )
 }

@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { ShoppingBag, X, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCartStore } from '@/lib/store/cart'
@@ -13,7 +12,7 @@ import { CountdownTimer } from './CountdownTimer'
 import { FreeShippingBar } from './FreeShippingBar'
 
 export function CartDrawer() {
-  const router = useRouter()
+
   const {
     items,
     isOpen,
@@ -25,7 +24,6 @@ export function CartDrawer() {
     isFreeShipping,
     getAmountToFreeShipping,
     isCartEmpty,
-    clearCart,
   } = useCartStore()
 
   // Lock body scroll when cart is open
@@ -42,12 +40,13 @@ export function CartDrawer() {
 
   const handleExpire = () => {
     // Optionally clear cart on expiry
-    // clearCart()
   }
 
   const handleCheckout = () => {
+    if (items.length === 0) return
     closeCart()
-    router.push('/checkout')
+    // Navigate to custom checkout page
+    window.location.href = '/checkout'
   }
 
   return (
