@@ -10,6 +10,7 @@ import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
 import { Button } from '@/components/ui/button'
+import { EmbeddedCheckoutModal } from '@/components/storefront/checkout/EmbeddedCheckoutModal'
 
 // Safe sessionStorage helpers for iOS private browsing mode
 function safeSetSessionStorage(key: string, value: string) {
@@ -156,6 +157,23 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
   const [showFallback, setShowFallback] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isBuyingNow, setIsBuyingNow] = useState(false)
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
+  const [checkoutItems, setCheckoutItems] = useState<Array<{
+    name: string
+    description: string
+    price: number
+    quantity: number
+    designId: string
+    designName: string
+    bundleId: string
+    bundleName: string
+    bundleSku: string
+  }> | null>(null)
+  const [checkoutFbData, setCheckoutFbData] = useState<{
+    fbc?: string
+    fbp?: string
+    eventId?: string
+  } | null>(null)
 
   // Get FB cookies for attribution
   const getFbCookies = () => {
@@ -213,10 +231,8 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
     createIntent()
   }, [designId, bundleId])
 
-  // Handle Buy Now fallback - redirects to Stripe hosted checkout
-  const handleBuyNow = async () => {
-    setIsBuyingNow(true)
-
+  // Handle Buy Now - opens embedded checkout modal (highest conversion)
+  const handleBuyNow = () => {
     const bundle = BUNDLES.find(b => b.id === bundleId)
     const design = PRODUCT.designs.find(d => d.id === designId)
     if (!bundle || !design) return
@@ -251,44 +267,27 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
     }
     safeSetSessionStorage('fb_purchase_data', JSON.stringify(purchaseData))
 
-    // Create Stripe Checkout Session
-    try {
-      const { fbc, fbp } = getFbCookies()
+    // Get FB cookies for attribution
+    const { fbc, fbp } = getFbCookies()
 
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: [{
-            name: productName,
-            description: bundle.description || 'Premium Valentine Card',
-            price: bundle.price,
-            quantity: 1,
-            designId,
-            designName: design.name,
-            bundleId,
-            bundleName: bundle.name,
-            bundleSku: bundle.sku,
-          }],
-          successUrl: `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: window.location.href,
-          fbData: {
-            fbc,
-            fbp,
-            eventId: purchaseEventId,
-          },
-        }),
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Checkout failed')
-
-      // Redirect to Stripe hosted checkout
-      window.location.href = data.url
-    } catch (err) {
-      console.error('Buy Now error:', err)
-      setIsBuyingNow(false)
-    }
+    // Set up checkout data and open modal
+    setCheckoutItems([{
+      name: productName,
+      description: bundle.description || 'Premium Valentine Card',
+      price: bundle.price,
+      quantity: 1,
+      designId,
+      designName: design.name,
+      bundleId,
+      bundleName: bundle.name,
+      bundleSku: bundle.sku,
+    }])
+    setCheckoutFbData({
+      fbc,
+      fbp,
+      eventId: purchaseEventId,
+    })
+    setShowCheckoutModal(true)
   }
 
   // Show loading spinner initially
@@ -303,73 +302,77 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
   // Show fallback Buy Now button if wallet methods not available or there's an error
   if (showFallback || error || !clientSecret) {
     return (
-      <Button
-        onClick={handleBuyNow}
-        disabled={isBuyingNow}
-        className={compact
-          ? 'bg-gray-900 hover:bg-gray-800 text-white font-semibold'
-          : 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 font-semibold'
-        }
-      >
-        {isBuyingNow ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Redirecting...
-          </>
-        ) : (
-          <>
-            <Zap className="mr-2 h-4 w-4" />
-            Buy Now
-          </>
-        )}
-      </Button>
-    )
-  }
-
-  return (
-    <Elements
-      stripe={stripePromise}
-      options={{
-        clientSecret,
-        appearance: {
-          theme: 'stripe',
-          variables: {
-            colorPrimary: '#ec4899',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            borderRadius: '8px',
-          },
-        },
-      }}
-    >
-      <ExpressCheckoutButtons
-        designId={designId}
-        bundleId={bundleId}
-        compact={compact}
-        onFallback={() => setShowFallback(true)}
-      />
-      {/* Show Buy Now if Stripe says no wallet methods available */}
-      {showFallback && (
+      <>
         <Button
           onClick={handleBuyNow}
-          disabled={isBuyingNow}
           className={compact
             ? 'bg-gray-900 hover:bg-gray-800 text-white font-semibold'
             : 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 font-semibold'
           }
         >
-          {isBuyingNow ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Redirecting...
-            </>
-          ) : (
-            <>
-              <Zap className="mr-2 h-4 w-4" />
-              Buy Now
-            </>
-          )}
+          <Zap className="mr-2 h-4 w-4" />
+          Buy Now
         </Button>
+
+        {/* Embedded Checkout Modal */}
+        {checkoutItems && (
+          <EmbeddedCheckoutModal
+            isOpen={showCheckoutModal}
+            onClose={() => setShowCheckoutModal(false)}
+            items={checkoutItems}
+            fbData={checkoutFbData || undefined}
+          />
+        )}
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Elements
+        stripe={stripePromise}
+        options={{
+          clientSecret,
+          appearance: {
+            theme: 'stripe',
+            variables: {
+              colorPrimary: '#ec4899',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              borderRadius: '8px',
+            },
+          },
+        }}
+      >
+        <ExpressCheckoutButtons
+          designId={designId}
+          bundleId={bundleId}
+          compact={compact}
+          onFallback={() => setShowFallback(true)}
+        />
+        {/* Show Buy Now if Stripe says no wallet methods available */}
+        {showFallback && (
+          <Button
+            onClick={handleBuyNow}
+            className={compact
+              ? 'bg-gray-900 hover:bg-gray-800 text-white font-semibold'
+              : 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 font-semibold'
+            }
+          >
+            <Zap className="mr-2 h-4 w-4" />
+            Buy Now
+          </Button>
+        )}
+      </Elements>
+
+      {/* Embedded Checkout Modal */}
+      {checkoutItems && (
+        <EmbeddedCheckoutModal
+          isOpen={showCheckoutModal}
+          onClose={() => setShowCheckoutModal(false)}
+          items={checkoutItems}
+          fbData={checkoutFbData || undefined}
+        />
       )}
-    </Elements>
+    </>
   )
 }
