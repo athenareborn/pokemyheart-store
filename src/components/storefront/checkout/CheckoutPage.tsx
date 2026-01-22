@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Elements } from '@stripe/react-stripe-js'
@@ -9,7 +9,7 @@ import { getStripe } from '@/lib/stripe/client'
 import { useCartStore } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
-import { generateEventId } from '@/lib/analytics/facebook-capi'
+import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 import { CheckoutForm } from './CheckoutForm'
@@ -29,13 +29,6 @@ export function CheckoutPage() {
   // Prevent hydration mismatch - cart store uses localStorage
   useEffect(() => {
     setMounted(true)
-  }, [])
-
-  // Get FB cookies for attribution
-  const getCookie = useCallback((name: string) => {
-    if (typeof document === 'undefined') return undefined
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
-    return match ? match[2] : undefined
   }, [])
 
   // Track InitiateCheckout and create PaymentIntent
@@ -101,8 +94,7 @@ export function CheckoutPage() {
             },
             shippingMethod: 'standard',
             fbData: {
-              fbc: getCookie('_fbc'),
-              fbp: getCookie('_fbp'),
+              ...getFbCookies(), // Gets fbc/fbp from localStorage (persistent) or cookies
               eventId,
             },
             gaData: {
@@ -124,7 +116,7 @@ export function CheckoutPage() {
     }
 
     initCheckout()
-  }, [items, getSubtotal, isFreeShipping, getCookie])
+  }, [items, getSubtotal, isFreeShipping])
 
   // Redirect if cart is empty (only after mounted)
   useEffect(() => {

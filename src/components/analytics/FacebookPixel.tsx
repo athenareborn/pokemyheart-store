@@ -6,11 +6,52 @@ import { useEffect, Suspense } from 'react'
 
 const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID
 
+/**
+ * Capture and persist Facebook Click ID (fbc) for better attribution
+ * fbc is set when users click a Facebook ad (contains fbclid from URL)
+ */
+function captureFbcFromUrl() {
+  if (typeof window === 'undefined') return
+
+  const urlParams = new URLSearchParams(window.location.search)
+  const fbclid = urlParams.get('fbclid')
+
+  if (fbclid) {
+    // Generate fbc in the correct format: fb.1.timestamp.fbclid
+    const timestamp = Date.now()
+    const fbc = `fb.1.${timestamp}.${fbclid}`
+
+    // Store in localStorage for persistence across pages
+    localStorage.setItem('_fbc', fbc)
+
+    // Also set as cookie for server access
+    document.cookie = `_fbc=${fbc}; path=/; max-age=${60 * 60 * 24 * 90}; SameSite=Lax`
+  }
+}
+
+/**
+ * Capture fbp (Browser ID) from cookie and persist to localStorage
+ */
+function captureFbpFromCookie() {
+  if (typeof document === 'undefined') return
+
+  const match = document.cookie.match(/(^| )_fbp=([^;]+)/)
+  if (match && match[2]) {
+    localStorage.setItem('_fbp', match[2])
+  }
+}
+
 function FacebookPixelPageView() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    // Capture fbc from URL on every page (in case user lands on any page from FB ad)
+    captureFbcFromUrl()
+
+    // Capture fbp from cookie (set by pixel)
+    setTimeout(() => captureFbpFromCookie(), 1000) // Wait for pixel to set cookie
+
     if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
       window.fbq('track', 'PageView')
     }

@@ -279,3 +279,31 @@ export const fbCAPI = {
 export function generateEventId(prefix: string): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 }
+
+/**
+ * Get Facebook attribution cookies (fbc and fbp)
+ * Checks localStorage first (persisted), then falls back to cookies
+ * Use this everywhere you need fbc/fbp for consistent attribution
+ */
+export function getFbCookies(): { fbc: string | undefined; fbp: string | undefined } {
+  if (typeof window === 'undefined') {
+    return { fbc: undefined, fbp: undefined }
+  }
+
+  // Try localStorage first (persisted across sessions)
+  let fbc = localStorage.getItem('_fbc') || undefined
+  let fbp = localStorage.getItem('_fbp') || undefined
+
+  // Fall back to cookies if not in localStorage
+  if (!fbc) {
+    const fbcMatch = document.cookie.match(/(^| )_fbc=([^;]+)/)
+    fbc = fbcMatch ? fbcMatch[2] : undefined
+  }
+
+  if (!fbp) {
+    const fbpMatch = document.cookie.match(/(^| )_fbp=([^;]+)/)
+    fbp = fbpMatch ? fbpMatch[2] : undefined
+  }
+
+  return { fbc, fbp }
+}
