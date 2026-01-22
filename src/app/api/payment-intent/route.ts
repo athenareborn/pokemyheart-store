@@ -94,6 +94,9 @@ export async function POST(req: NextRequest) {
       price: item.price,
     }))
 
+    // Build shipping object only if we have address data
+    const hasShippingData = shippingAddress.firstName && shippingAddress.address1
+
     // Create Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: total,
@@ -108,11 +111,11 @@ export async function POST(req: NextRequest) {
         shipping: String(shippingCost),
         discount_code: discountCode || '',
         discount_amount: String(discountAmount),
-        customer_email: email,
-        customer_name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+        customer_email: email || '',
+        customer_name: `${shippingAddress.firstName} ${shippingAddress.lastName}`.trim(),
         shipping_method: shippingMethod,
         shipping_address: JSON.stringify({
-          name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+          name: `${shippingAddress.firstName} ${shippingAddress.lastName}`.trim(),
           line1: shippingAddress.address1,
           line2: shippingAddress.address2 || '',
           city: shippingAddress.city,
@@ -125,19 +128,23 @@ export async function POST(req: NextRequest) {
         fb_event_id: fbData?.eventId || '',
         ga_client_id: gaData?.clientId || '',
       },
-      receipt_email: email,
-      shipping: {
-        name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
-        address: {
-          line1: shippingAddress.address1,
-          line2: shippingAddress.address2 || undefined,
-          city: shippingAddress.city,
-          state: shippingAddress.state,
-          postal_code: shippingAddress.postalCode,
-          country: shippingAddress.country,
+      // Only set receipt_email if we have a valid email
+      ...(email ? { receipt_email: email } : {}),
+      // Only set shipping if we have address data
+      ...(hasShippingData ? {
+        shipping: {
+          name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+          address: {
+            line1: shippingAddress.address1,
+            line2: shippingAddress.address2 || undefined,
+            city: shippingAddress.city,
+            state: shippingAddress.state,
+            postal_code: shippingAddress.postalCode,
+            country: shippingAddress.country,
+          },
+          phone: shippingAddress.phone || undefined,
         },
-        phone: shippingAddress.phone || undefined,
-      },
+      } : {}),
     })
 
     return NextResponse.json({
@@ -169,6 +176,7 @@ export async function PATCH(req: NextRequest) {
       shippingMethod,
       discountAmount = 0,
       subtotal,
+      fbEventId,
     } = body
 
     // Calculate shipping
@@ -193,6 +201,8 @@ export async function PATCH(req: NextRequest) {
         shipping: String(shippingCost),
         shipping_method: shippingMethod,
         discount_amount: String(discountAmount),
+        // Update fb_event_id with purchase eventId for proper deduplication
+        ...(fbEventId ? { fb_event_id: fbEventId } : {}),
       },
     })
 

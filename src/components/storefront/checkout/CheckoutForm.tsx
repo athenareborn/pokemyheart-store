@@ -117,7 +117,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutF
       }
       sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
 
-      // Update PaymentIntent with shipping info
+      // Update PaymentIntent with shipping info and purchase eventId for deduplication
       await fetch('/api/payment-intent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -126,6 +126,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutF
           shippingMethod: data.shippingMethod,
           subtotal,
           discountAmount: 0,
+          fbEventId: purchaseEventId, // Critical: same eventId for client and server deduplication
         }),
       })
 

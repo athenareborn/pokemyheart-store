@@ -19,11 +19,17 @@ const stripePromise = getStripe()
 
 export function CheckoutPage() {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard')
 
   const { items, isCartEmpty, getSubtotal, isFreeShipping } = useCartStore()
+
+  // Prevent hydration mismatch - cart store uses localStorage
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Get FB cookies for attribution
   const getCookie = useCallback((name: string) => {
@@ -120,12 +126,22 @@ export function CheckoutPage() {
     initCheckout()
   }, [items, getSubtotal, isFreeShipping, getCookie])
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (only after mounted)
   useEffect(() => {
-    if (isCartEmpty()) {
+    if (mounted && isCartEmpty()) {
       router.push('/products/i-choose-you-the-ultimate-valentines-gift')
     }
-  }, [isCartEmpty, router])
+  }, [mounted, isCartEmpty, router])
+
+  // Loading state until client-side hydration completes
+  if (!mounted) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-500 mb-4" />
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    )
+  }
 
   // Empty cart state
   if (isCartEmpty()) {
