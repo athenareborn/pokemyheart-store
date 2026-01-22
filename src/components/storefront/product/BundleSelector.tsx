@@ -78,16 +78,16 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
                     <p className="text-xs text-gray-500 mt-0.5">{bundle.description}</p>
                   </div>
 
-                  {/* Price column - fixed width for alignment */}
-                  <div className="flex-shrink-0 w-24 text-right">
-                    {showSavings ? (
-                      <>
-                        <div className="text-xs text-gray-400 line-through">{formatPrice(bundle.compareAt)}</div>
-                        <div className="text-lg font-bold text-gray-900">{formatPrice(bundle.price)}</div>
-                        <div className="text-[11px] font-bold text-brand-600">SAVE {savingsPercent}%</div>
-                      </>
-                    ) : (
-                      <div className="text-lg font-bold text-gray-900">{formatPrice(bundle.price)}</div>
+                  {/* Price - all on one line */}
+                  <div className="flex-shrink-0 flex items-center gap-1.5">
+                    {showSavings && (
+                      <span className="text-sm text-gray-400 line-through">{formatPrice(bundle.compareAt)}</span>
+                    )}
+                    <span className="text-lg font-bold text-gray-900">{formatPrice(bundle.price)}</span>
+                    {showSavings && (
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        -{savingsPercent}%
+                      </span>
                     )}
                   </div>
                 </div>
