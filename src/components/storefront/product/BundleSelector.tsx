@@ -40,9 +40,9 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
                 <Image
                   src="/images/most-popular-badge.png"
                   alt="Most Popular"
-                  width={80}
-                  height={64}
-                  className="absolute -top-4 -right-2 z-10 drop-shadow-md"
+                  width={88}
+                  height={70}
+                  className="absolute -top-6 -right-2 z-10 drop-shadow-md sm:-top-4 sm:w-[80px] sm:h-auto"
                 />
               )}
               <button
