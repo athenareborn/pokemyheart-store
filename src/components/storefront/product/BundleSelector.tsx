@@ -71,23 +71,23 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
                       <span className="font-semibold text-gray-900">{bundle.name}</span>
                       {hasFreeShipping && (
                         <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">
-                          Free Ship
+                          Free Shipping
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">{bundle.description}</p>
                   </div>
 
-                  {/* Price - all on one line */}
-                  <div className="flex-shrink-0 flex items-center gap-1.5">
+                  {/* Price */}
+                  <div className="flex-shrink-0 text-right">
                     {showSavings && (
-                      <span className="text-sm text-gray-400 line-through">{formatPrice(bundle.compareAt)}</span>
+                      <div className="text-xs text-gray-400 line-through -mb-0.5">{formatPrice(bundle.compareAt)}</div>
                     )}
-                    <span className="text-lg font-bold text-gray-900">{formatPrice(bundle.price)}</span>
+                    <div className="text-lg font-bold text-gray-900">{formatPrice(bundle.price)}</div>
                     {showSavings && (
-                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        -{savingsPercent}%
-                      </span>
+                      <div className="text-xs font-semibold text-emerald-600">
+                        Save {savingsPercent}%
+                      </div>
                     )}
                   </div>
                 </div>
