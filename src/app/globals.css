@@ -191,13 +191,17 @@
   animation: marquee 15s linear infinite;
 }
 
-/* Hide Stripe Link floating autofill button (bottom right popup) */
-iframe[name*="__privateStripeFrame"],
-div[class*="StripeElement--link"] {
+/* Hide Stripe DevTools button (black button bottom right in test mode) */
+#StripeDevToolsPanel,
+[data-stripe-dev-tools],
+iframe[name*="stripe-dev-tools"],
+div[class*="stripe-dev-tools"],
+body > div[style*="position: fixed"][style*="bottom: 0"][style*="right: 0"] > button {
   display: none !important;
 }
 
-/* Target the Link autofill modal specifically */
-body > div[style*="z-index: 2147483647"] {
+/* Also hide the floating iframe container Stripe uses */
+body > div[style*="z-index: 2147483647"],
+body > div[style*="position: fixed"][style*="z-index: 999999"] {
   display: none !important;
 }
