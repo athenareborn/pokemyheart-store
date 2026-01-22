@@ -190,3 +190,14 @@
 .animate-marquee {
   animation: marquee 15s linear infinite;
 }
+
+/* Hide Stripe Link floating autofill button (bottom right popup) */
+iframe[name*="__privateStripeFrame"],
+div[class*="StripeElement--link"] {
+  display: none !important;
+}
+
+/* Target the Link autofill modal specifically */
+body > div[style*="z-index: 2147483647"] {
+  display: none !important;
+}
