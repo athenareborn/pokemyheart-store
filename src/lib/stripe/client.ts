@@ -1,12 +1,16 @@
 'use client'
 
-import { loadStripe } from '@stripe/stripe-js'
+import { loadStripe, type Stripe } from '@stripe/stripe-js'
 
-const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+let stripePromise: Promise<Stripe | null> | null = null
 
 export const getStripe = () => {
-  if (!stripePublishableKey) {
-    throw new Error('Stripe publishable key not configured')
+  if (!stripePromise) {
+    const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    if (!key) {
+      throw new Error('Stripe publishable key not configured')
+    }
+    stripePromise = loadStripe(key)
   }
-  return loadStripe(stripePublishableKey)
+  return stripePromise
 }

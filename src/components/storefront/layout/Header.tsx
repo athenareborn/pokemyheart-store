@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ShoppingBag, Menu } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -17,40 +17,22 @@ const NAV_LINKS = [
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { openCart, getItemCount } = useCartStore()
   const itemCount = getItemCount()
+
+  // Avoid hydration mismatch - cart count comes from localStorage
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo + Nav */}
+        <div className="relative flex items-center justify-between h-16">
+          {/* Mobile: Hamburger left | Desktop: Logo + Nav */}
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/images/logo.png"
-                alt="UltraRareLove"
-                width={160}
-                height={40}
-                className="h-10 w-auto"
-                priority
-              />
-            </Link>
-
-            {/* Desktop Navigation - right after logo */}
-            <nav className="hidden lg:flex items-center gap-6">
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-sm font-medium text-gray-700 hover:text-brand-500 transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-
-            {/* Mobile menu button */}
+            {/* Mobile menu button - only on mobile */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild className="lg:hidden">
                 <Button variant="ghost" size="icon">
@@ -99,7 +81,44 @@ export function Header() {
                 </div>
               </SheetContent>
             </Sheet>
+
+            {/* Logo - hidden on mobile (shown centered below) */}
+            <Link href="/" className="hidden lg:flex items-center">
+              <Image
+                src="/images/logo.png"
+                alt="UltraRareLove"
+                width={160}
+                height={40}
+                className="h-10 w-auto"
+                priority
+              />
+            </Link>
+
+            {/* Desktop Navigation - right after logo */}
+            <nav className="hidden lg:flex items-center gap-6">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm font-medium text-gray-700 hover:text-brand-500 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
           </div>
+
+          {/* Mobile: Centered logo */}
+          <Link href="/" className="lg:hidden absolute left-1/2 -translate-x-1/2">
+            <Image
+              src="/images/logo.png"
+              alt="UltraRareLove"
+              width={140}
+              height={35}
+              className="h-9 w-auto"
+              priority
+            />
+          </Link>
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
@@ -110,7 +129,7 @@ export function Header() {
               onClick={openCart}
             >
               <ShoppingBag className="h-5 w-5" />
-              {itemCount > 0 && (
+              {mounted && itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-brand-500 text-white text-xs font-bold flex items-center justify-center">
                   {itemCount}
                 </span>

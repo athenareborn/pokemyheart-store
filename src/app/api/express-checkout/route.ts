@@ -84,6 +84,12 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    console.log('[ExpressCheckout API] Created PaymentIntent:', {
+      id: paymentIntent.id,
+      amount: total,
+      payment_method_types: paymentIntent.payment_method_types,
+    })
+
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
