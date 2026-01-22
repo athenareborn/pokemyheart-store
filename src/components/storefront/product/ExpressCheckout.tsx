@@ -11,6 +11,23 @@ import { ga4 } from '@/lib/analytics/ga4'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
 import { Button } from '@/components/ui/button'
 
+// Safe sessionStorage helpers for iOS private browsing mode
+function safeSetSessionStorage(key: string, value: string) {
+  try {
+    sessionStorage.setItem(key, value)
+  } catch (e) {
+    console.warn('[ExpressCheckout] sessionStorage unavailable (private mode?):', e)
+  }
+}
+
+function safeRemoveSessionStorage(key: string) {
+  try {
+    sessionStorage.removeItem(key)
+  } catch (e) {
+    // Ignore - storage not available
+  }
+}
+
 const stripePromise = getStripe()
 
 interface ExpressCheckoutProps {
@@ -52,7 +69,7 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback }: Exp
         quantity: 1,
       }],
     }
-    sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
+    safeSetSessionStorage('fb_purchase_data', JSON.stringify(purchaseData))
 
     // Confirm payment
     const { error } = await stripe.confirmPayment({
@@ -65,7 +82,7 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback }: Exp
     if (error) {
       console.error('Express checkout error:', error.message)
       // Remove stored data on error
-      sessionStorage.removeItem('fb_purchase_data')
+      safeRemoveSessionStorage('fb_purchase_data')
     }
   }
 
@@ -78,8 +95,12 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback }: Exp
     <div className={compact ? '' : 'min-h-[44px]'}>
       <ExpressCheckoutElement
         onReady={({ availablePaymentMethods }) => {
+          console.log('[ExpressCheckout] Ready. Payment methods:', JSON.stringify(availablePaymentMethods))
+          console.log('[ExpressCheckout] User Agent:', navigator.userAgent)
+          console.log('[ExpressCheckout] Protocol:', window.location.protocol)
           setIsReady(true)
           if (!availablePaymentMethods || Object.keys(availablePaymentMethods).length === 0) {
+            console.log('[ExpressCheckout] No wallet methods - showing fallback')
             setShowFallback(true)
             onFallback()
           }
@@ -109,6 +130,10 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback }: Exp
           buttonType: {
             applePay: 'buy',
             googlePay: 'buy',
+          },
+          layout: {
+            maxColumns: 1,
+            maxRows: 3,
           },
         }}
       />
@@ -145,6 +170,13 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
       fbp: cookies['_fbp'],
     }
   }
+
+  // Warn if not HTTPS - Apple Pay requires HTTPS
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+      console.warn('[ExpressCheckout] Apple Pay requires HTTPS. Current protocol:', window.location.protocol)
+    }
+  }, [])
 
   useEffect(() => {
     const createIntent = async () => {
@@ -217,7 +249,7 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
         quantity: 1,
       }],
     }
-    sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
+    safeSetSessionStorage('fb_purchase_data', JSON.stringify(purchaseData))
 
     // Create Stripe Checkout Session
     try {
