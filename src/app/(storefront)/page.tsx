@@ -71,7 +71,7 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-200 to-brand-300 rounded-3xl rotate-3" />
                 <div className="absolute inset-0 bg-white rounded-3xl shadow-2xl overflow-hidden">
                   <Image
-                    src="/images/Hero.png"
+                    src="/images/hero2.png"
                     alt="Premium Valentine's Card"
                     fill
                     className="object-cover"
@@ -170,7 +170,7 @@ export default function HomePage() {
             {/* Image */}
             <div className="relative aspect-square max-w-md mx-auto lg:max-w-none">
               <Image
-                src="/images/product-showcase.svg"
+                src="/images/Hero.png"
                 alt="Product Showcase"
                 fill
                 className="object-cover rounded-2xl"

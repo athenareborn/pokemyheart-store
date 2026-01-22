@@ -40,9 +40,9 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
                 <Image
                   src="/images/most-popular-badge.png"
                   alt="Most Popular"
-                  width={88}
-                  height={70}
-                  className="absolute -top-6 -right-2 z-10 drop-shadow-md sm:-top-4 sm:w-[80px] sm:h-auto"
+                  width={110}
+                  height={88}
+                  className="absolute -top-8 -right-3 z-10 drop-shadow-md sm:-top-6 sm:w-[100px] sm:h-auto"
                 />
               )}
               <button
@@ -80,10 +80,12 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
 
                   {/* Price */}
                   <div className="flex-shrink-0 text-right">
-                    {showSavings && (
-                      <div className="text-xs text-gray-400 line-through -mb-0.5">{formatPrice(bundle.compareAt)}</div>
-                    )}
-                    <div className="text-lg font-bold text-gray-900">{formatPrice(bundle.price)}</div>
+                    <div className="flex items-baseline justify-end gap-1.5">
+                      {showSavings && (
+                        <span className="text-[10px] text-gray-400 line-through">{formatPrice(bundle.compareAt)}</span>
+                      )}
+                      <span className="text-lg font-bold text-gray-900">{formatPrice(bundle.price)}</span>
+                    </div>
                     {showSavings && (
                       <div className="text-xs font-semibold text-emerald-600">
                         Save {savingsPercent}%
