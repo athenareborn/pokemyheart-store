@@ -3,7 +3,7 @@ import { DollarSign, Package, TrendingUp, Users, ShoppingCart, Eye, ExternalLink
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatCard } from '@/components/admin'
-import { RevenueChart, FunnelChart, TopProductsChart, LocationChart, VisitorsChart, ConversionRates } from '@/components/admin/charts'
+import { RevenueChart, FunnelChart, TopProductsChart, LocationChart, VisitorsChart, ConversionRates, TrafficSourcesChart, DeviceChart } from '@/components/admin/charts'
 import { formatPrice } from '@/lib/utils'
 import { getAnalyticsOverview, type TimePeriod } from '@/lib/db/analytics'
 
@@ -120,6 +120,12 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
           designs={analytics.salesByDesign}
         />
         <LocationChart data={analytics.topLocations} />
+      </div>
+
+      {/* Traffic & Device Section */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TrafficSourcesChart data={analytics.trafficSources} />
+        <DeviceChart data={analytics.deviceBreakdown} />
       </div>
 
       {/* PostHog */}

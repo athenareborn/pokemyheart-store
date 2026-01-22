@@ -8,7 +8,8 @@ import { createHash } from 'crypto'
 
 const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID
 const FB_ACCESS_TOKEN = process.env.FB_CONVERSIONS_API_TOKEN
-const FB_API_VERSION = 'v19.0'
+const FB_API_VERSION = 'v21.0' // Updated to latest stable version (2025)
+const FB_TEST_EVENT_CODE = process.env.FB_TEST_EVENT_CODE // Optional: for testing in Events Manager
 
 // ============================================
 // TYPES
@@ -19,6 +20,11 @@ interface UserData {
   firstName?: string
   lastName?: string
   phone?: string
+  city?: string
+  state?: string
+  postalCode?: string
+  country?: string
+  externalId?: string // Customer ID for improved matching (high impact on EMQ)
   ip?: string
   userAgent?: string
   fbc?: string // Click ID from _fbc cookie
@@ -35,7 +41,7 @@ interface CustomData {
   order_id?: string
 }
 
-type EventName =
+export type EventName =
   | 'PageView'
   | 'ViewContent'
   | 'AddToCart'
@@ -64,11 +70,31 @@ function sha256(value: string): string {
 }
 
 /**
+ * Normalize phone number to E.164 format (digits only, with country code)
+ * Per Meta specs: remove formatting, keep country code and digits
+ * Example: "(555) 123-4567" → "15551234567" (assumes US +1 if no country code)
+ */
+function normalizePhone(phone: string): string {
+  // Remove all non-digit characters
+  const digits = phone.replace(/\D/g, '')
+  // If it's a 10-digit US number, prepend country code
+  if (digits.length === 10) {
+    return '1' + digits
+  }
+  return digits
+}
+
+/**
  * Normalize and hash user data according to Meta specs
+ * https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/customer-information-parameters
+ *
+ * All PII fields: lowercase, trim whitespace, then SHA-256 hash
+ * Technical fields (IP, UA, fbc, fbp): send raw, do NOT hash
  */
 function hashUserData(userData: UserData) {
   const hashed: Record<string, unknown> = {}
 
+  // PII fields - all require lowercase + trim + SHA-256
   if (userData.email) {
     hashed.em = [sha256(userData.email)]
   }
@@ -79,9 +105,36 @@ function hashUserData(userData: UserData) {
     hashed.ln = [sha256(userData.lastName)]
   }
   if (userData.phone) {
-    // Remove non-digits before hashing
-    hashed.ph = [sha256(userData.phone.replace(/\D/g, ''))]
+    // Phone: normalize to E.164 format (digits only with country code), then hash
+    const normalizedPhone = normalizePhone(userData.phone)
+    if (normalizedPhone) {
+      hashed.ph = [sha256(normalizedPhone)]
+    }
   }
+
+  // Location data - all require lowercase + trim + SHA-256
+  if (userData.city) {
+    hashed.ct = [sha256(userData.city)]
+  }
+  if (userData.state) {
+    hashed.st = [sha256(userData.state)]
+  }
+  if (userData.postalCode) {
+    // ZIP: use first 5 chars for US, full code for international
+    const zip = userData.postalCode.substring(0, 5)
+    hashed.zp = [sha256(zip)]
+  }
+  if (userData.country) {
+    // Country: 2-letter ISO code (sha256 already lowercases)
+    hashed.country = [sha256(userData.country)]
+  }
+
+  // External ID - high impact on EMQ, hash it
+  if (userData.externalId) {
+    hashed.external_id = [sha256(userData.externalId)]
+  }
+
+  // Technical fields - do NOT hash these
   if (userData.ip) {
     hashed.client_ip_address = userData.ip
   }
@@ -115,7 +168,7 @@ export async function sendServerEvent(params: ServerEventParams): Promise<{
     return { success: false, error: 'Not configured' }
   }
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     data: [
       {
         event_name: params.eventName,
@@ -127,6 +180,11 @@ export async function sendServerEvent(params: ServerEventParams): Promise<{
         custom_data: params.customData,
       },
     ],
+  }
+
+  // Add test event code if configured (for debugging in Events Manager)
+  if (FB_TEST_EVENT_CODE) {
+    payload.test_event_code = FB_TEST_EVENT_CODE
   }
 
   try {
@@ -165,6 +223,7 @@ export async function sendServerEvent(params: ServerEventParams): Promise<{
 export const fbCAPI = {
   /**
    * Track purchase event server-side
+   * Includes all user data fields for maximum EMQ score
    */
   purchase: async (params: {
     eventId: string
@@ -173,6 +232,11 @@ export const fbCAPI = {
     firstName?: string
     lastName?: string
     phone?: string
+    city?: string
+    state?: string
+    postalCode?: string
+    country?: string
+    externalId?: string
     value: number
     currency: string
     contentIds: string[]
@@ -192,6 +256,11 @@ export const fbCAPI = {
         firstName: params.firstName,
         lastName: params.lastName,
         phone: params.phone,
+        city: params.city,
+        state: params.state,
+        postalCode: params.postalCode,
+        country: params.country,
+        externalId: params.externalId,
         ip: params.ip,
         userAgent: params.userAgent,
         fbc: params.fbc,

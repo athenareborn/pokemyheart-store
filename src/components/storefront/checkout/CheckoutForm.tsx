@@ -11,6 +11,7 @@ import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
 import { formatPrice } from '@/lib/utils'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
+import { saveUserData } from '@/lib/analytics/user-data-store'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 
@@ -94,6 +95,18 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutF
 
     setIsSubmitting(true)
     setPaymentError(null)
+
+    // Save user data for Facebook attribution (improves Event Match Quality)
+    saveUserData({
+      email: data.email,
+      phone: data.shippingAddress.phone,
+      firstName: data.shippingAddress.firstName,
+      lastName: data.shippingAddress.lastName,
+      city: data.shippingAddress.city,
+      state: data.shippingAddress.state,
+      postalCode: data.shippingAddress.postalCode,
+      country: data.shippingAddress.country,
+    })
 
     try {
       // Store purchase data for success page

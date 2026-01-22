@@ -11,9 +11,18 @@ function getStripe() {
   return new Stripe(key)
 }
 
-export interface ExpressCheckoutRequest {
+interface CartItem {
   designId: string
   bundleId: BundleId
+  quantity: number
+  price: number
+}
+
+export interface ExpressCheckoutRequest {
+  // Support both single item (legacy) and multiple items
+  designId?: string
+  bundleId?: BundleId
+  items?: CartItem[]
   fbData?: {
     fbc?: string
     fbp?: string
@@ -29,39 +38,83 @@ export async function POST(req: NextRequest) {
     const stripe = getStripe()
     const body: ExpressCheckoutRequest = await req.json()
 
-    const { designId, bundleId, fbData, gaData } = body
+    const { designId, bundleId, items, fbData, gaData } = body
 
-    // Get bundle and design info
-    const bundle = BUNDLES.find(b => b.id === bundleId)
-    if (!bundle) {
+    // Build order items - support both single item (legacy) and multiple items
+    const orderItems: Array<{
+      bundle_id: string
+      bundle_name: string
+      design_id: string
+      design_name: string
+      quantity: number
+      price: number
+    }> = []
+
+    let subtotal = 0
+
+    if (items && items.length > 0) {
+      // Multiple items from cart
+      for (const item of items) {
+        const bundle = BUNDLES.find(b => b.id === item.bundleId)
+        const design = PRODUCT.designs.find(d => d.id === item.designId)
+
+        if (!bundle || !design) {
+          return NextResponse.json(
+            { error: 'Invalid item', details: `Bundle or design not found for item ${item.designId}-${item.bundleId}` },
+            { status: 400 }
+          )
+        }
+
+        orderItems.push({
+          bundle_id: item.bundleId,
+          bundle_name: bundle.name,
+          design_id: item.designId,
+          design_name: design.name,
+          quantity: item.quantity,
+          price: item.price,
+        })
+
+        subtotal += item.price * item.quantity
+      }
+    } else if (designId && bundleId) {
+      // Legacy single item support
+      const bundle = BUNDLES.find(b => b.id === bundleId)
+      const design = PRODUCT.designs.find(d => d.id === designId)
+
+      if (!bundle) {
+        return NextResponse.json(
+          { error: 'Invalid bundle', details: 'Bundle not found' },
+          { status: 400 }
+        )
+      }
+
+      if (!design) {
+        return NextResponse.json(
+          { error: 'Invalid design', details: 'Design not found' },
+          { status: 400 }
+        )
+      }
+
+      orderItems.push({
+        bundle_id: bundleId,
+        bundle_name: bundle.name,
+        design_id: designId,
+        design_name: design.name,
+        quantity: 1,
+        price: bundle.price,
+      })
+
+      subtotal = bundle.price
+    } else {
       return NextResponse.json(
-        { error: 'Invalid bundle', details: 'Bundle not found' },
+        { error: 'Invalid request', details: 'No items provided' },
         { status: 400 }
       )
     }
 
-    const design = PRODUCT.designs.find(d => d.id === designId)
-    if (!design) {
-      return NextResponse.json(
-        { error: 'Invalid design', details: 'Design not found' },
-        { status: 400 }
-      )
-    }
-
-    const subtotal = bundle.price
     const qualifiesForFreeShipping = subtotal >= PRODUCT.freeShippingThreshold
     const shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
     const total = subtotal + shippingCost
-
-    // Build order item for metadata
-    const orderItem = {
-      bundle_id: bundleId,
-      bundle_name: bundle.name,
-      design_id: designId,
-      design_name: design.name,
-      quantity: 1,
-      price: bundle.price,
-    }
 
     // Create Payment Intent with deferred shipping (collected in payment sheet)
     const paymentIntent = await stripe.paymentIntents.create({
@@ -73,7 +126,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         source: 'ultrararelove-store',
         checkout_type: 'express',
-        items: JSON.stringify([orderItem]),
+        items: JSON.stringify(orderItems),
         subtotal: String(subtotal),
         shipping: String(shippingCost),
         shipping_method: 'standard',
@@ -87,7 +140,7 @@ export async function POST(req: NextRequest) {
     console.log('[ExpressCheckout API] Created PaymentIntent:', {
       id: paymentIntent.id,
       amount: total,
-      payment_method_types: paymentIntent.payment_method_types,
+      itemCount: orderItems.length,
     })
 
     return NextResponse.json({

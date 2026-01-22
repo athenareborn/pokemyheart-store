@@ -77,8 +77,8 @@ interface PurchaseParams {
  * ViewContent - When a user views a product page
  * Required for Dynamic Ads
  */
-export const viewContent = (params: ViewContentParams) => {
-  event('ViewContent', params as unknown as Record<string, unknown>)
+export const viewContent = (params: ViewContentParams, eventId?: string) => {
+  event('ViewContent', params as unknown as Record<string, unknown>, eventId)
 }
 
 /**
@@ -119,7 +119,8 @@ export const fbPixel = {
     productId: string,
     productName: string,
     value: number,
-    currency: string = 'USD'
+    currency: string = 'USD',
+    eventId?: string
   ) => {
     viewContent({
       content_ids: [productId],
@@ -127,7 +128,7 @@ export const fbPixel = {
       content_type: 'product',
       value,
       currency,
-    })
+    }, eventId)
   },
 
   /**

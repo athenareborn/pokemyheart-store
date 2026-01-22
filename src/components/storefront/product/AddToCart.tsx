@@ -8,7 +8,8 @@ import { PRODUCT } from '@/data/product'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { fbPixel } from '@/lib/analytics/fpixel'
-import { generateEventId } from '@/lib/analytics/facebook-capi'
+import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
+import { getUserData } from '@/lib/analytics/user-data-store'
 import { ga4 } from '@/lib/analytics/ga4'
 import { ExpressCheckout } from './ExpressCheckout'
 
@@ -31,7 +32,7 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
       const price = (bundle?.price || BUNDLES[0].price) / 100
       const productName = `${PRODUCT.name} - ${design?.name || 'Design'}`
 
-      // Track Facebook AddToCart
+      // Track Facebook AddToCart (client-side pixel)
       const eventId = generateEventId('atc')
       fbPixel.addToCart(
         `${designId}-${bundleId}`,
@@ -40,6 +41,41 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
         'USD',
         eventId
       )
+
+      // Track Facebook AddToCart (server-side CAPI for improved match quality)
+      const userData = getUserData()
+      const { fbc, fbp } = getFbCookies()
+
+      fetch('/api/analytics/fb-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventName: 'AddToCart',
+          eventId,
+          eventSourceUrl: window.location.href,
+          userData: {
+            email: userData?.email,
+            phone: userData?.phone,
+            firstName: userData?.firstName,
+            lastName: userData?.lastName,
+            city: userData?.city,
+            state: userData?.state,
+            postalCode: userData?.postalCode,
+            country: userData?.country,
+            fbc,
+            fbp,
+          },
+          customData: {
+            value: price,
+            currency: 'USD',
+            content_ids: [`${designId}-${bundleId}`],
+            content_name: productName,
+            content_type: 'product',
+          },
+        }),
+      }).catch(() => {
+        // Silent fail - don't break user experience for analytics
+      })
 
       // Track GA4 add_to_cart
       ga4.addToCart({

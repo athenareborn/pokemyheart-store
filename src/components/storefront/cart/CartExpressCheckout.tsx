@@ -43,7 +43,8 @@ function CartExpressCheckoutInner() {
 
   useEffect(() => {
     if (!stripe || items.length === 0) {
-      setCanMakePayment(false)
+      // Reset payment request - the render condition (!paymentRequest) handles hiding the button
+      setPaymentRequest(null)
       return
     }
 
@@ -79,21 +80,19 @@ function CartExpressCheckoutInner() {
         analytics.trackInitiateCheckout(getTrackingProducts(), total / 100)
         analytics.trackAddPaymentInfo(total / 100, ev.paymentMethod.card?.brand || 'wallet')
 
-        // Use the first item's bundle for metadata
-        const firstItem = items[0]
-        const bundle = BUNDLES.find(b => b.id === firstItem.bundleId)
-        const design = PRODUCT.designs.find(d => d.id === firstItem.designId)
+        // Send all cart items to the API
+        const cartItems = items.map(item => ({
+          designId: item.designId,
+          bundleId: item.bundleId,
+          quantity: item.quantity,
+          price: item.price,
+        }))
 
         const response = await fetch('/api/express-checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount: bundle?.price || firstItem.price,
-            designId: firstItem.designId,
-            designName: design?.name || firstItem.designId,
-            bundleId: firstItem.bundleId,
-            bundleName: bundle?.name || 'Bundle',
-            bundleSku: bundle?.sku || 'PMH-CARD',
+            items: cartItems,
           }),
         })
 

@@ -79,6 +79,12 @@ export interface AnalyticsOverview {
   salesByBundle: Array<{ name: string; sales: number; revenue: number }>
   salesByDesign: Array<{ name: string; revenue: number }>
   topLocations: Array<{ location: string; orders: number; revenue: number }>
+
+  // Traffic sources
+  trafficSources: Array<{ source: string; sessions: number; conversions: number }>
+
+  // Device breakdown
+  deviceBreakdown: Array<{ device: string; sessions: number; percentage: number }>
 }
 
 export async function getAnalyticsOverview(period: TimePeriod = '7d'): Promise<AnalyticsOverview> {
@@ -225,6 +231,27 @@ export async function getAnalyticsOverview(period: TimePeriod = '7d'): Promise<A
     locationCounts[location].revenue += order.total
   })
 
+  // Traffic sources breakdown
+  const sourceCounts: Record<string, { sessions: number; conversions: number }> = {}
+  currentSessions.forEach(session => {
+    const source = session.utm_source || (session.referrer ? new URL(session.referrer).hostname : null) || 'Direct'
+    if (!sourceCounts[source]) {
+      sourceCounts[source] = { sessions: 0, conversions: 0 }
+    }
+    sourceCounts[source].sessions += 1
+    if (session.completed_purchase) {
+      sourceCounts[source].conversions += 1
+    }
+  })
+
+  // Device breakdown
+  const deviceCounts: Record<string, number> = { desktop: 0, mobile: 0, tablet: 0 }
+  currentSessions.forEach(session => {
+    const device = session.device_type || 'desktop'
+    deviceCounts[device] = (deviceCounts[device] || 0) + 1
+  })
+  const totalDeviceSessions = Object.values(deviceCounts).reduce((a, b) => a + b, 0)
+
   return {
     revenue,
     revenueChange: calcChange(revenue, prevRevenue),
@@ -267,23 +294,74 @@ export async function getAnalyticsOverview(period: TimePeriod = '7d'): Promise<A
       .map(([location, data]) => ({ location, orders: data.orders, revenue: data.revenue }))
       .sort((a, b) => b.orders - a.orders)
       .slice(0, 5),
+
+    trafficSources: Object.entries(sourceCounts)
+      .map(([source, data]) => ({ source, sessions: data.sessions, conversions: data.conversions }))
+      .sort((a, b) => b.sessions - a.sessions)
+      .slice(0, 5),
+
+    deviceBreakdown: Object.entries(deviceCounts)
+      .map(([device, sessions]) => ({
+        device: device.charAt(0).toUpperCase() + device.slice(1),
+        sessions,
+        percentage: totalDeviceSessions > 0 ? Math.round((sessions / totalDeviceSessions) * 100) : 0,
+      }))
+      .sort((a, b) => b.sessions - a.sessions),
   }
 }
 
 export async function getTodayMetrics() {
   const supabase = await createClient()
-  const todayStart = startOfDay(new Date())
+  const now = new Date()
+  const todayStart = startOfDay(now)
+  const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000)
 
+  // Get today's orders
   const { data: todayOrders } = await supabase
     .from('orders')
     .select('total')
     .gte('created_at', todayStart.toISOString())
 
+  // Get active sessions (started in last 30 minutes)
+  const { data: activeSessions } = await supabase
+    .from('analytics_sessions')
+    .select('id')
+    .gte('started_at', thirtyMinutesAgo.toISOString())
+
+  // Get today's sessions for hourly breakdown
+  const { data: todaySessions } = await supabase
+    .from('analytics_sessions')
+    .select('started_at')
+    .gte('started_at', todayStart.toISOString())
+
   const ordersToday = todayOrders?.length || 0
   const revenueToday = todayOrders?.reduce((sum, o) => sum + o.total, 0) || 0
+  const activeVisitors = activeSessions?.length || 0
+  const sessionsToday = todaySessions?.length || 0
+
+  // Calculate hourly breakdown
+  const hourlyData: Record<number, number> = {}
+  for (let i = 0; i < 24; i++) {
+    hourlyData[i] = 0
+  }
+  todaySessions?.forEach(session => {
+    const hour = new Date(session.started_at).getHours()
+    hourlyData[hour] = (hourlyData[hour] || 0) + 1
+  })
+
+  const sessionsByHour = Object.entries(hourlyData)
+    .map(([hour, sessions]) => ({
+      hour: parseInt(hour),
+      label: `${hour.toString().padStart(2, '0')}:00`,
+      sessions,
+    }))
+    .filter(h => h.hour <= now.getHours()) // Only show hours up to current time
 
   return {
     ordersToday,
     revenueToday,
+    activeVisitors,
+    sessionsToday,
+    sessionsByHour,
   }
 }

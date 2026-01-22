@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { CartItem } from './CartItem'
 import { CountdownTimer } from './CountdownTimer'
 import { FreeShippingBar } from './FreeShippingBar'
+import { CartExpressCheckout } from './CartExpressCheckout'
 
 export function CartDrawer() {
 
@@ -146,7 +147,10 @@ export function CartDrawer() {
                   </div>
                 </div>
 
-                {/* Actions */}
+                {/* Express Checkout (Apple Pay / Google Pay) */}
+                <CartExpressCheckout />
+
+                {/* Regular Checkout */}
                 <div className="space-y-2">
                   <Button
                     className="w-full bg-brand-500 hover:bg-brand-600 text-white"

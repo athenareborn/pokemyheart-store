@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from 'react'
 import { Heart } from 'lucide-react'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
+import { analytics } from '@/lib/analytics/tracker'
+import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
+import { getUserData } from '@/lib/analytics/user-data-store'
 import { PRODUCT } from '@/data/product'
 import { BUNDLES, type BundleId } from '@/data/bundles'
 import { REVIEWS, getAverageRating, getReviewCount } from '@/data/reviews'
@@ -105,9 +108,45 @@ export default function ProductPage() {
   useEffect(() => {
     const bundle = BUNDLES.find(b => b.id === selectedBundle)
     const price = (bundle?.price || BUNDLES[0].price) / 100
+    const eventId = generateEventId('vc')
 
-    // Facebook Pixel
-    fbPixel.viewContent(PRODUCT.id, PRODUCT.name, price, 'USD')
+    // Facebook Pixel (client-side with eventId for deduplication)
+    fbPixel.viewContent(PRODUCT.id, PRODUCT.name, price, 'USD', eventId)
+
+    // Facebook CAPI (server-side with user data for improved match quality)
+    const userData = getUserData()
+    const { fbc, fbp } = getFbCookies()
+
+    fetch('/api/analytics/fb-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventName: 'ViewContent',
+        eventId,
+        eventSourceUrl: window.location.href,
+        userData: {
+          email: userData?.email,
+          phone: userData?.phone,
+          firstName: userData?.firstName,
+          lastName: userData?.lastName,
+          city: userData?.city,
+          state: userData?.state,
+          postalCode: userData?.postalCode,
+          country: userData?.country,
+          fbc,
+          fbp,
+        },
+        customData: {
+          value: price,
+          currency: 'USD',
+          content_ids: [PRODUCT.id],
+          content_name: PRODUCT.name,
+          content_type: 'product',
+        },
+      }),
+    }).catch(() => {
+      // Silent fail - don't break user experience for analytics
+    })
 
     // Google Analytics 4
     ga4.viewItem({
@@ -115,6 +154,9 @@ export default function ProductPage() {
       itemName: PRODUCT.name,
       price,
     })
+
+    // Supabase analytics (for admin dashboard funnel tracking)
+    analytics.productView(PRODUCT.id, PRODUCT.name, price)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle design selection from DesignSelector

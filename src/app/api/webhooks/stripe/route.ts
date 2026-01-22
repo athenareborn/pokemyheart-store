@@ -166,6 +166,11 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, request:
     firstName: customerName?.split(' ')[0],
     lastName: customerName?.split(' ').slice(1).join(' '),
     phone: customerPhone,
+    // Address data for improved EMQ
+    city: shippingAddress?.city,
+    state: shippingAddress?.state,
+    postalCode: shippingAddress?.postal_code,
+    country: shippingAddress?.country,
     value: (session.amount_total || 0) / 100,
     currency: 'USD',
     contentIds,
@@ -223,6 +228,8 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, r
   const customerEmail = metadata.customer_email
   const customerName = metadata.customer_name || null
   const shippingAddress = JSON.parse(metadata.shipping_address || 'null')
+  // Phone is stored in paymentIntent.shipping, not in metadata
+  const customerPhone = paymentIntent.shipping?.phone || undefined
 
   if (!customerEmail) {
     console.error('No customer email in payment intent metadata')
@@ -304,6 +311,12 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, r
     email: customerEmail,
     firstName: customerName?.split(' ')[0],
     lastName: customerName?.split(' ').slice(1).join(' '),
+    phone: customerPhone,
+    // Address data for improved EMQ
+    city: shippingAddress?.city,
+    state: shippingAddress?.state,
+    postalCode: shippingAddress?.postal_code,
+    country: shippingAddress?.country,
     value: paymentIntent.amount / 100,
     currency: 'USD',
     contentIds,
@@ -333,6 +346,7 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, r
     })),
     userData: {
       email: customerEmail,
+      phone: customerPhone,
       firstName: customerName?.split(' ')[0],
       lastName: customerName?.split(' ').slice(1).join(' '),
       street: shippingAddress?.line1,

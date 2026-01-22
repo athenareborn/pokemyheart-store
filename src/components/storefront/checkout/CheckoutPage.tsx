@@ -10,6 +10,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
 import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
+import { getUserData } from '@/lib/analytics/user-data-store'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 import { CheckoutForm } from './CheckoutForm'
@@ -42,6 +43,38 @@ export function CheckoutPage() {
       const contentIds = items.map(item => `${item.designId}-${item.bundleId}`)
 
       fbPixel.initiateCheckout(total / 100, items.length, contentIds, 'USD', eventId)
+
+      // Track InitiateCheckout server-side (CAPI) for improved match quality
+      const userData = getUserData()
+      fetch('/api/analytics/fb-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventName: 'InitiateCheckout',
+          eventId,
+          eventSourceUrl: window.location.href,
+          userData: {
+            email: userData?.email,
+            phone: userData?.phone,
+            firstName: userData?.firstName,
+            lastName: userData?.lastName,
+            city: userData?.city,
+            state: userData?.state,
+            postalCode: userData?.postalCode,
+            country: userData?.country,
+            ...getFbCookies(),
+          },
+          customData: {
+            value: total / 100,
+            currency: 'USD',
+            content_ids: contentIds,
+            num_items: items.length,
+          },
+        }),
+      }).catch(() => {
+        // Silent fail - don't break checkout for analytics
+      })
+
       ga4.beginCheckout({
         value: total / 100,
         items: items.map(item => {
