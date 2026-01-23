@@ -24,7 +24,7 @@ export const BUNDLES = [
     name: 'Deluxe Valentine',
     price: 5295,      // $52.95 in cents
     compareAt: 7495,  // $74.95 in cents
-    description: 'Everything in the Valentine pack, plus a luxury gift box for a special touch.',
+    description: "Everything in the Valentine's Pack, plus a luxury gift box for a special touch.",
     includes: ['Premium Holographic Card', 'Premium Display Case', 'Premium Stand', 'Luxury Gift Box', 'Tissue Paper', 'Envelope'],
     badge: undefined,
     sku: 'PMH-DELUXE',

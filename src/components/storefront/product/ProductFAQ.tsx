@@ -18,7 +18,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'What comes in each bundle?',
-    answer: 'Card Only: Premium holographic card + envelope. Love Pack: Card + premium display case + stand + envelope. Deluxe Love: Card + premium case + stand + luxury gift box + tissue paper + envelope.',
+    answer: "Card Only: Premium holographic card + envelope. Valentine's Pack: Card + premium display case + stand + envelope. Deluxe Valentine: Card + premium case + stand + luxury gift box + tissue paper + envelope.",
   },
   {
     question: 'Can I return or exchange my order?',
