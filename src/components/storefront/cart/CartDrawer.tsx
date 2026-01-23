@@ -4,7 +4,8 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { ShoppingBag, X, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useCartStore } from '@/lib/store/cart'
+import { useCartStore, SHIPPING_INSURANCE_PRICE } from '@/lib/store/cart'
+import { BUNDLES } from '@/data/bundles'
 import { formatPrice } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { CartItem } from './CartItem'
@@ -25,7 +26,15 @@ export function CartDrawer() {
     isFreeShipping,
     getAmountToFreeShipping,
     isCartEmpty,
+    hasBundle,
+    upgradeToBundle,
   } = useCartStore()
+
+  // Check if cart has card-only bundle (upgradeable)
+  const hasCardOnly = hasBundle('card-only')
+  const cardOnlyBundle = BUNDLES.find(b => b.id === 'card-only')
+  const lovePack = BUNDLES.find(b => b.id === 'love-pack')
+  const upgradeCost = lovePack && cardOnlyBundle ? lovePack.price - cardOnlyBundle.price : 0
 
   // Lock body scroll when cart is open
   useEffect(() => {
@@ -146,6 +155,41 @@ export function CartDrawer() {
                     <span>{formatPrice(getTotal())}</span>
                   </div>
                 </div>
+
+                {/* Upgrade Prompt - Show if cart has card-only bundle */}
+                {hasCardOnly && lovePack && (
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl flex-shrink-0">💡</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 text-sm">Upgrade & Save</p>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Add display case + stand for just {formatPrice(upgradeCost)} more
+                        </p>
+                        <div className="mt-2 space-y-1">
+                          <div className="flex items-center gap-1.5 text-xs text-gray-700">
+                            <svg className="w-3.5 h-3.5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Looks 10x more impressive as a gift</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs text-gray-700">
+                            <svg className="w-3.5 h-3.5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Unlocks FREE shipping ($4.95 value)</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => upgradeToBundle('card-only', 'love-pack')}
+                          className="mt-3 w-full py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg transition-colors"
+                        >
+                          Upgrade to Valentine&apos;s Pack - {formatPrice(lovePack.price)}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Express Checkout (Apple Pay / Google Pay) */}
                 <CartExpressCheckout />

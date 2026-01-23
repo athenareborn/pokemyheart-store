@@ -33,6 +33,7 @@ interface CartState {
   toggleCart: () => void
   resetReservation: () => void
   setShippingInsurance: (enabled: boolean) => void
+  upgradeToBundle: (fromBundleId: BundleId, toBundleId: BundleId) => void
 
   // Computed
   getSubtotal: () => number
@@ -43,6 +44,7 @@ interface CartState {
   isFreeShipping: () => boolean
   getAmountToFreeShipping: () => number
   getInsuranceCost: () => number
+  hasBundle: (bundleId: BundleId) => boolean
 }
 
 const RESERVATION_DURATION = 5 * 60 * 1000 // 5 minutes in ms
@@ -135,6 +137,27 @@ export const useCartStore = create<CartState>()(
         set({ shippingInsurance: enabled })
       },
 
+      upgradeToBundle: (fromBundleId: BundleId, toBundleId: BundleId) => {
+        const toBundle = BUNDLES.find(b => b.id === toBundleId)
+        if (!toBundle) return
+
+        set(state => ({
+          items: state.items.map(item => {
+            if (item.bundleId === fromBundleId) {
+              // Create new item ID with new bundle
+              const newItemId = `${item.productId}-${item.designId}-${toBundleId}`
+              return {
+                ...item,
+                id: newItemId,
+                bundleId: toBundleId,
+                price: toBundle.price,
+              }
+            }
+            return item
+          }),
+        }))
+      },
+
       getSubtotal: () => {
         return get().items.reduce(
           (total, item) => total + item.price * item.quantity,
@@ -167,6 +190,10 @@ export const useCartStore = create<CartState>()(
 
       getTotal: () => {
         return get().getSubtotal() + get().getShippingCost() + get().getInsuranceCost()
+      },
+
+      hasBundle: (bundleId: BundleId) => {
+        return get().items.some(item => item.bundleId === bundleId)
       },
     }),
     {
