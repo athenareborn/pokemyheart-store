@@ -88,7 +88,7 @@ export const CheckoutOrderSummary = memo(function CheckoutOrderSummary({
   onApplyDiscount,
   onRemoveDiscount,
 }: CheckoutOrderSummaryProps) {
-  const [isExpanded, setIsExpanded] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(false) // Start collapsed on mobile
   const [codeInput, setCodeInput] = useState('')
   const [isApplying, setIsApplying] = useState(false)
   const [discountError, setDiscountError] = useState<string | null>(null)
