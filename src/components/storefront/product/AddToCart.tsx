@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
-import { getUserData } from '@/lib/analytics/user-data-store'
+import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 import { ga4 } from '@/lib/analytics/ga4'
 import { ExpressCheckout } from './ExpressCheckout'
 
@@ -62,15 +62,22 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
             state: userData?.state,
             postalCode: userData?.postalCode,
             country: userData?.country,
+            externalId: getExternalId(),
             fbc,
             fbp,
           },
           customData: {
             value: price,
             currency: 'USD',
-            content_ids: [`${designId}-${bundleId}`],
             content_name: productName,
             content_type: 'product',
+            content_category: 'Valentine Cards',
+            // Per Meta: use contents (not content_ids) when we have full product info
+            contents: [{
+              id: `${designId}-${bundleId}`,
+              quantity: 1,
+              item_price: price,
+            }],
           },
         }),
       }).catch(() => {

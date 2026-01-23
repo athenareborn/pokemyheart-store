@@ -3,6 +3,8 @@
 import { usePathname, useSearchParams } from 'next/navigation'
 import Script from 'next/script'
 import { useEffect, Suspense } from 'react'
+import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
+import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 
 const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID
 
@@ -41,6 +43,48 @@ function captureFbpFromCookie() {
   }
 }
 
+/**
+ * Send PageView event to Facebook CAPI for server-side tracking
+ */
+function sendPageViewCAPI() {
+  if (typeof window === 'undefined') return
+
+  const eventId = generateEventId('pv')
+  const userData = getUserData()
+  const { fbc, fbp } = getFbCookies()
+
+  // Fire client-side pixel with eventId for deduplication
+  if (typeof window.fbq === 'function') {
+    window.fbq('track', 'PageView', {}, { eventID: eventId })
+  }
+
+  // Send server-side CAPI event
+  fetch('/api/analytics/fb-event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      eventName: 'PageView',
+      eventId,
+      eventSourceUrl: window.location.href,
+      userData: {
+        email: userData?.email,
+        phone: userData?.phone,
+        firstName: userData?.firstName,
+        lastName: userData?.lastName,
+        city: userData?.city,
+        state: userData?.state,
+        postalCode: userData?.postalCode,
+        country: userData?.country,
+        externalId: getExternalId(),
+        fbc,
+        fbp,
+      },
+    }),
+  }).catch(() => {
+    // Silent fail - don't break user experience for analytics
+  })
+}
+
 function FacebookPixelPageView() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -52,9 +96,8 @@ function FacebookPixelPageView() {
     // Capture fbp from cookie (set by pixel)
     setTimeout(() => captureFbpFromCookie(), 1000) // Wait for pixel to set cookie
 
-    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
-      window.fbq('track', 'PageView')
-    }
+    // Send PageView with both client-side pixel AND server-side CAPI
+    sendPageViewCAPI()
   }, [pathname, searchParams])
 
   return null

@@ -171,6 +171,8 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, request:
     state: shippingAddress?.state,
     postalCode: shippingAddress?.postal_code,
     country: shippingAddress?.country,
+    // external_id for ~12% EMQ improvement - use email as consistent identifier
+    externalId: customerEmail || undefined,
     value: (session.amount_total || 0) / 100,
     currency: 'USD',
     contentIds,
@@ -180,6 +182,12 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, request:
     userAgent: userAgent,
     fbc: metadata.fb_fbc || undefined,  // Facebook Click ID
     fbp: metadata.fb_fbp || undefined,  // Facebook Browser ID
+    // Dynamic Ads: detailed product info
+    contents: items.map((item: { bundleId: string; designId: string; price: number; quantity?: number }) => ({
+      id: `${item.designId}-${item.bundleId}`,
+      quantity: item.quantity || 1,
+      item_price: item.price / 100,
+    })),
   })
 
   console.log(`Facebook CAPI Purchase event sent for order ${orderNumber}`)
@@ -317,6 +325,8 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, r
     state: shippingAddress?.state,
     postalCode: shippingAddress?.postal_code,
     country: shippingAddress?.country,
+    // external_id for ~12% EMQ improvement - use email as consistent identifier
+    externalId: customerEmail,
     value: paymentIntent.amount / 100,
     currency: 'USD',
     contentIds,
@@ -326,6 +336,12 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, r
     userAgent: userAgent,
     fbc: metadata.fb_fbc || undefined,
     fbp: metadata.fb_fbp || undefined,
+    // Dynamic Ads: detailed product info
+    contents: items.map((item: { bundle_id: string; design_id: string; price: number; quantity?: number }) => ({
+      id: `${item.design_id}-${item.bundle_id}`,
+      quantity: item.quantity || 1,
+      item_price: item.price / 100,
+    })),
   })
 
   console.log(`Facebook CAPI Purchase event sent for order ${orderNumber}`)

@@ -20,7 +20,6 @@ export default function ProductsPage() {
   const [product, setProduct] = useState({
     name: PRODUCT.name,
     description: PRODUCT.shortDescription,
-    stockCount: PRODUCT.stockCount,
   })
 
   return (
@@ -59,7 +58,7 @@ export default function ProductsPage() {
                 <CardDescription className="mt-1">
                   {PRODUCT.shortDescription}
                 </CardDescription>
-                <p className="text-sm text-muted-foreground mt-2">SKU: PMH-CARD • {PRODUCT.stockCount} in stock</p>
+                <p className="text-sm text-muted-foreground mt-2">SKU: PMH-CARD • Limited Edition</p>
               </div>
             </div>
             <Button variant="outline" onClick={() => setIsEditing(!isEditing)}>
@@ -282,18 +281,18 @@ export default function ProductsPage() {
               <div className="grid sm:grid-cols-3 gap-4">
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Current Stock</p>
-                  <p className="text-3xl font-semibold text-foreground mt-1">{PRODUCT.stockCount}</p>
-                  <p className="text-xs text-amber-600 mt-1">Low stock</p>
+                  <p className="text-3xl font-semibold text-foreground mt-1">∞</p>
+                  <p className="text-xs text-emerald-600 mt-1">Print on demand</p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reserved</p>
-                  <p className="text-3xl font-semibold text-foreground mt-1">2</p>
+                  <p className="text-3xl font-semibold text-foreground mt-1">0</p>
                   <p className="text-xs text-muted-foreground mt-1">In carts</p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Available</p>
-                  <p className="text-3xl font-semibold text-foreground mt-1">{PRODUCT.stockCount - 2}</p>
-                  <p className="text-xs text-muted-foreground mt-1">For sale</p>
+                  <p className="text-3xl font-semibold text-foreground mt-1">∞</p>
+                  <p className="text-xs text-muted-foreground mt-1">Unlimited</p>
                 </div>
               </div>
 

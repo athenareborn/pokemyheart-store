@@ -8,7 +8,8 @@ import { BUNDLES, type BundleId } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
-import { generateEventId } from '@/lib/analytics/facebook-capi'
+import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
+import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 import { Button } from '@/components/ui/button'
 import { EmbeddedCheckoutModal } from '@/components/storefront/checkout/EmbeddedCheckoutModal'
 
@@ -113,16 +114,76 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback }: Exp
           if (bundle && design) {
             const price = bundle.price / 100
             const productName = `${PRODUCT.name} - ${design.name}`
+            const userData = getUserData()
+            const { fbc, fbp } = getFbCookies()
 
-            // Track AddToCart
+            // Track AddToCart (client + server)
             const atcEventId = generateEventId('atc')
             fbPixel.addToCart(`${designId}-${bundleId}`, productName, price, 'USD', atcEventId)
             ga4.addToCart({ itemId: `${designId}-${bundleId}`, itemName: productName, price, quantity: 1 })
 
-            // Track InitiateCheckout
+            // Server-side CAPI for AddToCart
+            fetch('/api/analytics/fb-event', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                eventName: 'AddToCart',
+                eventId: atcEventId,
+                eventSourceUrl: window.location.href,
+                userData: {
+                  email: userData?.email,
+                  phone: userData?.phone,
+                  firstName: userData?.firstName,
+                  lastName: userData?.lastName,
+                  externalId: getExternalId(),
+                  fbc,
+                  fbp,
+                },
+                customData: {
+                  value: price,
+                  currency: 'USD',
+                  content_name: productName,
+                  content_type: 'product',
+                  content_category: 'Valentine Cards',
+                  // Per Meta: use contents (not content_ids) when we have full product info
+                  contents: [{ id: `${designId}-${bundleId}`, quantity: 1, item_price: price }],
+                },
+              }),
+            }).catch(() => {})
+
+            // Track InitiateCheckout (client + server)
             const icEventId = generateEventId('ic')
             fbPixel.initiateCheckout(price, 1, [`${designId}-${bundleId}`], 'USD', icEventId)
             ga4.beginCheckout({ value: price, items: [{ itemId: `${designId}-${bundleId}`, itemName: productName, price, quantity: 1 }] })
+
+            // Server-side CAPI for InitiateCheckout
+            fetch('/api/analytics/fb-event', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                eventName: 'InitiateCheckout',
+                eventId: icEventId,
+                eventSourceUrl: window.location.href,
+                userData: {
+                  email: userData?.email,
+                  phone: userData?.phone,
+                  firstName: userData?.firstName,
+                  lastName: userData?.lastName,
+                  externalId: getExternalId(),
+                  fbc,
+                  fbp,
+                },
+                customData: {
+                  value: price,
+                  currency: 'USD',
+                  content_type: 'product',
+                  content_category: 'Valentine Cards',
+                  num_items: 1,
+                  // Per Meta: use contents (not content_ids) when we have full product info
+                  contents: [{ id: `${designId}-${bundleId}`, quantity: 1, item_price: price }],
+                },
+              }),
+            }).catch(() => {})
           }
           resolve()
         }}
@@ -175,19 +236,6 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
     eventId?: string
   } | null>(null)
 
-  // Get FB cookies for attribution
-  const getFbCookies = () => {
-    if (typeof document === 'undefined') return { fbc: undefined, fbp: undefined }
-    const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-      const [key, value] = cookie.trim().split('=')
-      acc[key] = value
-      return acc
-    }, {} as Record<string, string>)
-    return {
-      fbc: cookies['_fbc'],
-      fbp: cookies['_fbp'],
-    }
-  }
 
   // Warn if not HTTPS - Apple Pay requires HTTPS
   useEffect(() => {
@@ -239,16 +287,76 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
 
     const price = bundle.price / 100
     const productName = `${PRODUCT.name} - ${design.name}`
+    const userData = getUserData()
+    const { fbc, fbp } = getFbCookies()
 
-    // Track AddToCart
+    // Track AddToCart (client + server)
     const atcEventId = generateEventId('atc')
     fbPixel.addToCart(`${designId}-${bundleId}`, productName, price, 'USD', atcEventId)
     ga4.addToCart({ itemId: `${designId}-${bundleId}`, itemName: productName, price, quantity: 1 })
 
-    // Track InitiateCheckout
+    // Server-side CAPI for AddToCart
+    fetch('/api/analytics/fb-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventName: 'AddToCart',
+        eventId: atcEventId,
+        eventSourceUrl: window.location.href,
+        userData: {
+          email: userData?.email,
+          phone: userData?.phone,
+          firstName: userData?.firstName,
+          lastName: userData?.lastName,
+          externalId: getExternalId(),
+          fbc,
+          fbp,
+        },
+        customData: {
+          value: price,
+          currency: 'USD',
+          content_name: productName,
+          content_type: 'product',
+          content_category: 'Valentine Cards',
+          // Per Meta: use contents (not content_ids) when we have full product info
+          contents: [{ id: `${designId}-${bundleId}`, quantity: 1, item_price: price }],
+        },
+      }),
+    }).catch(() => {})
+
+    // Track InitiateCheckout (client + server)
     const icEventId = generateEventId('ic')
     fbPixel.initiateCheckout(price, 1, [`${designId}-${bundleId}`], 'USD', icEventId)
     ga4.beginCheckout({ value: price, items: [{ itemId: `${designId}-${bundleId}`, itemName: productName, price, quantity: 1 }] })
+
+    // Server-side CAPI for InitiateCheckout
+    fetch('/api/analytics/fb-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventName: 'InitiateCheckout',
+        eventId: icEventId,
+        eventSourceUrl: window.location.href,
+        userData: {
+          email: userData?.email,
+          phone: userData?.phone,
+          firstName: userData?.firstName,
+          lastName: userData?.lastName,
+          externalId: getExternalId(),
+          fbc,
+          fbp,
+        },
+        customData: {
+          value: price,
+          currency: 'USD',
+          content_type: 'product',
+          content_category: 'Valentine Cards',
+          num_items: 1,
+          // Per Meta: use contents (not content_ids) when we have full product info
+          contents: [{ id: `${designId}-${bundleId}`, quantity: 1, item_price: price }],
+        },
+      }),
+    }).catch(() => {})
 
     // Store purchase data for success page tracking
     const purchaseEventId = generateEventId('purchase')
@@ -267,10 +375,7 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
     }
     safeSetSessionStorage('fb_purchase_data', JSON.stringify(purchaseData))
 
-    // Get FB cookies for attribution
-    const { fbc, fbp } = getFbCookies()
-
-    // Set up checkout data and open modal
+    // Set up checkout data and open modal (reuse fbc/fbp from above)
     setCheckoutItems([{
       name: productName,
       description: bundle.description || 'Premium Valentine Card',
@@ -306,11 +411,11 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
         <Button
           onClick={handleBuyNow}
           className={compact
-            ? 'bg-gray-900 hover:bg-gray-800 text-white font-semibold'
+            ? 'w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm'
             : 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 font-semibold'
           }
         >
-          <Zap className="mr-2 h-4 w-4" />
+          <Zap className="mr-1.5 h-4 w-4" />
           Buy Now
         </Button>
 
@@ -354,11 +459,11 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
           <Button
             onClick={handleBuyNow}
             className={compact
-              ? 'bg-gray-900 hover:bg-gray-800 text-white font-semibold'
+              ? 'w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm'
               : 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 font-semibold'
             }
           >
-            <Zap className="mr-2 h-4 w-4" />
+            <Zap className="mr-1.5 h-4 w-4" />
             Buy Now
           </Button>
         )}

@@ -37,8 +37,15 @@ interface CustomData {
   content_ids?: string[]
   content_type?: string
   content_name?: string
+  content_category?: string
   num_items?: number
   order_id?: string
+  // Dynamic Ads: detailed product info with id, quantity, item_price
+  contents?: Array<{
+    id: string
+    quantity: number
+    item_price?: number
+  }>
 }
 
 export type EventName =
@@ -246,6 +253,12 @@ export const fbCAPI = {
     userAgent?: string
     fbc?: string
     fbp?: string
+    // Dynamic Ads: detailed product info
+    contents?: Array<{
+      id: string
+      quantity: number
+      item_price?: number
+    }>
   }) => {
     return sendServerEvent({
       eventName: 'Purchase',
@@ -269,8 +282,13 @@ export const fbCAPI = {
       customData: {
         value: params.value,
         currency: params.currency,
-        content_ids: params.contentIds,
+        // Per Meta: contents and content_ids are mutually exclusive
+        // Use contents when we have full product info, otherwise content_ids
+        ...(params.contents && params.contents.length > 0
+          ? { contents: params.contents }
+          : { content_ids: params.contentIds }),
         content_type: 'product',
+        content_category: 'Valentine Cards',
         num_items: params.numItems,
         order_id: params.orderId,
       },

@@ -74,3 +74,20 @@ export function clearUserData() {
   if (typeof window === 'undefined') return
   localStorage.removeItem(STORAGE_KEY)
 }
+
+/**
+ * Get external_id for Facebook CAPI
+ * Uses stored email to generate a consistent identifier
+ * Returns undefined if no user data is available
+ *
+ * Per Meta: external_id should be a unique, consistent identifier
+ * We use the raw email (will be hashed by CAPI before sending)
+ */
+export function getExternalId(): string | undefined {
+  const userData = getUserData()
+  if (!userData?.email) return undefined
+
+  // Return email as external_id - it will be hashed by the CAPI library
+  // This ensures the same user gets the same external_id across sessions
+  return userData.email
+}

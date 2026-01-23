@@ -10,7 +10,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
 import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
-import { getUserData } from '@/lib/analytics/user-data-store'
+import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 import { CheckoutForm } from './CheckoutForm'
@@ -62,13 +62,21 @@ export function CheckoutPage() {
             state: userData?.state,
             postalCode: userData?.postalCode,
             country: userData?.country,
+            externalId: getExternalId(),
             ...getFbCookies(),
           },
           customData: {
             value: total / 100,
             currency: 'USD',
-            content_ids: contentIds,
+            content_type: 'product',
+            content_category: 'Valentine Cards',
             num_items: items.length,
+            // Per Meta: use contents (not content_ids) when we have full product info
+            contents: items.map(item => ({
+              id: `${item.designId}-${item.bundleId}`,
+              quantity: item.quantity,
+              item_price: item.price / 100,
+            })),
           },
         }),
       }).catch(() => {

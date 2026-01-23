@@ -22,7 +22,7 @@ interface FBEventRequest {
     state?: string
     postalCode?: string
     country?: string
-    externalId?: string // Customer ID for improved EMQ
+    externalId?: string // Customer ID for improved EMQ (~12% improvement)
     fbc?: string
     fbp?: string
   }
@@ -32,7 +32,14 @@ interface FBEventRequest {
     content_ids?: string[]
     content_name?: string
     content_type?: string
+    content_category?: string
     num_items?: number
+    // Dynamic Ads: detailed product info with id, quantity, item_price
+    contents?: Array<{
+      id: string
+      quantity: number
+      item_price?: number
+    }>
   }
 }
 

@@ -42,9 +42,6 @@ export const PRODUCT = {
     '/images/gallery-6.svg',
   ],
 
-  // Stock urgency
-  stockCount: 8, // "Selling Fast! 8 pieces left!"
-
   // Free shipping threshold (cents)
   freeShippingThreshold: 3500, // $35
 

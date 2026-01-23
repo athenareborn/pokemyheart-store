@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { X, CheckCircle, Flame } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCartStore } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
+import { PRODUCT } from '@/data/product'
 
 // Diverse, realistic first names
 const FIRST_NAMES = [
@@ -54,6 +56,8 @@ function getRandomElement<T>(arr: T[]): T {
 function getRandomPurchase() {
   const product = getWeightedProduct()
   const showQuantity = Math.random() < 0.15 // 15% chance to show "bought 2x"
+  // Get a random design image from actual card designs
+  const randomDesign = getRandomElement(PRODUCT.designs)
 
   return {
     name: getRandomElement(FIRST_NAMES),
@@ -62,6 +66,8 @@ function getRandomPurchase() {
     badge: product.badge,
     timeAgo: getRandomElement(TIME_AGO),
     quantity: showQuantity ? 2 : 1,
+    designImage: randomDesign.thumbnail,
+    designName: randomDesign.name,
   }
 }
 
@@ -160,10 +166,15 @@ export function RecentPurchaseToast() {
 
             {/* Main content */}
             <div className="flex items-start gap-3">
-              {/* Product thumbnail placeholder with gradient */}
-              <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-brand-100 to-brand-200
-                              flex items-center justify-center flex-shrink-0 overflow-hidden">
-                <span className="text-2xl">💝</span>
+              {/* Actual card design thumbnail */}
+              <div className="w-14 h-14 rounded-lg bg-gray-50 flex-shrink-0 overflow-hidden border border-gray-100">
+                <Image
+                  src={purchase.designImage}
+                  alt={purchase.designName}
+                  width={56}
+                  height={56}
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               <div className="flex-1 min-w-0">

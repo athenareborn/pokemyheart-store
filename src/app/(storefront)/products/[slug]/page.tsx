@@ -6,7 +6,7 @@ import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 import { analytics } from '@/lib/analytics/tracker'
 import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
-import { getUserData } from '@/lib/analytics/user-data-store'
+import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 import { PRODUCT } from '@/data/product'
 import { BUNDLES, type BundleId } from '@/data/bundles'
 import { REVIEWS, getAverageRating, getReviewCount } from '@/data/reviews'
@@ -45,9 +45,7 @@ function generateProductJsonLd() {
       lowPrice: (lowestPrice / 100).toFixed(2),
       highPrice: (highestPrice / 100).toFixed(2),
       priceCurrency: 'USD',
-      availability: PRODUCT.stockCount > 0
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
+      availability: 'https://schema.org/InStock',
       offerCount: BUNDLES.length,
     },
     aggregateRating: {
@@ -94,7 +92,7 @@ export default function ProductPage() {
       ([entry]) => {
         setShowStickyCart(!entry.isIntersecting)
       },
-      { threshold: 0, rootMargin: '-100px 0px 0px 0px' }
+      { threshold: 0, rootMargin: '0px 0px 0px 0px' }
     )
 
     if (addToCartRef.current) {
@@ -133,15 +131,22 @@ export default function ProductPage() {
           state: userData?.state,
           postalCode: userData?.postalCode,
           country: userData?.country,
+          externalId: getExternalId(),
           fbc,
           fbp,
         },
         customData: {
           value: price,
           currency: 'USD',
-          content_ids: [PRODUCT.id],
           content_name: PRODUCT.name,
           content_type: 'product',
+          content_category: 'Valentine Cards',
+          // Per Meta: use contents (not content_ids) when we have full product info
+          contents: [{
+            id: PRODUCT.id,
+            quantity: 1,
+            item_price: price,
+          }],
         },
       }),
     }).catch(() => {
@@ -222,7 +227,7 @@ export default function ProductPage() {
               </div>
 
               {/* Urgency Badge */}
-              <UrgencyBadge stockCount={PRODUCT.stockCount} />
+              <UrgencyBadge />
 
               {/* Taglines - Collapsed on mobile, expanded on desktop */}
               <div className="space-y-2 sm:space-y-3">
@@ -365,7 +370,6 @@ export default function ProductPage() {
         designId={selectedDesign.id}
         bundleId={selectedBundle}
         isVisible={showStickyCart}
-        onScrollToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       />
     </>
   )
