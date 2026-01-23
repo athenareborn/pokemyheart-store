@@ -8,6 +8,8 @@ import { PRODUCT } from '@/data/product'
 import { BUNDLES } from '@/data/bundles'
 import { formatPrice } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { getFbCookies, generateEventId } from '@/lib/analytics/facebook-capi'
+import { getExternalId } from '@/lib/analytics/user-data-store'
 
 interface CustomerInfo {
   customerId: string
@@ -209,6 +211,39 @@ export function PostPurchaseOffer({ customerId, originalDesignId }: PostPurchase
           price: data.discountedPrice / 100,
           quantity: 1,
         }],
+      })
+
+      // Facebook CAPI tracking for iOS 14.5+ attribution
+      const { fbc, fbp } = getFbCookies()
+      const fbEventId = generateEventId('purchase')
+      fetch('/api/analytics/fb-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventName: 'Purchase',
+          eventId: fbEventId,
+          eventSourceUrl: window.location.href,
+          userData: {
+            externalId: getExternalId(),
+            fbc,
+            fbp,
+          },
+          customData: {
+            value: data.amount / 100,
+            currency: 'USD',
+            order_id: data.paymentIntentId,
+            num_items: 1,
+            content_type: 'product',
+            contents: [{
+              id: `card-only-${selectedDesignId}`,
+              quantity: 1,
+              item_price: data.discountedPrice / 100,
+            }],
+            is_post_purchase: true,
+          },
+        }),
+      }).catch(() => {
+        // Silent fail - primary tracking already done
       })
     } catch (err) {
       console.error('Purchase error:', err)

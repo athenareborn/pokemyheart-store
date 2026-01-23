@@ -26,8 +26,9 @@ function CartExpressCheckoutInner() {
   const [paymentRequest, setPaymentRequest] = useState<StripePaymentRequest | null>(null)
   const [canMakePayment, setCanMakePayment] = useState<boolean | null>(null)
 
-  const { items, getTotal, isFreeShipping, clearCart, closeCart } = useCartStore()
+  const { items, getTotal, isFreeShipping, clearCart, closeCart, shippingInsurance, getInsuranceCost } = useCartStore()
   const total = getTotal()
+  const insuranceCost = getInsuranceCost()
 
   const getTrackingProducts = useCallback(() => {
     return items.map(item => {
@@ -67,6 +68,14 @@ function CartExpressCheckoutInner() {
       label: isFreeShipping() ? 'Free Shipping' : 'Standard Shipping',
       amount: shippingAmount,
     })
+
+    // Add shipping insurance if enabled
+    if (shippingInsurance && insuranceCost > 0) {
+      displayItems.push({
+        label: 'Shipping Insurance',
+        amount: insuranceCost,
+      })
+    }
 
     const pr = stripe.paymentRequest({
       country: 'US',
@@ -119,6 +128,7 @@ function CartExpressCheckoutInner() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             items: cartItems,
+            shippingInsurance,
             fbData: { fbc, fbp, eventId: purchaseEventId },
             gaData: { clientId: gaClientId },
           }),
@@ -172,7 +182,7 @@ function CartExpressCheckoutInner() {
     return () => {
       pr.off('paymentmethod')
     }
-  }, [stripe, items, total, isFreeShipping, clearCart, closeCart, router, getTrackingProducts])
+  }, [stripe, items, total, isFreeShipping, shippingInsurance, insuranceCost, clearCart, closeCart, router, getTrackingProducts])
 
   // Don't render anything if wallet payments aren't available
   if (!canMakePayment || !paymentRequest) {

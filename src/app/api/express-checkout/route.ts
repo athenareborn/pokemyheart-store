@@ -3,6 +3,9 @@ import Stripe from 'stripe'
 import { PRODUCT } from '@/data/product'
 import { BUNDLES, type BundleId } from '@/data/bundles'
 
+// Shipping insurance price in cents - must match cart.ts
+const SHIPPING_INSURANCE_PRICE = 299 // $2.99
+
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) {
@@ -23,6 +26,7 @@ export interface ExpressCheckoutRequest {
   designId?: string
   bundleId?: BundleId
   items?: CartItem[]
+  shippingInsurance?: boolean
   fbData?: {
     fbc?: string
     fbp?: string
@@ -38,7 +42,7 @@ export async function POST(req: NextRequest) {
     const stripe = getStripe()
     const body: ExpressCheckoutRequest = await req.json()
 
-    const { designId, bundleId, items, fbData, gaData } = body
+    const { designId, bundleId, items, shippingInsurance = true, fbData, gaData } = body
 
     // Build order items - support both single item (legacy) and multiple items
     const orderItems: Array<{
@@ -123,7 +127,8 @@ export async function POST(req: NextRequest) {
 
     const qualifiesForFreeShipping = subtotal >= PRODUCT.freeShippingThreshold
     const shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
-    const total = subtotal + shippingCost
+    const insuranceCost = shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0
+    const total = subtotal + shippingCost + insuranceCost
 
     // Create Payment Intent with deferred shipping (collected in payment sheet)
     const paymentIntent = await stripe.paymentIntents.create({
@@ -139,6 +144,8 @@ export async function POST(req: NextRequest) {
         subtotal: String(subtotal),
         shipping: String(shippingCost),
         shipping_method: 'standard',
+        shipping_insurance: shippingInsurance ? 'true' : 'false',
+        shipping_insurance_amount: String(insuranceCost),
         fb_fbc: fbData?.fbc || '',
         fb_fbp: fbData?.fbp || '',
         fb_event_id: fbData?.eventId || '',
@@ -158,6 +165,7 @@ export async function POST(req: NextRequest) {
       amount: total,
       subtotal,
       shippingCost,
+      insuranceCost,
     })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'

@@ -76,6 +76,10 @@ export async function POST(req: NextRequest) {
     const shippingCost = PRODUCT.shipping.standard
     const total = DISCOUNTED_PRICE + shippingCost
 
+    // Get customer email for receipt
+    const customer = await stripe.customers.retrieve(customerId)
+    const customerEmail = !customer.deleted ? customer.email : null
+
     // Create and confirm PaymentIntent immediately (off-session charge)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: total,
@@ -84,6 +88,7 @@ export async function POST(req: NextRequest) {
       payment_method: paymentMethod.id,
       confirm: true,
       off_session: true,
+      ...(customerEmail ? { receipt_email: customerEmail } : {}),
       metadata: {
         source: 'ultrararelove-store',
         is_post_purchase: 'true',
