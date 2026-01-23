@@ -165,12 +165,12 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12 items-center">
             {/* Image */}
-            <div className="relative aspect-square max-w-md mx-auto lg:max-w-none">
+            <div className="relative w-full h-[500px]">
               <Image
                 src="/images/Hero.png"
                 alt="Product Showcase"
                 fill
-                className="object-contain rounded-2xl"
+                className="object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
