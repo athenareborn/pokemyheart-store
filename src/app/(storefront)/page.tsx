@@ -67,7 +67,7 @@ export default function HomePage() {
 
             {/* Hero Image */}
             <div className="relative">
-              <div className="relative aspect-square max-w-md mx-auto">
+              <div className="relative aspect-square max-w-2xl mx-auto">
                 <Image
                   src="/images/hero2.png"
                   alt="Premium Valentine's Card"
@@ -170,7 +170,8 @@ export default function HomePage() {
                 src="/images/Hero.png"
                 alt="Product Showcase"
                 fill
-                className="object-cover rounded-2xl"
+                className="object-contain rounded-2xl"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
 
