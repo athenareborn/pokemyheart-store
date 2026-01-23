@@ -24,8 +24,36 @@ export function CheckoutPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard')
+  const [discountCode, setDiscountCode] = useState<string | null>(null)
+  const [discountAmount, setDiscountAmount] = useState(0)
 
   const { items, isCartEmpty, getSubtotal, isFreeShipping } = useCartStore()
+
+  const handleApplyDiscount = async (code: string) => {
+    const subtotal = getSubtotal()
+    try {
+      const res = await fetch('/api/discount/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, subtotal }),
+      })
+      const data = await res.json()
+
+      if (data.valid) {
+        setDiscountCode(code.toUpperCase())
+        setDiscountAmount(data.discountAmount)
+        return { valid: true, message: data.message, amount: data.discountAmount }
+      }
+      return { valid: false, message: data.message }
+    } catch {
+      return { valid: false, message: 'Failed to validate discount code' }
+    }
+  }
+
+  const handleRemoveDiscount = () => {
+    setDiscountCode(null)
+    setDiscountAmount(0)
+  }
 
   // Prevent hydration mismatch - cart store uses localStorage
   useEffect(() => {
@@ -231,9 +259,9 @@ export function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="border-b border-gray-200">
+      <header className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link
             href="/products/i-choose-you-the-ultimate-valentines-gift"
@@ -273,6 +301,8 @@ export function CheckoutPage() {
               <CheckoutForm
                 onShippingMethodChange={setShippingMethod}
                 clientSecret={clientSecret}
+                discountCode={discountCode}
+                discountAmount={discountAmount}
               />
             </Elements>
           </div>
@@ -280,7 +310,13 @@ export function CheckoutPage() {
           {/* Right: Order Summary */}
           <div className="order-1 lg:order-2 mb-8 lg:mb-0">
             <div className="lg:sticky lg:top-8">
-              <CheckoutOrderSummary shippingMethod={shippingMethod} />
+              <CheckoutOrderSummary
+                shippingMethod={shippingMethod}
+                discountCode={discountCode}
+                discountAmount={discountAmount}
+                onApplyDiscount={handleApplyDiscount}
+                onRemoveDiscount={handleRemoveDiscount}
+              />
             </div>
           </div>
         </div>

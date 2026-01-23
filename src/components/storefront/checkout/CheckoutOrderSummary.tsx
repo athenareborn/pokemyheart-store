@@ -1,9 +1,8 @@
 'use client'
 
-import { memo } from 'react'
+import { memo, useState, useCallback } from 'react'
 import Image from 'next/image'
-import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useState } from 'react'
+import { ChevronDown, ChevronUp, Tag, X, Loader2 } from 'lucide-react'
 import { useCartStore, type CartItem } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
@@ -57,13 +56,25 @@ const OrderItem = memo(function OrderItem({ item }: OrderItemProps) {
 interface CheckoutOrderSummaryProps {
   shippingMethod: 'standard' | 'express'
   className?: string
+  discountCode: string | null
+  discountAmount: number
+  onApplyDiscount: (code: string) => Promise<{ valid: boolean; message: string; amount?: number }>
+  onRemoveDiscount: () => void
 }
 
 export const CheckoutOrderSummary = memo(function CheckoutOrderSummary({
   shippingMethod,
   className = '',
+  discountCode,
+  discountAmount,
+  onApplyDiscount,
+  onRemoveDiscount,
 }: CheckoutOrderSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(true)
+  const [codeInput, setCodeInput] = useState('')
+  const [isApplying, setIsApplying] = useState(false)
+  const [discountError, setDiscountError] = useState<string | null>(null)
+
   const { items, getSubtotal, isFreeShipping } = useCartStore()
 
   const subtotal = getSubtotal()
@@ -77,7 +88,32 @@ export const CheckoutOrderSummary = memo(function CheckoutOrderSummary({
     return qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
   })()
 
-  const total = subtotal + shippingCost
+  const total = subtotal + shippingCost - discountAmount
+
+  const handleApplyDiscount = useCallback(async () => {
+    if (!codeInput.trim()) return
+
+    setIsApplying(true)
+    setDiscountError(null)
+
+    try {
+      const result = await onApplyDiscount(codeInput.trim())
+      if (!result.valid) {
+        setDiscountError(result.message)
+      } else {
+        setCodeInput('')
+      }
+    } catch {
+      setDiscountError('Failed to apply discount code')
+    } finally {
+      setIsApplying(false)
+    }
+  }, [codeInput, onApplyDiscount])
+
+  const handleRemoveDiscount = useCallback(() => {
+    onRemoveDiscount()
+    setDiscountError(null)
+  }, [onRemoveDiscount])
 
   return (
     <div className={`bg-gray-50 rounded-xl p-4 lg:p-6 ${className}`}>
@@ -110,12 +146,68 @@ export const CheckoutOrderSummary = memo(function CheckoutOrderSummary({
           ))}
         </div>
 
+        {/* Discount Code */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          {discountCode ? (
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-green-700">{discountCode}</span>
+              </div>
+              <button
+                onClick={handleRemoveDiscount}
+                className="p-1 hover:bg-green-100 rounded transition-colors"
+                aria-label="Remove discount"
+              >
+                <X className="w-4 h-4 text-green-600" />
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Discount code"
+                  value={codeInput}
+                  onChange={(e) => {
+                    setCodeInput(e.target.value)
+                    setDiscountError(null)
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                />
+                <button
+                  onClick={handleApplyDiscount}
+                  disabled={isApplying || !codeInput.trim()}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400 text-gray-700 text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                >
+                  {isApplying ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Apply'
+                  )}
+                </button>
+              </div>
+              {discountError && (
+                <p className="text-sm text-red-600">{discountError}</p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Totals */}
         <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Subtotal</span>
             <span className="font-medium">{formatPrice(subtotal)}</span>
           </div>
+
+          {discountAmount > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Discount</span>
+              <span className="font-medium text-green-600">-{formatPrice(discountAmount)}</span>
+            </div>
+          )}
 
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Shipping</span>

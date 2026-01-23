@@ -197,6 +197,7 @@ export async function PATCH(req: NextRequest) {
       paymentIntentId,
       shippingMethod,
       discountAmount = 0,
+      discountCode,
       subtotal,
       fbEventId,
     } = body
@@ -226,6 +227,7 @@ export async function PATCH(req: NextRequest) {
         shipping: String(shippingCost),
         shipping_method: shippingMethod,
         discount_amount: String(validDiscountAmount),
+        ...(discountCode ? { discount_code: discountCode } : {}),
         // Update fb_event_id with purchase eventId for proper deduplication
         ...(fbEventId ? { fb_event_id: fbEventId } : {}),
       },

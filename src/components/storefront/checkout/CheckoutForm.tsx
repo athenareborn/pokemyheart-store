@@ -25,9 +25,11 @@ const COUNTRIES = [
 interface CheckoutFormProps {
   onShippingMethodChange: (method: 'standard' | 'express') => void
   clientSecret: string | null
+  discountCode: string | null
+  discountAmount: number
 }
 
-export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutFormProps) {
+export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCode, discountAmount }: CheckoutFormProps) {
   const stripe = useStripe()
   const elements = useElements()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -78,7 +80,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutF
     return qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
   })()
 
-  const total = subtotal + shippingCost
+  const total = subtotal + shippingCost - discountAmount
 
   // Get FB cookies
   const getCookie = (name: string) => {
@@ -138,7 +140,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutF
           paymentIntentId: clientSecret.split('_secret_')[0],
           shippingMethod: data.shippingMethod,
           subtotal,
-          discountAmount: 0,
+          discountAmount,
+          discountCode,
           fbEventId: purchaseEventId, // Critical: same eventId for client and server deduplication
         }),
       })
@@ -194,8 +197,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutF
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Contact */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Contact</h2>
+      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
+        <h2 className="text-base font-semibold text-gray-900 mb-3">Contact</h2>
         <div>
           <input
             type="email"
@@ -211,8 +214,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutF
       </div>
 
       {/* Shipping Address */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Shipping Address</h2>
+      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
+        <h2 className="text-base font-semibold text-gray-900 mb-3">Shipping Address</h2>
         <div className="space-y-3">
           {/* Name row */}
           <div className="grid grid-cols-2 gap-3">
@@ -338,8 +341,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutF
       </div>
 
       {/* Shipping Method */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Shipping Method</h2>
+      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
+        <h2 className="text-base font-semibold text-gray-900 mb-3">Shipping Method</h2>
         <div className="space-y-2">
           <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:border-brand-500 transition-colors">
             <div className="flex items-center gap-3">
@@ -386,9 +389,9 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutF
       </div>
 
       {/* Payment */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Payment</h2>
-        <div className="p-4 border rounded-lg bg-white">
+      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
+        <h2 className="text-base font-semibold text-gray-900 mb-3">Payment</h2>
+        <div>
           <PaymentElement
             onReady={() => setIsPaymentReady(true)}
             options={{
