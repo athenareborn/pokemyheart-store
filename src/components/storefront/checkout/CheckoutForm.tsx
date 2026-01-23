@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { PaymentElement, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Loader2, Lock } from 'lucide-react'
 import { checkoutFormSchema, type CheckoutFormInput } from '@/lib/validation/checkout-schema'
 import { useCartStore } from '@/lib/store/cart'
@@ -194,8 +194,91 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       hasError ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
     }`
 
+  // Handle express checkout confirmation
+  const onExpressCheckoutConfirm = async () => {
+    if (!stripe || !elements) return
+
+    setIsSubmitting(true)
+    setPaymentError(null)
+
+    try {
+      // Store purchase data for success page (same as regular checkout)
+      const purchaseEventId = generateEventId('purchase')
+      const purchaseData = {
+        value: total / 100,
+        numItems: items.length,
+        contentIds: items.map(item => `${item.designId}-${item.bundleId}`),
+        currency: 'USD',
+        eventId: purchaseEventId,
+        items: items.map(item => {
+          const bundle = BUNDLES.find(b => b.id === item.bundleId)
+          const design = PRODUCT.designs.find(d => d.id === item.designId)
+          return {
+            itemId: `${item.designId}-${item.bundleId}`,
+            itemName: `${PRODUCT.name} - ${design?.name || 'Design'}`,
+            price: item.price / 100,
+            quantity: item.quantity,
+          }
+        }),
+      }
+      sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
+
+      // Update PaymentIntent with purchase eventId
+      await fetch('/api/payment-intent', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentIntentId: clientSecret?.split('_secret_')[0],
+          shippingMethod: 'standard',
+          subtotal,
+          discountAmount,
+          discountCode,
+          fbEventId: purchaseEventId,
+        }),
+      })
+
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/checkout/success`,
+        },
+      })
+
+      if (error) {
+        sessionStorage.removeItem('fb_purchase_data')
+        setPaymentError(error.message || 'Express checkout failed. Please try again.')
+        setIsSubmitting(false)
+      }
+    } catch (err) {
+      setPaymentError('Express checkout failed. Please try again.')
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Express Checkout - Apple Pay, Google Pay, Link */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
+        <h2 className="text-base font-semibold text-gray-900 mb-3">Express Checkout</h2>
+        <ExpressCheckoutElement
+          onConfirm={onExpressCheckoutConfirm}
+          options={{
+            buttonType: {
+              applePay: 'buy',
+              googlePay: 'buy',
+            },
+          }}
+        />
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-4 text-gray-500">or pay with card</span>
+          </div>
+        </div>
+      </div>
+
       {/* Contact */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
         <h2 className="text-base font-semibold text-gray-900 mb-3">Contact</h2>
@@ -269,20 +352,22 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
             />
           </div>
 
-          {/* City, State, ZIP */}
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <input
-                type="text"
-                placeholder="City"
-                autoComplete="address-level2"
-                className={inputClassName(!!errors.shippingAddress?.city)}
-                {...register('shippingAddress.city')}
-              />
-              {errors.shippingAddress?.city && (
-                <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.city.message}</p>
-              )}
-            </div>
+          {/* City */}
+          <div>
+            <input
+              type="text"
+              placeholder="City"
+              autoComplete="address-level2"
+              className={inputClassName(!!errors.shippingAddress?.city)}
+              {...register('shippingAddress.city')}
+            />
+            {errors.shippingAddress?.city && (
+              <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.city.message}</p>
+            )}
+          </div>
+
+          {/* State, ZIP */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <input
                 type="text"
@@ -388,14 +473,18 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         </div>
       </div>
 
-      {/* Payment */}
+      {/* Payment - Card only (express methods shown above) */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
-        <h2 className="text-base font-semibold text-gray-900 mb-3">Payment</h2>
+        <h2 className="text-base font-semibold text-gray-900 mb-3">Card Details</h2>
         <div>
           <PaymentElement
             onReady={() => setIsPaymentReady(true)}
             options={{
               layout: 'tabs',
+              wallets: {
+                applePay: 'never',
+                googlePay: 'never',
+              },
             }}
           />
         </div>
