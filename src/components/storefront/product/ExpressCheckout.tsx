@@ -37,8 +37,6 @@ interface ExpressCheckoutProps {
   bundleId: BundleId
   /** Compact mode for sticky bar - shows only the button, no dividers */
   compact?: boolean
-  /** Callback when wallet payment methods (Apple Pay/Google Pay) are not available */
-  onWalletsUnavailable?: () => void
 }
 
 // Inner component that uses Stripe hooks
@@ -222,7 +220,7 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
  * Desktop: Shows below Add to Cart with "or checkout with" divider
  * Mobile (compact): Shows just the button, suitable for sticky bars
  */
-export function ExpressCheckout({ designId, bundleId, compact = false, onWalletsUnavailable }: ExpressCheckoutProps) {
+export function ExpressCheckout({ designId, bundleId, compact = false }: ExpressCheckoutProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showFallback, setShowFallback] = useState(false)
@@ -292,7 +290,6 @@ export function ExpressCheckout({ designId, bundleId, compact = false, onWallets
         setError(err instanceof Error ? err.message : 'Something went wrong')
         // Show fallback on error
         setShowFallback(true)
-        onWalletsUnavailable?.()
       } finally {
         setIsLoading(false)
       }
@@ -483,10 +480,7 @@ export function ExpressCheckout({ designId, bundleId, compact = false, onWallets
           designId={designId}
           bundleId={bundleId}
           compact={compact}
-          onFallback={() => {
-            setShowFallback(true)
-            onWalletsUnavailable?.()
-          }}
+          onFallback={() => setShowFallback(true)}
           purchaseEventId={purchaseEventId}
         />
         {/* Show Buy Now if Stripe says no wallet methods available */}
