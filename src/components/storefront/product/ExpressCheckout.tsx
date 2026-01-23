@@ -40,7 +40,7 @@ interface ExpressCheckoutProps {
 }
 
 // Inner component that uses Stripe hooks
-function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback }: ExpressCheckoutProps & { onFallback: () => void }) {
+function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purchaseEventId }: ExpressCheckoutProps & { onFallback: () => void; purchaseEventId: string | null }) {
   const stripe = useStripe()
   const elements = useElements()
   const [showFallback, setShowFallback] = useState(false)
@@ -52,8 +52,8 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback }: Exp
   const handleConfirm = async () => {
     if (!stripe || !elements || !bundle || !design) return
 
-    // Track analytics
-    const eventId = generateEventId('purchase')
+    // Use the same eventId that was sent to PaymentIntent metadata for deduplication
+    const eventId = purchaseEventId || generateEventId('purchase')
     const price = bundle.price / 100
     const productName = `${PRODUCT.name} - ${design.name}`
 
@@ -235,6 +235,8 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
     fbp?: string
     eventId?: string
   } | null>(null)
+  // Store the purchase eventId for deduplication between client and server
+  const [purchaseEventId, setPurchaseEventId] = useState<string | null>(null)
 
 
   // Warn if not HTTPS - Apple Pay requires HTTPS
@@ -254,7 +256,9 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
     const createIntent = async () => {
       try {
         const { fbc, fbp } = getFbCookies()
-        const eventId = generateEventId('ec')
+        // Use 'purchase' prefix so eventId matches between client success page and webhook
+        const eventId = generateEventId('purchase')
+        setPurchaseEventId(eventId)
 
         const res = await fetch('/api/express-checkout', {
           method: 'POST',
@@ -460,6 +464,7 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
           bundleId={bundleId}
           compact={compact}
           onFallback={() => setShowFallback(true)}
+          purchaseEventId={purchaseEventId}
         />
         {/* Show Buy Now if Stripe says no wallet methods available */}
         {showFallback && (

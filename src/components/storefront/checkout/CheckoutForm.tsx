@@ -165,6 +165,13 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret }: CheckoutF
       })
 
       if (error) {
+        // Clear stored purchase data on failure to prevent stale data on retry
+        try {
+          sessionStorage.removeItem('fb_purchase_data')
+        } catch {
+          // sessionStorage may not be available
+        }
+
         if (error.type === 'card_error' || error.type === 'validation_error') {
           setPaymentError(error.message || 'Payment failed. Please try again.')
         } else {

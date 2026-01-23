@@ -146,7 +146,7 @@ function CartExpressCheckoutInner() {
         if (paymentIntent?.status === 'succeeded') {
           // Store purchase data for success page tracking (enables proper deduplication)
           try {
-            sessionStorage.setItem('purchase_data', JSON.stringify({
+            sessionStorage.setItem('fb_purchase_data', JSON.stringify({
               value: total / 100,
               numItems: items.reduce((acc, i) => acc + i.quantity, 0),
               contentIds: items.map(i => `${i.designId}-${i.bundleId}`),
