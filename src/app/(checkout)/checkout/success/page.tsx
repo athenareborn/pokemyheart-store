@@ -2,8 +2,9 @@
 
 import { Suspense, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
-import { CheckCircle, Package, Mail, ArrowRight, Heart } from 'lucide-react'
+import { CheckCircle, Package, Mail, ArrowRight, Heart, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/store/cart'
 import { fbPixel } from '@/lib/analytics/fpixel'
@@ -108,8 +109,31 @@ function CheckoutSuccessContent() {
   }, [clearCart, searchParams])
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4 py-16">
-      <div className="max-w-md w-full text-center space-y-6">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header - matches checkout */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="w-20" /> {/* Spacer */}
+          <Link href="/">
+            <Image
+              src="/images/logo.png"
+              alt="UltraRareLove"
+              width={140}
+              height={40}
+              className="h-8 w-auto"
+              priority
+            />
+          </Link>
+          <div className="flex items-center gap-1 text-sm text-gray-500">
+            <Lock className="w-4 h-4" />
+            <span>Secure</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Content */}
+      <div className="flex items-center justify-center px-4 py-16">
+        <div className="max-w-md w-full text-center space-y-6">
         {/* Success Icon */}
         <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
           <CheckCircle className="w-12 h-12 text-green-500" />
@@ -171,6 +195,7 @@ function CheckoutSuccessContent() {
         <Button variant="outline" asChild>
           <Link href="/">Back to Home</Link>
         </Button>
+        </div>
       </div>
     </div>
   )

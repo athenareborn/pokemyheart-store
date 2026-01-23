@@ -16,6 +16,12 @@ const OrderItem = memo(function OrderItem({ item }: OrderItemProps) {
   const bundle = BUNDLES.find(b => b.id === item.bundleId)
   const design = PRODUCT.designs.find(d => d.id === item.designId)
 
+  // Calculate savings if bundle has compareAt price
+  const hasDiscount = bundle && bundle.compareAt && bundle.compareAt > bundle.price
+  const savingsPercent = hasDiscount
+    ? Math.round(((bundle.compareAt - bundle.price) / bundle.compareAt) * 100)
+    : 0
+
   return (
     <div className="flex gap-3 py-3">
       {/* Product Image */}
@@ -43,6 +49,16 @@ const OrderItem = memo(function OrderItem({ item }: OrderItemProps) {
         <p className="text-xs text-gray-500 truncate">
           {design?.name || 'Design'}
         </p>
+        {hasDiscount && (
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-xs text-gray-400 line-through">
+              {formatPrice(bundle.compareAt * item.quantity)}
+            </span>
+            <span className="text-xs font-medium text-green-600">
+              Save {savingsPercent}%
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Price */}

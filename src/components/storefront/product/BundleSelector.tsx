@@ -81,10 +81,10 @@ export function BundleSelector({ selectedId, onSelect }: BundleSelectorProps) {
                   {/* Price */}
                   <div className="flex-shrink-0 text-right">
                     <div className="flex items-baseline gap-1.5 justify-end">
-                      <span className="text-lg font-bold text-gray-900">{formatPrice(bundle.price)}</span>
                       {showSavings && (
                         <span className="text-xs text-gray-400 line-through">{formatPrice(bundle.compareAt)}</span>
                       )}
+                      <span className="text-lg font-bold text-gray-900">{formatPrice(bundle.price)}</span>
                     </div>
                     {showSavings && (
                       <div className="text-xs font-semibold text-emerald-600">

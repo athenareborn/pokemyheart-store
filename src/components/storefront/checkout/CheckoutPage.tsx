@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Elements } from '@stripe/react-stripe-js'
 import { ArrowLeft, ShoppingBag, Loader2 } from 'lucide-react'
 import { getStripe } from '@/lib/stripe/client'
@@ -271,8 +272,15 @@ export function CheckoutPage() {
             <span className="text-sm">Back to shop</span>
           </Link>
 
-          <Link href="/" className="font-bold text-xl text-brand-500">
-            UltraRareLove
+          <Link href="/">
+            <Image
+              src="/images/logo.png"
+              alt="UltraRareLove"
+              width={140}
+              height={40}
+              className="h-8 w-auto"
+              priority
+            />
           </Link>
 
           <div className="w-20" /> {/* Spacer for centering */}
