@@ -17,7 +17,8 @@ export default function StorefrontLayout({
       <main className="flex-1">{children}</main>
       <Footer />
       <CartDrawer />
-      <ExitIntentPopup />
+      {/* Exit intent disabled for now - revisit later */}
+      {/* <ExitIntentPopup /> */}
       <RecentPurchaseToast />
     </div>
   )
