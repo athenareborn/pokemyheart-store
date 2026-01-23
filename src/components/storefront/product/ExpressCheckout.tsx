@@ -1,18 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { Elements, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Zap, Loader2 } from 'lucide-react'
 import { getStripe } from '@/lib/stripe/client'
 import { BUNDLES, type BundleId } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
-import { useCartStore } from '@/lib/store/cart'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
 import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 import { Button } from '@/components/ui/button'
+import { EmbeddedCheckoutModal } from '@/components/storefront/checkout/EmbeddedCheckoutModal'
 
 // Safe sessionStorage helpers for iOS private browsing mode
 function safeSetSessionStorage(key: string, value: string) {
@@ -38,12 +37,12 @@ interface ExpressCheckoutProps {
   bundleId: BundleId
   /** Compact mode for sticky bar - shows only the button, no dividers */
   compact?: boolean
-  /** Called when wallet methods (Apple Pay/Google Pay) are not available */
+  /** Callback when wallet payment methods (Apple Pay/Google Pay) are not available */
   onWalletsUnavailable?: () => void
 }
 
 // Inner component that uses Stripe hooks
-function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, onWalletsUnavailable, purchaseEventId }: ExpressCheckoutProps & { onFallback: () => void; purchaseEventId: string | null }) {
+function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purchaseEventId }: ExpressCheckoutProps & { onFallback: () => void; purchaseEventId: string | null }) {
   const stripe = useStripe()
   const elements = useElements()
   const [showFallback, setShowFallback] = useState(false)
@@ -108,7 +107,6 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, onWal
             console.log('[ExpressCheckout] No wallet methods - showing fallback')
             setShowFallback(true)
             onFallback()
-            onWalletsUnavailable?.()
           }
         }}
         onClick={({ resolve }) => {
@@ -225,12 +223,28 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, onWal
  * Mobile (compact): Shows just the button, suitable for sticky bars
  */
 export function ExpressCheckout({ designId, bundleId, compact = false, onWalletsUnavailable }: ExpressCheckoutProps) {
-  const router = useRouter()
-  const { addItem } = useCartStore()
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showFallback, setShowFallback] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isBuyingNow, setIsBuyingNow] = useState(false)
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
+  const [checkoutItems, setCheckoutItems] = useState<Array<{
+    name: string
+    description: string
+    price: number
+    quantity: number
+    designId: string
+    designName: string
+    bundleId: string
+    bundleName: string
+    bundleSku: string
+  }> | null>(null)
+  const [checkoutFbData, setCheckoutFbData] = useState<{
+    fbc?: string
+    fbp?: string
+    eventId?: string
+  } | null>(null)
   // Store the purchase eventId for deduplication between client and server
   const [purchaseEventId, setPurchaseEventId] = useState<string | null>(null)
 
@@ -278,6 +292,7 @@ export function ExpressCheckout({ designId, bundleId, compact = false, onWallets
         setError(err instanceof Error ? err.message : 'Something went wrong')
         // Show fallback on error
         setShowFallback(true)
+        onWalletsUnavailable?.()
       } finally {
         setIsLoading(false)
       }
@@ -286,7 +301,7 @@ export function ExpressCheckout({ designId, bundleId, compact = false, onWallets
     createIntent()
   }, [designId, bundleId])
 
-  // Handle Buy Now - adds to cart and goes to checkout page
+  // Handle Buy Now - opens embedded checkout modal (highest conversion)
   const handleBuyNow = () => {
     const bundle = BUNDLES.find(b => b.id === bundleId)
     const design = PRODUCT.designs.find(d => d.id === designId)
@@ -294,16 +309,120 @@ export function ExpressCheckout({ designId, bundleId, compact = false, onWallets
 
     const price = bundle.price / 100
     const productName = `${PRODUCT.name} - ${design.name}`
+    const userData = getUserData()
     const { fbc, fbp } = getFbCookies()
 
-    // Track AddToCart
+    // Track AddToCart (client + server)
     const atcEventId = generateEventId('atc')
     fbPixel.addToCart(`${designId}-${bundleId}`, productName, price, 'USD', atcEventId)
     ga4.addToCart({ itemId: `${designId}-${bundleId}`, itemName: productName, price, quantity: 1 })
 
-    // Add to cart and go to checkout
-    addItem(designId, bundleId as BundleId)
-    router.push('/checkout')
+    // Server-side CAPI for AddToCart
+    fetch('/api/analytics/fb-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventName: 'AddToCart',
+        eventId: atcEventId,
+        eventSourceUrl: window.location.href,
+        userData: {
+          email: userData?.email,
+          phone: userData?.phone,
+          firstName: userData?.firstName,
+          lastName: userData?.lastName,
+          city: userData?.city,
+          state: userData?.state,
+          postalCode: userData?.postalCode,
+          country: userData?.country,
+          externalId: getExternalId(),
+          fbc,
+          fbp,
+        },
+        customData: {
+          value: price,
+          currency: 'USD',
+          content_name: productName,
+          content_type: 'product',
+          content_category: 'Valentine Cards',
+          // Per Meta: use contents (not content_ids) when we have full product info
+          contents: [{ id: `${designId}-${bundleId}`, quantity: 1, item_price: price }],
+        },
+      }),
+    }).catch(() => {})
+
+    // Track InitiateCheckout (client + server)
+    const icEventId = generateEventId('ic')
+    fbPixel.initiateCheckout(price, 1, [`${designId}-${bundleId}`], 'USD', icEventId)
+    ga4.beginCheckout({ value: price, items: [{ itemId: `${designId}-${bundleId}`, itemName: productName, price, quantity: 1 }] })
+
+    // Server-side CAPI for InitiateCheckout
+    fetch('/api/analytics/fb-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventName: 'InitiateCheckout',
+        eventId: icEventId,
+        eventSourceUrl: window.location.href,
+        userData: {
+          email: userData?.email,
+          phone: userData?.phone,
+          firstName: userData?.firstName,
+          lastName: userData?.lastName,
+          city: userData?.city,
+          state: userData?.state,
+          postalCode: userData?.postalCode,
+          country: userData?.country,
+          externalId: getExternalId(),
+          fbc,
+          fbp,
+        },
+        customData: {
+          value: price,
+          currency: 'USD',
+          content_type: 'product',
+          content_category: 'Valentine Cards',
+          num_items: 1,
+          // Per Meta: use contents (not content_ids) when we have full product info
+          contents: [{ id: `${designId}-${bundleId}`, quantity: 1, item_price: price }],
+        },
+      }),
+    }).catch(() => {})
+
+    // Store purchase data for success page tracking
+    const purchaseEventId = generateEventId('purchase')
+    const purchaseData = {
+      value: price,
+      numItems: 1,
+      contentIds: [`${designId}-${bundleId}`],
+      currency: 'USD',
+      eventId: purchaseEventId,
+      items: [{
+        itemId: `${designId}-${bundleId}`,
+        itemName: productName,
+        price,
+        quantity: 1,
+      }],
+    }
+    safeSetSessionStorage('fb_purchase_data', JSON.stringify(purchaseData))
+
+    // Set up checkout data and open modal (reuse fbc/fbp from above)
+    setCheckoutItems([{
+      name: productName,
+      description: bundle.description || 'Premium Valentine Card',
+      price: bundle.price,
+      quantity: 1,
+      designId,
+      designName: design.name,
+      bundleId,
+      bundleName: bundle.name,
+      bundleSku: bundle.sku,
+    }])
+    setCheckoutFbData({
+      fbc,
+      fbp,
+      eventId: purchaseEventId,
+    })
+    setShowCheckoutModal(true)
   }
 
   // Show loading spinner initially
@@ -329,6 +448,16 @@ export function ExpressCheckout({ designId, bundleId, compact = false, onWallets
           <Zap className="mr-1.5 h-4 w-4" />
           Buy Now
         </Button>
+
+        {/* Embedded Checkout Modal */}
+        {checkoutItems && (
+          <EmbeddedCheckoutModal
+            isOpen={showCheckoutModal}
+            onClose={() => setShowCheckoutModal(false)}
+            items={checkoutItems}
+            fbData={checkoutFbData || undefined}
+          />
+        )}
       </>
     )
   }
@@ -354,8 +483,10 @@ export function ExpressCheckout({ designId, bundleId, compact = false, onWallets
           designId={designId}
           bundleId={bundleId}
           compact={compact}
-          onFallback={() => setShowFallback(true)}
-          onWalletsUnavailable={onWalletsUnavailable}
+          onFallback={() => {
+            setShowFallback(true)
+            onWalletsUnavailable?.()
+          }}
           purchaseEventId={purchaseEventId}
         />
         {/* Show Buy Now if Stripe says no wallet methods available */}
@@ -372,6 +503,16 @@ export function ExpressCheckout({ designId, bundleId, compact = false, onWallets
           </Button>
         )}
       </Elements>
+
+      {/* Embedded Checkout Modal */}
+      {checkoutItems && (
+        <EmbeddedCheckoutModal
+          isOpen={showCheckoutModal}
+          onClose={() => setShowCheckoutModal(false)}
+          items={checkoutItems}
+          fbData={checkoutFbData || undefined}
+        />
+      )}
     </>
   )
 }
