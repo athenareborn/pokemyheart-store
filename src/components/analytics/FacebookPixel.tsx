@@ -3,8 +3,6 @@
 import { usePathname, useSearchParams } from 'next/navigation'
 import Script from 'next/script'
 import { useEffect, Suspense } from 'react'
-import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
-import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 
 const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID
 
@@ -44,45 +42,18 @@ function captureFbpFromCookie() {
 }
 
 /**
- * Send PageView event to Facebook CAPI for server-side tracking
+ * Fire PageView event via client-side pixel only
+ * Note: Server-side CAPI for PageView removed to prevent duplicate events.
+ * PageView is low-value for conversion optimization; focus CAPI on high-value events
+ * like AddToCart, InitiateCheckout, and Purchase.
  */
-function sendPageViewCAPI() {
+function firePageView() {
   if (typeof window === 'undefined') return
 
-  const eventId = generateEventId('pv')
-  const userData = getUserData()
-  const { fbc, fbp } = getFbCookies()
-
-  // Fire client-side pixel with eventId for deduplication
+  // Fire client-side pixel only (no CAPI for PageView to avoid duplicates)
   if (typeof window.fbq === 'function') {
-    window.fbq('track', 'PageView', {}, { eventID: eventId })
+    window.fbq('track', 'PageView')
   }
-
-  // Send server-side CAPI event
-  fetch('/api/analytics/fb-event', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      eventName: 'PageView',
-      eventId,
-      eventSourceUrl: window.location.href,
-      userData: {
-        email: userData?.email,
-        phone: userData?.phone,
-        firstName: userData?.firstName,
-        lastName: userData?.lastName,
-        city: userData?.city,
-        state: userData?.state,
-        postalCode: userData?.postalCode,
-        country: userData?.country,
-        externalId: getExternalId(),
-        fbc,
-        fbp,
-      },
-    }),
-  }).catch(() => {
-    // Silent fail - don't break user experience for analytics
-  })
 }
 
 function FacebookPixelPageView() {
@@ -96,8 +67,8 @@ function FacebookPixelPageView() {
     // Capture fbp from cookie (set by pixel)
     setTimeout(() => captureFbpFromCookie(), 1000) // Wait for pixel to set cookie
 
-    // Send PageView with both client-side pixel AND server-side CAPI
-    sendPageViewCAPI()
+    // Send PageView (client-side only)
+    firePageView()
   }, [pathname, searchParams])
 
   return null

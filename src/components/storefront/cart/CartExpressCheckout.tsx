@@ -11,6 +11,7 @@ import {
 import { useCartStore } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
+// Import PRODUCT for consistent shipping constants
 import { analytics } from '@/lib/analytics'
 import { getFbCookies, generateEventId } from '@/lib/analytics/facebook-capi'
 import { ga4 } from '@/lib/analytics/ga4'
@@ -60,8 +61,8 @@ function CartExpressCheckoutInner() {
       }
     })
 
-    // Add shipping line
-    const shippingAmount = isFreeShipping() ? 0 : 495
+    // Add shipping line - use PRODUCT constants for consistency
+    const shippingAmount = isFreeShipping() ? 0 : PRODUCT.shipping.standard
     displayItems.push({
       label: isFreeShipping() ? 'Free Shipping' : 'Standard Shipping',
       amount: shippingAmount,
@@ -81,8 +82,8 @@ function CartExpressCheckoutInner() {
       shippingOptions: isFreeShipping() ? [
         { id: 'free', label: 'Free Shipping', detail: '5-7 business days', amount: 0 },
       ] : [
-        { id: 'standard', label: 'Standard Shipping', detail: '5-7 business days', amount: 495 },
-        { id: 'express', label: 'Express Shipping', detail: '1-3 business days', amount: 995 },
+        { id: 'standard', label: 'Standard Shipping', detail: '5-7 business days', amount: PRODUCT.shipping.standard },
+        { id: 'express', label: 'Express Shipping', detail: '1-3 business days', amount: PRODUCT.shipping.express },
       ],
     })
 

@@ -65,16 +65,25 @@ export async function POST(req: NextRequest) {
           )
         }
 
+        // Validate quantity
+        if (!Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 99) {
+          return NextResponse.json(
+            { error: 'Invalid quantity', details: `Invalid quantity for item ${item.designId}-${item.bundleId}` },
+            { status: 400 }
+          )
+        }
+
+        // SECURITY: Use server-side bundle price, NOT client-provided price
         orderItems.push({
           bundle_id: item.bundleId,
           bundle_name: bundle.name,
           design_id: item.designId,
           design_name: design.name,
           quantity: item.quantity,
-          price: item.price,
+          price: bundle.price, // Server-side validated price
         })
 
-        subtotal += item.price * item.quantity
+        subtotal += bundle.price * item.quantity // Use bundle.price, NOT item.price
       }
     } else if (designId && bundleId) {
       // Legacy single item support

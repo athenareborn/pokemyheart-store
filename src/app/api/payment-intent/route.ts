@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { PRODUCT } from '@/data/product'
+import { BUNDLES } from '@/data/bundles'
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -63,11 +64,29 @@ export async function POST(req: NextRequest) {
       gaData,
     } = body
 
-    // Calculate subtotal
-    const subtotal = items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    )
+    // SECURITY: Validate and calculate subtotal using server-side prices
+    let subtotal = 0
+    for (const item of items) {
+      // Validate quantity
+      if (!Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 99) {
+        return NextResponse.json(
+          { error: 'Invalid quantity', details: `Invalid quantity for ${item.bundleId}` },
+          { status: 400 }
+        )
+      }
+
+      // Get server-side bundle price
+      const bundle = BUNDLES.find(b => b.id === item.bundleId)
+      if (!bundle) {
+        return NextResponse.json(
+          { error: 'Invalid bundle', details: `Bundle ${item.bundleId} not found` },
+          { status: 400 }
+        )
+      }
+
+      // Use server-side price, not client-provided price
+      subtotal += bundle.price * item.quantity
+    }
 
     // Calculate shipping
     const qualifiesForFreeShipping = subtotal >= PRODUCT.freeShippingThreshold
@@ -81,8 +100,11 @@ export async function POST(req: NextRequest) {
       shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
     }
 
+    // Validate discount amount - must be non-negative and not exceed subtotal
+    const validDiscountAmount = Math.max(0, Math.min(discountAmount, subtotal))
+
     // Calculate total
-    const total = subtotal + shippingCost - discountAmount
+    const total = subtotal + shippingCost - validDiscountAmount
 
     // Build order summary for metadata
     const orderItemsSummary = items.map((item) => ({
@@ -110,7 +132,7 @@ export async function POST(req: NextRequest) {
         subtotal: String(subtotal),
         shipping: String(shippingCost),
         discount_code: discountCode || '',
-        discount_amount: String(discountAmount),
+        discount_amount: String(validDiscountAmount),
         customer_email: email || '',
         customer_name: `${shippingAddress.firstName} ${shippingAddress.lastName}`.trim(),
         shipping_method: shippingMethod,
@@ -153,7 +175,7 @@ export async function POST(req: NextRequest) {
       amount: total,
       subtotal,
       shippingCost,
-      discountAmount,
+      discountAmount: validDiscountAmount,
     })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
@@ -191,8 +213,11 @@ export async function PATCH(req: NextRequest) {
       shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
     }
 
+    // Validate discount amount in PATCH as well
+    const validDiscountAmount = Math.max(0, Math.min(discountAmount, subtotal))
+
     // Calculate new total
-    const total = subtotal + shippingCost - discountAmount
+    const total = subtotal + shippingCost - validDiscountAmount
 
     // Update Payment Intent
     const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
@@ -200,7 +225,7 @@ export async function PATCH(req: NextRequest) {
       metadata: {
         shipping: String(shippingCost),
         shipping_method: shippingMethod,
-        discount_amount: String(discountAmount),
+        discount_amount: String(validDiscountAmount),
         // Update fb_event_id with purchase eventId for proper deduplication
         ...(fbEventId ? { fb_event_id: fbEventId } : {}),
       },
@@ -211,7 +236,7 @@ export async function PATCH(req: NextRequest) {
       amount: total,
       subtotal,
       shippingCost,
-      discountAmount,
+      discountAmount: validDiscountAmount,
     })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'

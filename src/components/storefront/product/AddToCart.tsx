@@ -106,6 +106,7 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
             isAdding && 'scale-95'
           )}
           onClick={handleAddToCart}
+          disabled={isAdding}
         >
           <ShoppingBag className={cn('mr-2 h-5 w-5', isAdding && 'animate-bounce')} />
           {isAdding ? 'Added!' : 'Add to Cart'}

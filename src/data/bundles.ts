@@ -14,7 +14,7 @@ export const BUNDLES = [
     name: "Valentine's Pack",
     price: 3795,      // $37.95 in cents
     compareAt: 4995,  // $49.95 in cents
-    description: 'Card + premium display case to show case your love!',
+    description: 'Card + premium display case to showcase your love!',
     includes: ['Premium Holographic Card', 'Display Case', 'Display Stand', 'Envelope'],
     badge: 'Most Popular',
     sku: 'PMH-LOVEPACK',

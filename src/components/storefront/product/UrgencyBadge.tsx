@@ -55,7 +55,10 @@ export function UrgencyBadge() {
     return () => clearInterval(interval)
   }, [])
 
-  if (!mounted) return null
+  // Reserve space to prevent CLS (Cumulative Layout Shift)
+  if (!mounted) {
+    return <div className="h-[36px]" aria-hidden="true" />
+  }
 
   return (
     <motion.div

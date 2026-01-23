@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { PRODUCT } from '@/data/product'
+import { BUNDLES } from '@/data/bundles'
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
         {
           shipping_rate_data: {
             type: 'fixed_amount',
-            fixed_amount: { amount: 495, currency: 'usd' },
+            fixed_amount: { amount: PRODUCT.shipping.standard, currency: 'usd' },
             display_name: 'Express Shipping (1-3 days)',
           },
         },
@@ -88,14 +89,14 @@ export async function POST(req: NextRequest) {
         {
           shipping_rate_data: {
             type: 'fixed_amount',
-            fixed_amount: { amount: 495, currency: 'usd' },
+            fixed_amount: { amount: PRODUCT.shipping.standard, currency: 'usd' },
             display_name: 'Standard Shipping (5-7 days)',
           },
         },
         {
           shipping_rate_data: {
             type: 'fixed_amount',
-            fixed_amount: { amount: 995, currency: 'usd' },
+            fixed_amount: { amount: PRODUCT.shipping.express, currency: 'usd' },
             display_name: 'Express Shipping (1-3 days)',
           },
         },
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
         checkout_type: 'embedded',
         items: JSON.stringify(orderItemsSummary),
         subtotal: String(subtotal),
-        shipping: qualifiesForFreeShipping ? '0' : '495',
+        shipping: qualifiesForFreeShipping ? '0' : String(PRODUCT.shipping.standard),
         fb_fbc: fbData?.fbc || '',
         fb_fbp: fbData?.fbp || '',
         fb_event_id: fbData?.eventId || '',

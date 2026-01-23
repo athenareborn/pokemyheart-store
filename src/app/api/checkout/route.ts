@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { PRODUCT } from '@/data/product'
+import { BUNDLES } from '@/data/bundles'
 
 export async function POST(req: NextRequest) {
   try {
@@ -72,12 +74,11 @@ export async function POST(req: NextRequest) {
     params.append('shipping_address_collection[allowed_countries][2]', 'GB')
     params.append('shipping_address_collection[allowed_countries][3]', 'AU')
 
-    // Free shipping threshold: $35 (3500 cents)
-    const FREE_SHIPPING_THRESHOLD = 3500
-    const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD
+    // Use PRODUCT constants for shipping costs
+    const qualifiesForFreeShipping = subtotal >= PRODUCT.freeShippingThreshold
 
     if (qualifiesForFreeShipping) {
-      // Free standard shipping for orders $35+
+      // Free standard shipping for qualifying orders
       params.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount')
       params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', '0')
       params.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'usd')
@@ -85,19 +86,19 @@ export async function POST(req: NextRequest) {
 
       // Express shipping still available at reduced rate
       params.append('shipping_options[1][shipping_rate_data][type]', 'fixed_amount')
-      params.append('shipping_options[1][shipping_rate_data][fixed_amount][amount]', '495')
+      params.append('shipping_options[1][shipping_rate_data][fixed_amount][amount]', String(PRODUCT.shipping.standard))
       params.append('shipping_options[1][shipping_rate_data][fixed_amount][currency]', 'usd')
       params.append('shipping_options[1][shipping_rate_data][display_name]', 'Express Shipping (1-3 days)')
     } else {
       // Standard shipping
       params.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount')
-      params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', '495')
+      params.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(PRODUCT.shipping.standard))
       params.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'usd')
       params.append('shipping_options[0][shipping_rate_data][display_name]', 'Standard Shipping (5-7 days)')
 
       // Express shipping
       params.append('shipping_options[1][shipping_rate_data][type]', 'fixed_amount')
-      params.append('shipping_options[1][shipping_rate_data][fixed_amount][amount]', '995')
+      params.append('shipping_options[1][shipping_rate_data][fixed_amount][amount]', String(PRODUCT.shipping.express))
       params.append('shipping_options[1][shipping_rate_data][fixed_amount][currency]', 'usd')
       params.append('shipping_options[1][shipping_rate_data][display_name]', 'Express Shipping (1-3 days)')
     }
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
     params.append('metadata[source]', 'ultrararelove-store')
     params.append('metadata[items]', JSON.stringify(orderItemsSummary))
     params.append('metadata[subtotal]', String(subtotal))
-    params.append('metadata[shipping]', qualifiesForFreeShipping ? '0' : '495')
+    params.append('metadata[shipping]', qualifiesForFreeShipping ? '0' : String(PRODUCT.shipping.standard))
 
     // Facebook attribution data
     if (fbData?.fbc) params.append('metadata[fb_fbc]', fbData.fbc)

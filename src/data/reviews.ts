@@ -491,8 +491,10 @@ export const REVIEWS = [
 export type Review = typeof REVIEWS[number]
 
 export function getAverageRating(): number {
+  const reviewCount = REVIEWS.length as number // Cast to avoid TS const inference
+  if (reviewCount === 0) return 0 // Guard against zero division
   const total = REVIEWS.reduce((sum, r) => sum + r.rating, 0)
-  return Math.round((total / REVIEWS.length) * 10) / 10
+  return Math.round((total / reviewCount) * 10) / 10
 }
 
 export function getReviewCount(): number {

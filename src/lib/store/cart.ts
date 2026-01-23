@@ -94,14 +94,20 @@ export const useCartStore = create<CartState>()(
       },
 
       updateQuantity: (id: string, quantity: number) => {
-        if (quantity < 1) {
-          get().removeItem(id)
-          return
+        // Validate quantity - reject invalid values
+        if (!Number.isFinite(quantity) || quantity < 1 || quantity > 99) {
+          if (quantity < 1) {
+            get().removeItem(id)
+          }
+          return // Reject NaN, Infinity, negative, or excessive quantities
         }
+
+        // Ensure integer
+        const safeQuantity = Math.floor(quantity)
 
         set(state => ({
           items: state.items.map(item =>
-            item.id === id ? { ...item, quantity } : item
+            item.id === id ? { ...item, quantity: safeQuantity } : item
           ),
         }))
       },

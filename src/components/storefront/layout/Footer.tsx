@@ -39,13 +39,13 @@ export function Footer() {
               Premium holographic cards that say &quot;I Choose You&quot; - the perfect Valentine&apos;s gift.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-brand-500 transition-colors">
+              <a href="#" className="hover:text-brand-500 transition-colors" aria-label="Follow us on Instagram">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-brand-500 transition-colors">
+              <a href="#" className="hover:text-brand-500 transition-colors" aria-label="Follow us on Facebook">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-brand-500 transition-colors">
+              <a href="#" className="hover:text-brand-500 transition-colors" aria-label="Follow us on Twitter">
                 <Twitter className="h-5 w-5" />
               </a>
             </div>
