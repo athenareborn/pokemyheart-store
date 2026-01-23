@@ -274,6 +274,7 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
           body: JSON.stringify({
             designId,
             bundleId,
+            shippingInsurance: false, // Product page express checkout - no hidden fees
             fbData: { fbc, fbp, eventId },
           }),
         })

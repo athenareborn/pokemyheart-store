@@ -153,22 +153,32 @@ export function CartDrawer() {
                       )}
                     </span>
                   </div>
-                  {/* Shipping Insurance Toggle */}
-                  <label className="flex items-center justify-between text-sm cursor-pointer group">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={shippingInsurance}
-                        onChange={(e) => setShippingInsurance(e.target.checked)}
-                        className="w-4 h-4 text-brand-500 rounded focus:ring-brand-500 focus:ring-offset-0"
-                      />
-                      <span className="text-gray-600 group-hover:text-gray-900 transition-colors">
-                        Shipping Insurance
-                      </span>
+                  {/* Shipping Insurance Toggle - Professional styling matching checkout */}
+                  <label className="flex items-start gap-2.5 p-3 border border-gray-200 rounded-lg cursor-pointer hover:border-brand-400 transition-colors has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/50 -mx-1">
+                    <input
+                      type="checkbox"
+                      checked={shippingInsurance}
+                      onChange={(e) => setShippingInsurance(e.target.checked)}
+                      className="w-4 h-4 mt-0.5 text-brand-500 rounded focus:ring-brand-500 focus:ring-offset-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        {/* Package with Shield Icon */}
+                        <svg
+                          className="w-4 h-4 text-gray-700 flex-shrink-0"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M3 8.5V19a2 2 0 002 2h8.5a6.5 6.5 0 01-1.04-2H5V9.41l6 3V14h2v-1.59l1-.5V19a4.5 4.5 0 009 0v-6.38l-9-4.5-9 4.5V8.5H3zM12 3L4 6.5V8h16V6.5L12 3z" />
+                          <path d="M18 11c-2.76 0-5 2.24-5 5 0 2.21 1.44 4.08 3.43 4.74.22.07.45.11.68.14.29.04.59.06.89.06.3 0 .6-.02.89-.06.23-.03.46-.07.68-.14C21.56 20.08 23 18.21 23 16c0-2.76-2.24-5-5-5zm2.12 4.12l-2.83 2.83a.996.996 0 01-1.41 0l-1.41-1.41a.996.996 0 111.41-1.41l.71.71 2.12-2.12a.996.996 0 111.41 1.4z" />
+                        </svg>
+                        <span className="font-medium text-gray-900 text-xs">Shipping Insurance</span>
+                        <span className="font-semibold text-gray-900 text-xs ml-auto">{formatPrice(SHIPPING_INSURANCE_PRICE)}</span>
+                      </div>
+                      <p className="text-[10px] text-gray-500 mt-0.5 leading-tight">
+                        Protect against loss, theft, or damage
+                      </p>
                     </div>
-                    <span className="font-medium text-gray-600">
-                      {shippingInsurance ? formatPrice(getInsuranceCost()) : formatPrice(0)}
-                    </span>
                   </label>
                   <div className="flex justify-between text-base font-semibold pt-2 border-t border-gray-200">
                     <span>Total</span>

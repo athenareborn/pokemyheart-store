@@ -473,33 +473,39 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         {/* Divider */}
         <div className="border-t border-gray-100 mb-5" />
 
-        {/* Shipping Insurance */}
+        {/* Protect Your Order - Add-on Section */}
         <div className="pb-5">
-          <label className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-brand-400 transition-colors has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Protect Your Order</h2>
+          <label className={`flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all ${
+            shippingInsurance
+              ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-400 shadow-sm'
+              : 'bg-gray-50 border border-gray-200 hover:border-gray-300'
+          }`}>
             <input
               type="checkbox"
               checked={shippingInsurance}
               onChange={(e) => setShippingInsurance(e.target.checked)}
-              className="w-5 h-5 mt-0.5 text-brand-500 rounded focus:ring-brand-500 focus:ring-offset-0"
+              className="w-5 h-5 mt-0.5 text-emerald-500 rounded focus:ring-emerald-500 focus:ring-offset-0"
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                {/* Shipping Insurance Icon - Package with Shield */}
+                {/* Shield Icon */}
                 <svg
-                  className="w-5 h-5 text-gray-700 flex-shrink-0"
+                  className={`w-5 h-5 flex-shrink-0 ${shippingInsurance ? 'text-emerald-600' : 'text-gray-500'}`}
                   viewBox="0 0 24 24"
                   fill="currentColor"
                 >
-                  {/* Package box */}
-                  <path d="M3 8.5V19a2 2 0 002 2h8.5a6.5 6.5 0 01-1.04-2H5V9.41l6 3V14h2v-1.59l1-.5V19a4.5 4.5 0 009 0v-6.38l-9-4.5-9 4.5V8.5H3zM12 3L4 6.5V8h16V6.5L12 3z" />
-                  {/* Shield with checkmark */}
-                  <path d="M18 11c-2.76 0-5 2.24-5 5 0 2.21 1.44 4.08 3.43 4.74.22.07.45.11.68.14.29.04.59.06.89.06.3 0 .6-.02.89-.06.23-.03.46-.07.68-.14C21.56 20.08 23 18.21 23 16c0-2.76-2.24-5-5-5zm2.12 4.12l-2.83 2.83a.996.996 0 01-1.41 0l-1.41-1.41a.996.996 0 111.41-1.41l.71.71 2.12-2.12a.996.996 0 111.41 1.4z" />
+                  <path fillRule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 00-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08zm3.094 8.016a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
                 </svg>
-                <span className="font-medium text-gray-900 text-sm">Shipping Insurance</span>
-                <span className="font-semibold text-gray-900 text-sm ml-auto">{formatPrice(SHIPPING_INSURANCE_PRICE)}</span>
+                <span className={`font-semibold text-sm ${shippingInsurance ? 'text-emerald-900' : 'text-gray-900'}`}>
+                  Package Protection
+                </span>
+                <span className={`font-bold text-sm ml-auto ${shippingInsurance ? 'text-emerald-700' : 'text-gray-700'}`}>
+                  {formatPrice(SHIPPING_INSURANCE_PRICE)}
+                </span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Protect against loss, theft, or damage. Full refund or free replacement.
+              <p className={`text-xs mt-1.5 ${shippingInsurance ? 'text-emerald-700' : 'text-gray-500'}`}>
+                Full coverage against loss, theft, or damage during shipping. Get a free replacement or full refund.
               </p>
             </div>
           </label>
