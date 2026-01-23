@@ -13,7 +13,12 @@ import {
   ChevronRight,
   Star,
   Zap,
-  FileText
+  FileText,
+  Lightbulb,
+  Calendar,
+  CheckCircle,
+  Clock,
+  MessageSquareQuote
 } from 'lucide-react'
 import marketingData from '@/data/marketing-source-of-truth.json'
 
@@ -123,8 +128,8 @@ function CopyCard({ copy, type }: { copy: { text: string; performance?: string; 
 }
 
 export default function MarketingPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'winners' | 'copy' | 'assets'>('overview')
-  const { campaign, winners, copy_library, assets, recommendations } = marketingData
+  const [activeTab, setActiveTab] = useState<'overview' | 'winners' | 'copy' | 'assets' | 'plans'>('overview')
+  const { campaign, winners, copy_library, assets, recommendations, future_plans } = marketingData as typeof marketingData & { future_plans?: { status: string; backlog: Array<{ id: string; priority: string; category: string; title: string; description: string; timing: string; status: string }>; review_quotes_for_ads: Array<{ quote: string; author: string; use_case: string }>; new_descriptions_to_test: Array<{ text: string; angle: string }> } }
 
   return (
     <div className="space-y-6">
@@ -139,7 +144,7 @@ export default function MarketingPage() {
 
       {/* Tabs */}
       <div className="flex gap-2 border-b">
-        {(['overview', 'winners', 'copy', 'assets'] as const).map((tab) => (
+        {(['overview', 'winners', 'copy', 'assets', 'plans'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -386,6 +391,96 @@ export default function MarketingPage() {
             <p className="text-xs text-muted-foreground mt-2">
               Source: {assets['2026_campaign'].source} | {assets['2026_campaign'].specs.status}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Plans Tab */}
+      {activeTab === 'plans' && future_plans && (
+        <div className="space-y-6">
+          {/* Status Banner */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+            <div className="flex items-center gap-2">
+              <Lightbulb className="h-5 w-5 text-purple-500" />
+              <span className="font-semibold text-purple-700">{future_plans.status}</span>
+            </div>
+          </div>
+
+          {/* Backlog Items */}
+          <div>
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-blue-500" />
+              Creative Backlog
+            </h2>
+            <div className="space-y-3">
+              {future_plans.backlog.map((item) => (
+                <div key={item.id} className="bg-white rounded-lg border p-4 hover:border-primary/30 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        item.priority === 'high' ? 'bg-red-100 text-red-700' :
+                        item.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        {item.priority}
+                      </div>
+                      <div>
+                        <p className="font-medium">{item.title}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className={`px-2 py-1 rounded-full ${
+                        item.status === 'ready' ? 'bg-green-100 text-green-700' :
+                        item.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        {item.status === 'ready' ? <CheckCircle className="h-3 w-3 inline mr-1" /> :
+                         item.status === 'idea' ? <Lightbulb className="h-3 w-3 inline mr-1" /> :
+                         <Clock className="h-3 w-3 inline mr-1" />}
+                        {item.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+                    <span className="bg-muted px-2 py-0.5 rounded">{item.category}</span>
+                    <span>Timing: {item.timing}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Review Quotes for Ads */}
+          <div>
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <MessageSquareQuote className="h-5 w-5 text-amber-500" />
+              Review Quotes for Ads
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {future_plans.review_quotes_for_ads.map((review, i) => (
+                <div key={i} className="bg-white rounded-lg border p-4">
+                  <p className="font-medium">&ldquo;{review.quote}&rdquo;</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-sm text-muted-foreground">— {review.author}</span>
+                    <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded">{review.use_case}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* New Descriptions to Test */}
+          <div>
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <FileText className="h-5 w-5 text-green-500" />
+              New Descriptions to Test
+            </h2>
+            <div className="space-y-3">
+              {future_plans.new_descriptions_to_test.map((desc, i) => (
+                <CopyCard key={i} copy={{ text: desc.text, angle: desc.angle }} type="body" />
+              ))}
+            </div>
           </div>
         </div>
       )}

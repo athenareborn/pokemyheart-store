@@ -61,6 +61,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Preconnect to third-party domains for faster loading */}
+        <link rel="preconnect" href="https://js.stripe.com" />
+        <link rel="preconnect" href="https://connect.facebook.net" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://js.stripe.com" />
+        <link rel="dns-prefetch" href="https://connect.facebook.net" />
         <style dangerouslySetInnerHTML={{ __html: `
           :root {
             --brand-50: oklch(0.971 0.014 343.198);

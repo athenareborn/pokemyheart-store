@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Package, DollarSign } from 'lucide-react'
+import { Search, Package, DollarSign, Download } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -40,6 +41,43 @@ export function CustomersClient({ initialCustomers, stats }: CustomersClientProp
     ? Math.round((stats.subscribers / stats.total) * 100)
     : 0
 
+  // Export for Meta Ads Custom Audience (with value for value-based lookalikes)
+  const exportForMetaAds = (type: 'all' | 'high-value' | 'repeat') => {
+    let customersToExport = initialCustomers
+    let filename = 'customers-all'
+
+    if (type === 'high-value') {
+      customersToExport = initialCustomers.filter(c => c.total_spent >= 5000) // $50+
+      filename = 'customers-high-value'
+    } else if (type === 'repeat') {
+      customersToExport = initialCustomers.filter(c => c.orders_count >= 2)
+      filename = 'customers-repeat'
+    }
+
+    // Meta Ads format: email, fn (first name), ln (last name), value
+    const headers = ['email', 'fn', 'ln', 'value']
+    const rows = customersToExport.map(c => {
+      const nameParts = (c.name || '').split(' ')
+      const firstName = nameParts[0] || ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+      return [
+        c.email,
+        firstName,
+        lastName,
+        (c.total_spent / 100).toFixed(2) // Convert cents to dollars
+      ]
+    })
+
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${filename}-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -68,15 +106,32 @@ export function CustomersClient({ initialCustomers, stats }: CustomersClientProp
         />
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by name or email..."
-          className="pl-9"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      {/* Search + Export */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name or email..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Export for Meta Ads:</span>
+          <Button variant="outline" size="sm" onClick={() => exportForMetaAds('all')}>
+            <Download className="h-4 w-4 mr-1" />
+            All
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => exportForMetaAds('high-value')}>
+            <Download className="h-4 w-4 mr-1" />
+            High Value ($50+)
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => exportForMetaAds('repeat')}>
+            <Download className="h-4 w-4 mr-1" />
+            Repeat Buyers
+          </Button>
+        </div>
       </div>
 
       {/* Customers Table */}

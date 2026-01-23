@@ -69,11 +69,12 @@ export default function HomePage() {
             <div className="relative">
               <div className="relative aspect-square max-w-2xl mx-auto">
                 <Image
-                  src="/images/hero2.png"
+                  src="/images/hero2.webp"
                   alt="Premium Valentine's Card"
                   fill
                   className="object-contain"
                   priority
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>
             </div>
@@ -167,11 +168,12 @@ export default function HomePage() {
             {/* Image */}
             <div className="relative w-full h-[500px]">
               <Image
-                src="/images/Hero.png"
+                src="/images/Hero.webp"
                 alt="Product Showcase"
                 fill
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                loading="lazy"
               />
             </div>
 

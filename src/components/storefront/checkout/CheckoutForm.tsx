@@ -255,35 +255,22 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
     <div className="space-y-4">
       {/* Express Checkout - Hidden if no Apple Pay / Google Pay available */}
       {!hideExpressCheckout && (
-        <>
-          <div className="bg-white border border-gray-200 rounded-xl p-4 lg:p-5">
-            <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Express Checkout</h2>
-            <ExpressCheckoutElement
-              onReady={({ availablePaymentMethods }) => {
-                if (!availablePaymentMethods || Object.keys(availablePaymentMethods).length === 0) {
-                  setHideExpressCheckout(true)
-                }
-              }}
-              onConfirm={onExpressCheckoutConfirm}
-              options={{
-                buttonType: {
-                  applePay: 'buy',
-                  googlePay: 'buy',
-                },
-              }}
-            />
-          </div>
-
-          {/* Divider - Outside Express Box */}
-          <div className="relative py-2">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-gray-50 px-4 text-gray-500">or continue below</span>
-            </div>
-          </div>
-        </>
+        <div className="mb-4">
+          <ExpressCheckoutElement
+            onReady={({ availablePaymentMethods }) => {
+              if (!availablePaymentMethods || Object.keys(availablePaymentMethods).length === 0) {
+                setHideExpressCheckout(true)
+              }
+            }}
+            onConfirm={onExpressCheckoutConfirm}
+            options={{
+              buttonType: {
+                applePay: 'buy',
+                googlePay: 'buy',
+              },
+            }}
+          />
+        </div>
       )}
 
       {/* Main Checkout Form */}
