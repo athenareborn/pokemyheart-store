@@ -150,6 +150,10 @@ export function CartDrawer() {
                       )}
                     </span>
                   </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Shipping Insurance</span>
+                    <span className="font-medium">{formatPrice(SHIPPING_INSURANCE_PRICE)}</span>
+                  </div>
                   <div className="flex justify-between text-base font-semibold pt-2 border-t border-gray-200">
                     <span>Total</span>
                     <span>{formatPrice(getTotal())}</span>
@@ -195,23 +199,14 @@ export function CartDrawer() {
                 <CartExpressCheckout />
 
                 {/* Regular Checkout */}
-                <div className="space-y-2">
-                  <Button
-                    className="w-full bg-brand-500 hover:bg-brand-600 text-white"
-                    size="lg"
-                    onClick={handleCheckout}
-                  >
-                    Checkout
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={closeCart}
-                  >
-                    Continue Shopping
-                  </Button>
-                </div>
+                <Button
+                  className="w-full bg-brand-500 hover:bg-brand-600 text-white"
+                  size="lg"
+                  onClick={handleCheckout}
+                >
+                  Checkout
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
 
                 {/* Trust badges */}
                 <div className="flex items-center justify-center gap-4 text-xs text-gray-500 pt-2">
