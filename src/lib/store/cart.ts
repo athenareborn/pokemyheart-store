@@ -14,10 +14,14 @@ export interface CartItem {
   price: number // in cents
 }
 
+// Shipping insurance price in cents
+export const SHIPPING_INSURANCE_PRICE = 299 // $2.99
+
 interface CartState {
   items: CartItem[]
   isOpen: boolean
   reservationExpiry: number | null // timestamp
+  shippingInsurance: boolean // Pre-selected by default
 
   // Actions
   addItem: (designId: string, bundleId: BundleId) => void
@@ -28,6 +32,7 @@ interface CartState {
   closeCart: () => void
   toggleCart: () => void
   resetReservation: () => void
+  setShippingInsurance: (enabled: boolean) => void
 
   // Computed
   getSubtotal: () => number
@@ -37,6 +42,7 @@ interface CartState {
   getTotal: () => number
   isFreeShipping: () => boolean
   getAmountToFreeShipping: () => number
+  getInsuranceCost: () => number
 }
 
 const RESERVATION_DURATION = 5 * 60 * 1000 // 5 minutes in ms
@@ -47,6 +53,7 @@ export const useCartStore = create<CartState>()(
       items: [],
       isOpen: false,
       reservationExpiry: null,
+      shippingInsurance: true, // Pre-selected by default
 
       addItem: (designId: string, bundleId: BundleId) => {
         const bundle = BUNDLES.find(b => b.id === bundleId)
@@ -124,6 +131,10 @@ export const useCartStore = create<CartState>()(
         set({ reservationExpiry: Date.now() + RESERVATION_DURATION })
       },
 
+      setShippingInsurance: (enabled: boolean) => {
+        set({ shippingInsurance: enabled })
+      },
+
       getSubtotal: () => {
         return get().items.reduce(
           (total, item) => total + item.price * item.quantity,
@@ -150,8 +161,12 @@ export const useCartStore = create<CartState>()(
         return get().isFreeShipping() ? 0 : PRODUCT.shipping.standard
       },
 
+      getInsuranceCost: () => {
+        return get().shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0
+      },
+
       getTotal: () => {
-        return get().getSubtotal() + get().getShippingCost()
+        return get().getSubtotal() + get().getShippingCost() + get().getInsuranceCost()
       },
     }),
     {
@@ -159,6 +174,7 @@ export const useCartStore = create<CartState>()(
       partialize: (state) => ({
         items: state.items,
         reservationExpiry: state.reservationExpiry,
+        shippingInsurance: state.shippingInsurance,
       }),
     }
   )

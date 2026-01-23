@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { PaymentElement, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Loader2, Lock } from 'lucide-react'
 import { checkoutFormSchema, type CheckoutFormInput } from '@/lib/validation/checkout-schema'
-import { useCartStore } from '@/lib/store/cart'
+import { useCartStore, SHIPPING_INSURANCE_PRICE } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
 import { formatPrice } from '@/lib/utils'
@@ -34,7 +34,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [isPaymentReady, setIsPaymentReady] = useState(false)
 
-  const { items, getSubtotal, isFreeShipping } = useCartStore()
+  const { items, getSubtotal, isFreeShipping, shippingInsurance, setShippingInsurance } = useCartStore()
   const subtotal = getSubtotal()
   const qualifiesForFreeShipping = isFreeShipping()
 
@@ -76,7 +76,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
     return qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
   })()
 
-  const total = subtotal + shippingCost - discountAmount
+  const insuranceCost = shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0
+  const total = subtotal + shippingCost + insuranceCost - discountAmount
 
   const onSubmit = async (data: CheckoutFormInput) => {
     if (!stripe || !elements || !clientSecret) {
@@ -128,6 +129,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           subtotal,
           discountAmount,
           discountCode,
+          shippingInsurance,
           fbEventId: purchaseEventId,
         }),
       })
@@ -213,6 +215,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           subtotal,
           discountAmount,
           discountCode,
+          shippingInsurance,
           fbEventId: purchaseEventId,
         }),
       })
@@ -453,6 +456,41 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               </span>
             </label>
           </div>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-gray-100 mb-5" />
+
+        {/* Shipping Insurance */}
+        <div className="pb-5">
+          <label className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-brand-400 transition-colors has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+            <input
+              type="checkbox"
+              checked={shippingInsurance}
+              onChange={(e) => setShippingInsurance(e.target.checked)}
+              className="w-5 h-5 mt-0.5 text-brand-500 rounded focus:ring-brand-500 focus:ring-offset-0"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                {/* Shipping Insurance Icon - Package with Shield */}
+                <svg
+                  className="w-5 h-5 text-gray-700 flex-shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  {/* Package box */}
+                  <path d="M3 8.5V19a2 2 0 002 2h8.5a6.5 6.5 0 01-1.04-2H5V9.41l6 3V14h2v-1.59l1-.5V19a4.5 4.5 0 009 0v-6.38l-9-4.5-9 4.5V8.5H3zM12 3L4 6.5V8h16V6.5L12 3z" />
+                  {/* Shield with checkmark */}
+                  <path d="M18 11c-2.76 0-5 2.24-5 5 0 2.21 1.44 4.08 3.43 4.74.22.07.45.11.68.14.29.04.59.06.89.06.3 0 .6-.02.89-.06.23-.03.46-.07.68-.14C21.56 20.08 23 18.21 23 16c0-2.76-2.24-5-5-5zm2.12 4.12l-2.83 2.83a.996.996 0 01-1.41 0l-1.41-1.41a.996.996 0 111.41-1.41l.71.71 2.12-2.12a.996.996 0 111.41 1.4z" />
+                </svg>
+                <span className="font-medium text-gray-900 text-sm">Shipping Insurance</span>
+                <span className="font-semibold text-gray-900 text-sm ml-auto">{formatPrice(SHIPPING_INSURANCE_PRICE)}</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Protect against loss, theft, or damage. Full refund or free replacement.
+              </p>
+            </div>
+          </label>
         </div>
 
         {/* Divider */}

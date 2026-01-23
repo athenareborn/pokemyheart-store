@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { Elements } from '@stripe/react-stripe-js'
 import { ArrowLeft, ShoppingBag, Loader2 } from 'lucide-react'
 import { getStripe } from '@/lib/stripe/client'
-import { useCartStore } from '@/lib/store/cart'
+import { useCartStore, SHIPPING_INSURANCE_PRICE } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
 import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
@@ -28,7 +28,7 @@ export function CheckoutPage() {
   const [discountCode, setDiscountCode] = useState<string | null>(null)
   const [discountAmount, setDiscountAmount] = useState(0)
 
-  const { items, isCartEmpty, getSubtotal, isFreeShipping } = useCartStore()
+  const { items, isCartEmpty, getSubtotal, isFreeShipping, shippingInsurance } = useCartStore()
 
   const handleApplyDiscount = async (code: string) => {
     const subtotal = getSubtotal()
@@ -322,6 +322,7 @@ export function CheckoutPage() {
                 shippingMethod={shippingMethod}
                 discountCode={discountCode}
                 discountAmount={discountAmount}
+                insuranceAmount={shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0}
                 onApplyDiscount={handleApplyDiscount}
                 onRemoveDiscount={handleRemoveDiscount}
               />

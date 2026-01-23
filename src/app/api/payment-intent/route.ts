@@ -3,6 +3,9 @@ import Stripe from 'stripe'
 import { PRODUCT } from '@/data/product'
 import { BUNDLES } from '@/data/bundles'
 
+// Shipping insurance price in cents - must match cart.ts
+const SHIPPING_INSURANCE_PRICE = 299 // $2.99
+
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) {
@@ -36,6 +39,7 @@ export interface PaymentIntentRequest {
     phone?: string
   }
   shippingMethod: 'standard' | 'express'
+  shippingInsurance?: boolean
   discountCode?: string
   discountAmount?: number
   fbData?: {
@@ -196,6 +200,7 @@ export async function PATCH(req: NextRequest) {
     const {
       paymentIntentId,
       shippingMethod,
+      shippingInsurance = true, // Default to true (pre-selected)
       discountAmount = 0,
       discountCode,
       subtotal,
@@ -214,11 +219,14 @@ export async function PATCH(req: NextRequest) {
       shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
     }
 
+    // Calculate insurance cost
+    const insuranceCost = shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0
+
     // Validate discount amount in PATCH as well
     const validDiscountAmount = Math.max(0, Math.min(discountAmount, subtotal))
 
-    // Calculate new total
-    const total = subtotal + shippingCost - validDiscountAmount
+    // Calculate new total (subtotal + shipping + insurance - discount)
+    const total = subtotal + shippingCost + insuranceCost - validDiscountAmount
 
     // Update Payment Intent
     const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
@@ -226,6 +234,8 @@ export async function PATCH(req: NextRequest) {
       metadata: {
         shipping: String(shippingCost),
         shipping_method: shippingMethod,
+        shipping_insurance: shippingInsurance ? 'true' : 'false',
+        shipping_insurance_amount: String(insuranceCost),
         discount_amount: String(validDiscountAmount),
         ...(discountCode ? { discount_code: discountCode } : {}),
         // Update fb_event_id with purchase eventId for proper deduplication
@@ -238,6 +248,7 @@ export async function PATCH(req: NextRequest) {
       amount: total,
       subtotal,
       shippingCost,
+      insuranceCost,
       discountAmount: validDiscountAmount,
     })
   } catch (error) {

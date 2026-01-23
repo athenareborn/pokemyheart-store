@@ -74,6 +74,7 @@ interface CheckoutOrderSummaryProps {
   className?: string
   discountCode: string | null
   discountAmount: number
+  insuranceAmount: number
   onApplyDiscount: (code: string) => Promise<{ valid: boolean; message: string; amount?: number }>
   onRemoveDiscount: () => void
 }
@@ -83,6 +84,7 @@ export const CheckoutOrderSummary = memo(function CheckoutOrderSummary({
   className = '',
   discountCode,
   discountAmount,
+  insuranceAmount,
   onApplyDiscount,
   onRemoveDiscount,
 }: CheckoutOrderSummaryProps) {
@@ -104,7 +106,7 @@ export const CheckoutOrderSummary = memo(function CheckoutOrderSummary({
     return qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
   })()
 
-  const total = subtotal + shippingCost - discountAmount
+  const total = subtotal + shippingCost + insuranceAmount - discountAmount
 
   const handleApplyDiscount = useCallback(async () => {
     if (!codeInput.trim()) return
@@ -235,6 +237,13 @@ export const CheckoutOrderSummary = memo(function CheckoutOrderSummary({
               )}
             </span>
           </div>
+
+          {insuranceAmount > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Shipping Insurance</span>
+              <span className="font-medium">{formatPrice(insuranceAmount)}</span>
+            </div>
+          )}
 
           <div className="flex justify-between text-base font-semibold pt-2 border-t border-gray-200">
             <span>Total</span>
