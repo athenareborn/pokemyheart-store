@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
-// Generate realistic "sold today" numbers
+// Generate high-urgency "sold today" numbers
 function getSoldToday() {
   const now = new Date()
   const hour = now.getHours()
@@ -13,32 +13,33 @@ function getSoldToday() {
   const valentinesDate = new Date('2026-02-14')
   const daysUntil = Math.ceil((valentinesDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
-  let seasonMultiplier = 1
-  if (daysUntil <= 3) seasonMultiplier = 4
-  else if (daysUntil <= 7) seasonMultiplier = 3
-  else if (daysUntil <= 14) seasonMultiplier = 2.5
-  else if (daysUntil <= 21) seasonMultiplier = 2
-  else if (daysUntil <= 30) seasonMultiplier = 1.5
+  // Aggressive Valentine's multipliers
+  let seasonMultiplier = 1.5
+  if (daysUntil <= 3) seasonMultiplier = 6
+  else if (daysUntil <= 7) seasonMultiplier = 5
+  else if (daysUntil <= 14) seasonMultiplier = 4
+  else if (daysUntil <= 21) seasonMultiplier = 3
+  else if (daysUntil <= 30) seasonMultiplier = 2.5
 
+  // Higher base numbers - cumulative throughout the day
   const hourlyPattern: Record<number, number> = {
-    0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0,
-    6: 1, 7: 2, 8: 3, 9: 5, 10: 7, 11: 9,
-    12: 12, 13: 15, 14: 18, 15: 22, 16: 26, 17: 31,
-    18: 37, 19: 43, 20: 48, 21: 52, 22: 55, 23: 57
+    0: 18, 1: 19, 2: 20, 3: 21, 4: 22, 5: 24,
+    6: 28, 7: 34, 8: 42, 9: 52, 10: 64, 11: 78,
+    12: 94, 13: 112, 14: 132, 15: 154, 16: 178, 17: 204,
+    18: 232, 19: 262, 20: 294, 21: 328, 22: 364, 23: 402
   }
 
-  let baseSold = hourlyPattern[hour] || 0
-  if (isWeekend) baseSold = Math.floor(baseSold * 1.3)
+  let baseSold = hourlyPattern[hour] || 18
+  if (isWeekend) baseSold = Math.floor(baseSold * 1.4)
   baseSold = Math.floor(baseSold * seasonMultiplier)
 
+  // Add some variance so it doesn't look static
   const seed = Math.floor(Date.now() / 60000)
-  const variance = ((seed % 20) - 10) / 100
+  const variance = ((seed % 15) - 7) / 100
   baseSold = Math.floor(baseSold * (1 + variance))
 
-  // Always show at least 3 during reasonable hours, minimum 1 otherwise
-  if (baseSold < 3) baseSold = hour >= 6 && hour <= 23 ? 3 : 1
-
-  return Math.max(1, baseSold)
+  // Minimum 18 at any hour
+  return Math.max(18, baseSold)
 }
 
 export function UrgencyBadge() {
