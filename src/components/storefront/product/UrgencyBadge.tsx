@@ -64,7 +64,7 @@ export function UrgencyBadge() {
       transition={{ duration: 0.4 }}
       className="flex flex-wrap items-center gap-2"
     >
-      {/* Sold today - main urgency indicator */}
+      {/* Selling Fast badge */}
       <div className="inline-flex items-center gap-2 bg-gray-900 text-white pl-2.5 pr-3.5 py-1.5 rounded-full text-sm font-medium">
         {/* Animated fire icon */}
         <motion.span
@@ -80,7 +80,7 @@ export function UrgencyBadge() {
         >
           🔥
         </motion.span>
-        <span>{soldToday} sold today</span>
+        <span>Selling Fast · {soldToday} sold today</span>
         {/* Live pulse */}
         <span className="relative flex h-2 w-2 ml-0.5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -93,7 +93,7 @@ export function UrgencyBadge() {
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
-        <span>Valentine's delivery guaranteed</span>
+        <span>Order today for guaranteed Valentine's delivery</span>
       </div>
     </motion.div>
   )
