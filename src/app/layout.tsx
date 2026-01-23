@@ -12,6 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.ultrararelove.com'),
   title: {
     default: "UltraRareLove - Premium Valentine's Cards",
     template: "%s | UltraRareLove",
@@ -20,19 +21,35 @@ export const metadata: Metadata = {
   keywords: ["valentine's card", "holographic card", "gift", "love", "collectible"],
   openGraph: {
     title: "UltraRareLove - Premium Valentine's Cards",
-    description: "Premium holographic Valentine's cards that say 'I Choose You'",
+    description: "Premium holographic Valentine's cards that say 'I Choose You' - the perfect gift for your special someone.",
     type: "website",
     locale: "en_US",
     siteName: "UltraRareLove",
+    images: [
+      {
+        url: '/images/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: "UltraRareLove - Premium Valentine's Cards",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "UltraRareLove - Premium Valentine's Cards",
-    description: "Premium holographic Valentine's cards that say 'I Choose You'",
+    description: "Premium holographic Valentine's cards that say 'I Choose You' - the perfect gift for your special someone.",
+    images: ['/images/og-image.png'],
   },
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: [
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
   },
 };
 
