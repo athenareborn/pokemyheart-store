@@ -35,9 +35,10 @@ function getSoldToday() {
   const variance = ((seed % 20) - 10) / 100
   baseSold = Math.floor(baseSold * (1 + variance))
 
-  if (hour >= 8 && hour <= 23 && baseSold < 3) baseSold = 3
+  // Always show at least 3 during reasonable hours, minimum 1 otherwise
+  if (baseSold < 3) baseSold = hour >= 6 && hour <= 23 ? 3 : 1
 
-  return Math.max(0, baseSold)
+  return Math.max(1, baseSold)
 }
 
 export function UrgencyBadge() {
