@@ -68,16 +68,13 @@ export default function HomePage() {
             {/* Hero Image */}
             <div className="relative">
               <div className="relative aspect-square max-w-md mx-auto">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-200 to-brand-300 rounded-3xl rotate-3" />
-                <div className="absolute inset-0 bg-white rounded-3xl shadow-2xl overflow-hidden">
-                  <Image
-                    src="/images/hero2.png"
-                    alt="Premium Valentine's Card"
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                </div>
+                <Image
+                  src="/images/hero2.png"
+                  alt="Premium Valentine's Card"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
             </div>
           </div>
