@@ -229,13 +229,13 @@ export default function ProductPage() {
               {/* Urgency Badge */}
               <UrgencyBadge />
 
-              {/* Taglines - Collapsed on mobile, expanded on desktop */}
+              {/* Taglines - Full text on all devices */}
               <div className="space-y-2 sm:space-y-3">
                 {PRODUCT.taglines.map((tagline, index) => (
                   <p key={index} className="text-sm sm:text-base text-gray-700">
                     <span className="mr-1">{tagline.emoji}</span>
                     <span className="font-semibold">{tagline.title}</span>{' '}
-                    <span className="text-gray-600 hidden sm:inline">{tagline.description}</span>
+                    <span className="text-gray-600">{tagline.description}</span>
                   </p>
                 ))}
               </div>
