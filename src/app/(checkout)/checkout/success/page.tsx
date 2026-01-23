@@ -4,18 +4,22 @@ import { Suspense, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
-import { CheckCircle, Package, Mail, ArrowRight, Heart, Lock } from 'lucide-react'
+import { CheckCircle, Package, Mail, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/store/cart'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 import { getFbCookies } from '@/lib/analytics/facebook-capi'
 import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
+import { PostPurchaseOffer } from '@/components/storefront/checkout/PostPurchaseOffer'
 
 function CheckoutSuccessContent() {
   const { clearCart } = useCartStore()
   const searchParams = useSearchParams()
   const hasTracked = useRef(false)
+
+  // Get customer ID for post-purchase 1-click offer
+  const customerId = searchParams.get('customer')
 
   // Clear cart and track FB Purchase on successful checkout
   useEffect(() => {
@@ -174,22 +178,8 @@ function CheckoutSuccessContent() {
           </div>
         </div>
 
-        {/* Upsell */}
-        <div className="bg-brand-50 border border-brand-100 rounded-xl p-6 space-y-3">
-          <div className="flex items-center justify-center gap-2 text-brand-600">
-            <Heart className="w-5 h-5 fill-brand-500" />
-            <span className="font-semibold">Special Offer</span>
-          </div>
-          <p className="text-gray-700">
-            Add a second card and get <span className="font-bold">20% off</span>!
-          </p>
-          <Button className="bg-brand-500 hover:bg-brand-600 text-white" asChild>
-            <Link href="/products/i-choose-you-the-ultimate-valentines-gift">
-              Shop Again
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
+        {/* Post-Purchase 1-Click Offer */}
+        <PostPurchaseOffer customerId={customerId} />
 
         {/* Continue Shopping */}
         <Button variant="outline" asChild>

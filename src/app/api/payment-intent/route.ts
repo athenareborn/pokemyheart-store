@@ -205,6 +205,9 @@ export async function PATCH(req: NextRequest) {
       discountCode,
       subtotal,
       fbEventId,
+      email,
+      customerName,
+      shippingAddress,
     } = body
 
     // Calculate shipping
@@ -228,9 +231,48 @@ export async function PATCH(req: NextRequest) {
     // Calculate new total (subtotal + shipping + insurance - discount)
     const total = subtotal + shippingCost + insuranceCost - validDiscountAmount
 
-    // Update Payment Intent
+    // Create or find Stripe Customer for 1-click post-purchase offers
+    let stripeCustomerId: string | undefined
+    if (email) {
+      // Check if customer already exists
+      const existingCustomers = await stripe.customers.list({
+        email: email,
+        limit: 1,
+      })
+
+      if (existingCustomers.data.length > 0) {
+        stripeCustomerId = existingCustomers.data[0].id
+      } else {
+        // Create new customer
+        const newCustomer = await stripe.customers.create({
+          email: email,
+          name: customerName || undefined,
+          shipping: shippingAddress ? {
+            name: customerName || '',
+            address: {
+              line1: shippingAddress.address1 || '',
+              line2: shippingAddress.address2 || undefined,
+              city: shippingAddress.city || '',
+              state: shippingAddress.state || '',
+              postal_code: shippingAddress.postalCode || '',
+              country: shippingAddress.country || 'US',
+            },
+          } : undefined,
+          metadata: {
+            source: 'ultrararelove-store',
+          },
+        })
+        stripeCustomerId = newCustomer.id
+      }
+    }
+
+    // Update Payment Intent with customer and setup_future_usage to save payment method
     const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
       amount: total,
+      ...(stripeCustomerId ? {
+        customer: stripeCustomerId,
+        setup_future_usage: 'off_session', // Enables saving payment method for future charges
+      } : {}),
       metadata: {
         shipping: String(shippingCost),
         shipping_method: shippingMethod,
@@ -238,6 +280,7 @@ export async function PATCH(req: NextRequest) {
         shipping_insurance_amount: String(insuranceCost),
         discount_amount: String(validDiscountAmount),
         ...(discountCode ? { discount_code: discountCode } : {}),
+        ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
         // Update fb_event_id with purchase eventId for proper deduplication
         ...(fbEventId ? { fb_event_id: fbEventId } : {}),
       },
@@ -245,6 +288,7 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({
       paymentIntentId: paymentIntent.id,
+      stripeCustomerId,
       amount: total,
       subtotal,
       shippingCost,

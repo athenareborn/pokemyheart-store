@@ -120,7 +120,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       }
       sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
 
-      await fetch('/api/payment-intent', {
+      const patchResponse = await fetch('/api/payment-intent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -131,13 +131,25 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           discountCode,
           shippingInsurance,
           fbEventId: purchaseEventId,
+          email: data.email,
+          customerName: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`.trim(),
+          shippingAddress: data.shippingAddress,
         }),
       })
+
+      const patchData = await patchResponse.json()
+      const stripeCustomerId = patchData.stripeCustomerId
+
+      // Build success URL with customer ID for 1-click post-purchase offers
+      const successUrl = new URL(`${window.location.origin}/checkout/success`)
+      if (stripeCustomerId) {
+        successUrl.searchParams.set('customer', stripeCustomerId)
+      }
 
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/checkout/success`,
+          return_url: successUrl.toString(),
           receipt_email: data.email,
           shipping: {
             name: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`,
