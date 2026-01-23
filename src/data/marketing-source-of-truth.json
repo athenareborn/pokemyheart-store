@@ -1,0 +1,285 @@
+{
+  "last_updated": "2026-01-23",
+  "campaign": {
+    "name": "Pokemyheart Valentine's 2025",
+    "period": "Jan-Mar 2025",
+    "market": "US + Australia",
+    "total_spend": 8167.52,
+    "total_purchases": 418,
+    "total_roas": 3.48,
+    "avg_cpa": 19.54
+  },
+  "winners": [
+    {
+      "rank": 1,
+      "ad_id": "120216643775800096",
+      "name": "Static AD - Copy",
+      "type": "static",
+      "creative_id": "1111328797737774",
+      "performance": {
+        "spend": 2455.75,
+        "purchases": 157,
+        "roas": 4.04,
+        "cpa": 15.64,
+        "impressions": 0,
+        "clicks": 0
+      },
+      "notes": "Top performer. Brown theme static images with Valentine's copy for US market."
+    },
+    {
+      "rank": 2,
+      "ad_id": "120216369461530096",
+      "name": "Static AD",
+      "type": "static",
+      "creative_id": "1325228775579055",
+      "performance": {
+        "spend": 1633.55,
+        "purchases": 101,
+        "roas": 3.44,
+        "cpa": 16.17
+      },
+      "notes": "Australian market version of Static AD"
+    },
+    {
+      "rank": 3,
+      "ad_id": "120215987861500096",
+      "name": "INTIAL TT VID",
+      "type": "video",
+      "creative_id": "1881211225795812",
+      "performance": {
+        "spend": 2293.05,
+        "purchases": 98,
+        "roas": 2.91,
+        "cpa": 23.40
+      },
+      "notes": "TikTok-style video. 'I Choose You' theme. Higher CPA but good volume."
+    },
+    {
+      "rank": 4,
+      "ad_id": "120216365237390096",
+      "name": "INTIAL TT VID - OG Copy",
+      "type": "video",
+      "creative_id": "912279084403026",
+      "performance": {
+        "spend": 328.57,
+        "purchases": 27,
+        "roas": 5.04,
+        "cpa": 12.17
+      },
+      "notes": "Best CPA of all video ads. Original copy version."
+    },
+    {
+      "rank": 5,
+      "ad_id": "120216955859400096",
+      "name": "new creative multi card brock",
+      "type": "carousel",
+      "creative_id": "982308939962339",
+      "performance": {
+        "spend": 39.96,
+        "purchases": 5,
+        "roas": 5.77,
+        "cpa": 7.99
+      },
+      "notes": "HIGHEST ROAS, LOWEST CPA. Small sample but worth scaling. Multi-card Brock creative."
+    },
+    {
+      "rank": 6,
+      "ad_id": "120216070458470096",
+      "name": "Tired of the same old Vday Routine",
+      "type": "static",
+      "creative_id": "3879786362235539",
+      "performance": {
+        "spend": 58.12,
+        "purchases": 3,
+        "roas": 2.98,
+        "cpa": 19.37
+      },
+      "notes": "Problem-aware hook. Break from predictable gifts angle."
+    },
+    {
+      "rank": 7,
+      "ad_id": "120216375021950096",
+      "name": "Say I choose You - Copy",
+      "type": "static",
+      "creative_id": "593150776924904",
+      "performance": {
+        "spend": 42.06,
+        "purchases": 3,
+        "roas": 3.67,
+        "cpa": 14.02
+      },
+      "notes": "Pokemon 'I Choose You' reference. Good CPA."
+    }
+  ],
+  "copy_library": {
+    "top_bodies": [
+      {
+        "text": "They don't have to be a Pokémon fan to love this card—it's shiny, thoughtful, and so romantic! The perfect Valentine's Day surprise. Limited edition—shop now!",
+        "performance": "Used in 4.04x ROAS winner",
+        "angle": "Widens audience beyond Pokemon fans"
+      },
+      {
+        "text": "NOT a Pokémon fan? No problem! This shiny, romantic card is for anyone who loves love. Limited edition - will you be their Valentine's Day hero? Shop now and make it unforgettable!",
+        "performance": "Used in video ads",
+        "angle": "Question hook, audience expansion"
+      },
+      {
+        "text": "Catch their heart this Valentine's Day with a one-of-a-kind Pokémon-inspired trading card! Perfect for fans and collectors, this holographic card combines nostalgia and romance in a thoughtful, limited-edition gift. Order now—available only for a short time!",
+        "performance": "High volume performer",
+        "angle": "Nostalgia + Romance combo"
+      },
+      {
+        "text": "Looking for the perfect Valentine's gift? Surprise your Pokémon-loving partner with this one-of-a-kind gift! Exclusive, romantic, and designed to impress—get yours before it's gone!",
+        "performance": "Consistent performer",
+        "angle": "Gift-giver targeting"
+      },
+      {
+        "text": "This Valentine's, don't settle for ordinary—get the ultimate Pokémon-inspired card for someone special. Limited edition, stunning holographic finish. Order now before they're all gone!",
+        "performance": "Good urgency driver",
+        "angle": "Anti-ordinary positioning"
+      },
+      {
+        "text": "Warning: not just for Pokémon fans! This limited edition card is so shiny, thoughtful & romantic... it's the perfect Valentine's Day surprise! Will you be their hero this year? Shop now before they're gone!",
+        "performance": "Video hook performer",
+        "angle": "Warning hook + hero framing"
+      }
+    ],
+    "top_headlines": [
+      {
+        "text": "The Perfect Valentine's Gift for Pokémon Lovers!",
+        "usage": "Most used across all ads"
+      },
+      {
+        "text": "Catch Their Heart this Valentine's Day",
+        "usage": "Pokemon reference + emotional"
+      },
+      {
+        "text": "One-of-a-Kind Valentine's Gift",
+        "usage": "Uniqueness focus"
+      },
+      {
+        "text": "Limited Edition Valentine's Gift",
+        "usage": "Urgency/scarcity"
+      },
+      {
+        "text": "Limited Edition Heartstealer",
+        "usage": "Playful + urgency"
+      },
+      {
+        "text": "Shiny Valentine's Day Surprise",
+        "usage": "Pokemon 'shiny' reference"
+      }
+    ],
+    "top_descriptions": [
+      {
+        "text": "Unique Pokémon-inspired Valentine's card with holographic shine. Limited edition—shop now before it's gone!",
+        "usage": "Standard US version"
+      },
+      {
+        "text": "Unique Pokémon-inspired Valentine's card with holographic shine. Limited edition—shop now before it's gone! Made in the USA!",
+        "usage": "US-made emphasis"
+      },
+      {
+        "text": "Unique Pokémon-inspired Valentine's card with holographic shine. Limited edition—shop now before it's gone! Australian Made!",
+        "usage": "Australian market"
+      }
+    ],
+    "copy_patterns": {
+      "hooks_that_work": [
+        "NOT a Pokémon fan? No problem!",
+        "Warning: not just for Pokémon fans!",
+        "Looking for the perfect Valentine's gift?",
+        "This Valentine's, don't settle for ordinary",
+        "Tired of the same old V-Day routine?"
+      ],
+      "urgency_phrases": [
+        "Limited edition",
+        "shop now before they're gone",
+        "Order now—available only for a short time",
+        "Limited stock",
+        "Will you be their Valentine's Day hero?"
+      ],
+      "benefit_stacks": [
+        "shiny, thoughtful, and so romantic",
+        "Exclusive, romantic, and designed to impress",
+        "nostalgia and romance",
+        "holographic shine"
+      ],
+      "pokemon_references": [
+        "I choose you",
+        "Catch their heart",
+        "Gotta catch love",
+        "shiny"
+      ],
+      "audience_expansion": [
+        "They don't have to be a Pokémon fan",
+        "NOT a Pokémon fan? No problem!",
+        "not just for Pokémon fans",
+        "for anyone who loves love"
+      ]
+    }
+  },
+  "assets": {
+    "static_images": {
+      "location": "ad-assets/2025-winners/static-ads/",
+      "files": [
+        "design 1 anniversary brown static.png",
+        "design 1 romantic brown static.png",
+        "design 2 anniversary brown static.png",
+        "design 2 romantic brown static.png",
+        "design 3 anniversary brown static.png",
+        "design 3 romantic brown static.png"
+      ],
+      "specs": {
+        "dimensions": "1080x1080",
+        "format": "PNG",
+        "theme": "Brown/warm tones"
+      }
+    },
+    "videos": {
+      "location": "ad-assets/2025-winners/video-ads/",
+      "files": [
+        "Video I choose you Anniversary.mp4",
+        "Video I choose you Love.mp4"
+      ],
+      "specs": {
+        "dimensions": "1080x1920",
+        "format": "MP4 H.264",
+        "duration": "37 seconds"
+      }
+    },
+    "2026_campaign": {
+      "location": "ad-assets/2026-campaign/video/",
+      "files": [
+        "liquidluck_trainer_gift.mp4",
+        "liquidluck_video2.mp4",
+        "liquidluck_holographic.mp4"
+      ],
+      "source": "TikTok @_liquidluckgaming",
+      "specs": {
+        "dimensions": "1080x1920",
+        "format": "MP4 H.264",
+        "status": "cleaned, metadata stripped"
+      }
+    }
+  },
+  "recommendations": {
+    "budget_allocation": {
+      "static_ads": "60%",
+      "video_ads": "30%",
+      "testing": "10%"
+    },
+    "priority_tests": [
+      "Scale multi-card Brock creative (5.77x ROAS, $7.99 CPA)",
+      "Test LiquidLuck videos with proven copy",
+      "Try 'NOT a Pokemon fan' hook on static ads"
+    ],
+    "copy_strategy": [
+      "Lead with audience expansion hooks",
+      "Always include urgency (limited edition)",
+      "Use Pokemon references naturally",
+      "Stack benefits: shiny + thoughtful + romantic"
+    ]
+  },
+  "decisions_log": []
+}

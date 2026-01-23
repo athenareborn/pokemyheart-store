@@ -15,6 +15,7 @@ import {
   ExternalLink,
   ListTodo,
   Rocket,
+  Megaphone,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
   { href: '/admin/products', label: 'Products', icon: ShoppingBag },
   { href: '/admin/customers', label: 'Customers', icon: Users },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/admin/marketing', label: 'Marketing', icon: Megaphone },
   { href: '/admin/todos', label: 'Launch Tasks', icon: ListTodo },
   { href: '/admin/mission-report', label: 'Mission Report', icon: Rocket },
 ]
