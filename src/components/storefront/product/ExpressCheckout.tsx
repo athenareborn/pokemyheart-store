@@ -245,6 +245,12 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
   }, [])
 
   useEffect(() => {
+    // Reset state when bundle changes to show loading and force Elements remount
+    setClientSecret(null)
+    setIsLoading(true)
+    setError(null)
+    setShowFallback(false)
+
     const createIntent = async () => {
       try {
         const { fbc, fbp } = getFbCookies()
@@ -435,6 +441,7 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
   return (
     <>
       <Elements
+        key={`${bundleId}-${clientSecret}`}
         stripe={stripePromise}
         options={{
           clientSecret,
