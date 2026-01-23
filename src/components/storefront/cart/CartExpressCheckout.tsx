@@ -12,6 +12,8 @@ import { useCartStore } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
 import { analytics } from '@/lib/analytics'
+import { getFbCookies, generateEventId } from '@/lib/analytics/facebook-capi'
+import { ga4 } from '@/lib/analytics/ga4'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -48,6 +50,23 @@ function CartExpressCheckoutInner() {
       return
     }
 
+    // Build displayItems to show line items in Apple Pay/Google Pay sheet
+    const displayItems = items.map(item => {
+      const bundle = BUNDLES.find(b => b.id === item.bundleId)
+      const design = PRODUCT.designs.find(d => d.id === item.designId)
+      return {
+        label: `${design?.name || 'Card'} - ${bundle?.name || 'Bundle'}`,
+        amount: item.price * item.quantity,
+      }
+    })
+
+    // Add shipping line
+    const shippingAmount = isFreeShipping() ? 0 : 495
+    displayItems.push({
+      label: isFreeShipping() ? 'Free Shipping' : 'Standard Shipping',
+      amount: shippingAmount,
+    })
+
     const pr = stripe.paymentRequest({
       country: 'US',
       currency: 'usd',
@@ -55,6 +74,7 @@ function CartExpressCheckoutInner() {
         label: 'UltraRareLove Order',
         amount: total,
       },
+      displayItems,
       requestPayerName: true,
       requestPayerEmail: true,
       requestShipping: true,
@@ -80,6 +100,11 @@ function CartExpressCheckoutInner() {
         analytics.trackInitiateCheckout(getTrackingProducts(), total / 100)
         analytics.trackAddPaymentInfo(total / 100, ev.paymentMethod.card?.brand || 'wallet')
 
+        // Get tracking data for attribution
+        const { fbc, fbp } = getFbCookies()
+        const purchaseEventId = generateEventId('purchase')
+        const gaClientId = await ga4.getClientId()
+
         // Send all cart items to the API
         const cartItems = items.map(item => ({
           designId: item.designId,
@@ -93,6 +118,8 @@ function CartExpressCheckoutInner() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             items: cartItems,
+            fbData: { fbc, fbp, eventId: purchaseEventId },
+            gaData: { clientId: gaClientId },
           }),
         })
 
@@ -117,6 +144,20 @@ function CartExpressCheckoutInner() {
         ev.complete('success')
 
         if (paymentIntent?.status === 'succeeded') {
+          // Store purchase data for success page tracking (enables proper deduplication)
+          try {
+            sessionStorage.setItem('purchase_data', JSON.stringify({
+              value: total / 100,
+              numItems: items.reduce((acc, i) => acc + i.quantity, 0),
+              contentIds: items.map(i => `${i.designId}-${i.bundleId}`),
+              currency: 'USD',
+              eventId: purchaseEventId,
+              items: getTrackingProducts(),
+            }))
+          } catch {
+            // sessionStorage may not be available in iOS private browsing
+          }
+
           analytics.trackPurchase(getTrackingProducts(), total / 100, paymentIntent.id)
           clearCart()
           closeCart()
