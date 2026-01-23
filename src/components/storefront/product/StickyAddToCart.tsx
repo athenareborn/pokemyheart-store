@@ -47,26 +47,24 @@ export function StickyAddToCart({ designId, bundleId, isVisible }: StickyAddToCa
 
               {/* Bundle name + Price */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-gray-900 truncate">
-                    {bundle?.name || 'Bundle'}
-                  </p>
-                  {hasFreeShipping && (
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase whitespace-nowrap">
-                      Free Shipping
-                    </span>
-                  )}
-                </div>
+                <p className="text-sm font-semibold text-gray-900 truncate">
+                  {bundle?.name || 'Bundle'}
+                </p>
                 <div className="flex items-baseline gap-1.5">
+                  <span className="text-base font-bold text-gray-900">
+                    {formatPrice(bundle?.price || 0)}
+                  </span>
                   {bundle?.compareAt && (
                     <span className="text-xs text-gray-400 line-through">
                       {formatPrice(bundle.compareAt)}
                     </span>
                   )}
-                  <span className="text-base font-bold text-gray-900">
-                    {formatPrice(bundle?.price || 0)}
-                  </span>
                 </div>
+                {hasFreeShipping && (
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase inline-block mt-0.5">
+                    Free Shipping
+                  </span>
+                )}
               </div>
 
               {/* Single CTA - Express Checkout */}
