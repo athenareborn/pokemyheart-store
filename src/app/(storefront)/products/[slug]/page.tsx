@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Heart } from 'lucide-react'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
@@ -74,8 +75,20 @@ function generateProductJsonLd() {
 
 export default function ProductPage() {
   const jsonLd = generateProductJsonLd()
+  const searchParams = useSearchParams()
+
+  // Get initial bundle from URL param (for ad campaigns) or default to 'love-pack'
+  const getInitialBundle = (): BundleId => {
+    const bundleParam = searchParams.get('bundle')
+    const validBundles: BundleId[] = ['card-only', 'love-pack', 'deluxe-love']
+    if (bundleParam && validBundles.includes(bundleParam as BundleId)) {
+      return bundleParam as BundleId
+    }
+    return 'love-pack' // Default to middle bundle
+  }
+
   const [selectedDesignIndex, setSelectedDesignIndex] = useState(0)
-  const [selectedBundle, setSelectedBundle] = useState<BundleId>('love-pack')
+  const [selectedBundle, setSelectedBundle] = useState<BundleId>(getInitialBundle())
   const [showStickyCart, setShowStickyCart] = useState(false)
   const [showAllReviews, setShowAllReviews] = useState(false)
   const addToCartRef = useRef<HTMLDivElement>(null)
