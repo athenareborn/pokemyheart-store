@@ -12,8 +12,6 @@ import { PRODUCT } from '@/data/product'
 import { formatPrice } from '@/lib/utils'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
 import { saveUserData } from '@/lib/analytics/user-data-store'
-import { fbPixel } from '@/lib/analytics/fpixel'
-import { ga4 } from '@/lib/analytics/ga4'
 
 const COUNTRIES = [
   { code: 'US', name: 'United States' },
@@ -36,7 +34,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [isPaymentReady, setIsPaymentReady] = useState(false)
 
-  const { items, getSubtotal, isFreeShipping, clearCart } = useCartStore()
+  const { items, getSubtotal, isFreeShipping } = useCartStore()
   const subtotal = getSubtotal()
   const qualifiesForFreeShipping = isFreeShipping()
 
@@ -67,12 +65,10 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
 
   const shippingMethod = watch('shippingMethod')
 
-  // Notify parent of shipping method changes
   useEffect(() => {
     onShippingMethodChange(shippingMethod)
   }, [shippingMethod, onShippingMethodChange])
 
-  // Calculate shipping cost
   const shippingCost = (() => {
     if (shippingMethod === 'express') {
       return qualifiesForFreeShipping ? PRODUCT.shipping.standard : PRODUCT.shipping.express
@@ -81,13 +77,6 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
   })()
 
   const total = subtotal + shippingCost - discountAmount
-
-  // Get FB cookies
-  const getCookie = (name: string) => {
-    if (typeof document === 'undefined') return undefined
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
-    return match ? match[2] : undefined
-  }
 
   const onSubmit = async (data: CheckoutFormInput) => {
     if (!stripe || !elements || !clientSecret) {
@@ -98,7 +87,6 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
     setIsSubmitting(true)
     setPaymentError(null)
 
-    // Save user data for Facebook attribution (improves Event Match Quality)
     saveUserData({
       email: data.email,
       phone: data.shippingAddress.phone,
@@ -111,7 +99,6 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
     })
 
     try {
-      // Store purchase data for success page
       const purchaseEventId = generateEventId('purchase')
       const purchaseData = {
         value: total / 100,
@@ -132,7 +119,6 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       }
       sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
 
-      // Update PaymentIntent with shipping info and purchase eventId for deduplication
       await fetch('/api/payment-intent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -142,11 +128,10 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           subtotal,
           discountAmount,
           discountCode,
-          fbEventId: purchaseEventId, // Critical: same eventId for client and server deduplication
+          fbEventId: purchaseEventId,
         }),
       })
 
-      // Confirm payment
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -168,7 +153,6 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       })
 
       if (error) {
-        // Clear stored purchase data on failure to prevent stale data on retry
         try {
           sessionStorage.removeItem('fb_purchase_data')
         } catch {
@@ -182,8 +166,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         }
         setIsSubmitting(false)
       }
-      // If no error, Stripe will redirect to success page
-    } catch (err) {
+    } catch {
       setPaymentError('Failed to process payment. Please try again.')
       setIsSubmitting(false)
     }
@@ -194,7 +177,6 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       hasError ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
     }`
 
-  // Handle express checkout confirmation
   const onExpressCheckoutConfirm = async () => {
     if (!stripe || !elements) return
 
@@ -202,7 +184,6 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
     setPaymentError(null)
 
     try {
-      // Store purchase data for success page (same as regular checkout)
       const purchaseEventId = generateEventId('purchase')
       const purchaseData = {
         value: total / 100,
@@ -223,7 +204,6 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       }
       sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
 
-      // Update PaymentIntent with purchase eventId
       await fetch('/api/payment-intent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -249,17 +229,17 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         setPaymentError(error.message || 'Express checkout failed. Please try again.')
         setIsSubmitting(false)
       }
-    } catch (err) {
+    } catch {
       setPaymentError('Express checkout failed. Please try again.')
       setIsSubmitting(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Express Checkout - Apple Pay, Google Pay, Link */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
-        <h2 className="text-base font-semibold text-gray-900 mb-3">Express Checkout</h2>
+    <div className="space-y-4">
+      {/* Express Checkout - Standalone Section */}
+      <div className="bg-white border border-gray-200 rounded-xl p-4 lg:p-5">
+        <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Express Checkout</h2>
         <ExpressCheckoutElement
           onConfirm={onExpressCheckoutConfirm}
           options={{
@@ -269,20 +249,23 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
             },
           }}
         />
-        <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-4 text-gray-500">or pay with card</span>
-          </div>
+      </div>
+
+      {/* Divider - Outside Express Box */}
+      <div className="relative py-2">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="bg-gray-50 px-4 text-gray-500">or continue below</span>
         </div>
       </div>
 
-      {/* Contact */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
-        <h2 className="text-base font-semibold text-gray-900 mb-3">Contact</h2>
-        <div>
+      {/* Unified Form Section */}
+      <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-gray-200 rounded-xl p-4 lg:p-6">
+        {/* Contact */}
+        <div className="pb-5">
+          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Contact</h2>
           <input
             type="email"
             placeholder="Email"
@@ -294,55 +277,56 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
             <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
           )}
         </div>
-      </div>
 
-      {/* Shipping Address */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
-        <h2 className="text-base font-semibold text-gray-900 mb-3">Shipping Address</h2>
-        <div className="space-y-3">
-          {/* Name row */}
-          <div className="grid grid-cols-2 gap-3">
+        {/* Divider */}
+        <div className="border-t border-gray-100 mb-5" />
+
+        {/* Shipping */}
+        <div className="pb-5">
+          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Shipping</h2>
+          <div className="space-y-3">
+            {/* Name row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <input
+                  type="text"
+                  placeholder="First name"
+                  autoComplete="given-name"
+                  className={inputClassName(!!errors.shippingAddress?.firstName)}
+                  {...register('shippingAddress.firstName')}
+                />
+                {errors.shippingAddress?.firstName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.firstName.message}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Last name"
+                  autoComplete="family-name"
+                  className={inputClassName(!!errors.shippingAddress?.lastName)}
+                  {...register('shippingAddress.lastName')}
+                />
+                {errors.shippingAddress?.lastName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.lastName.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Address */}
             <div>
               <input
                 type="text"
-                placeholder="First name"
-                autoComplete="given-name"
-                className={inputClassName(!!errors.shippingAddress?.firstName)}
-                {...register('shippingAddress.firstName')}
+                placeholder="Address"
+                autoComplete="address-line1"
+                className={inputClassName(!!errors.shippingAddress?.address1)}
+                {...register('shippingAddress.address1')}
               />
-              {errors.shippingAddress?.firstName && (
-                <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.firstName.message}</p>
+              {errors.shippingAddress?.address1 && (
+                <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.address1.message}</p>
               )}
             </div>
-            <div>
-              <input
-                type="text"
-                placeholder="Last name"
-                autoComplete="family-name"
-                className={inputClassName(!!errors.shippingAddress?.lastName)}
-                {...register('shippingAddress.lastName')}
-              />
-              {errors.shippingAddress?.lastName && (
-                <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.lastName.message}</p>
-              )}
-            </div>
-          </div>
 
-          {/* Address */}
-          <div>
-            <input
-              type="text"
-              placeholder="Address"
-              autoComplete="address-line1"
-              className={inputClassName(!!errors.shippingAddress?.address1)}
-              {...register('shippingAddress.address1')}
-            />
-            {errors.shippingAddress?.address1 && (
-              <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.address1.message}</p>
-            )}
-          </div>
-
-          <div>
             <input
               type="text"
               placeholder="Apartment, suite, etc. (optional)"
@@ -350,70 +334,66 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               className={inputClassName(false)}
               {...register('shippingAddress.address2')}
             />
-          </div>
 
-          {/* City */}
-          <div>
-            <input
-              type="text"
-              placeholder="City"
-              autoComplete="address-level2"
-              className={inputClassName(!!errors.shippingAddress?.city)}
-              {...register('shippingAddress.city')}
-            />
-            {errors.shippingAddress?.city && (
-              <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.city.message}</p>
-            )}
-          </div>
-
-          {/* State, ZIP */}
-          <div className="grid grid-cols-2 gap-3">
+            {/* City */}
             <div>
               <input
                 type="text"
-                placeholder="State"
-                autoComplete="address-level1"
-                className={inputClassName(!!errors.shippingAddress?.state)}
-                {...register('shippingAddress.state')}
+                placeholder="City"
+                autoComplete="address-level2"
+                className={inputClassName(!!errors.shippingAddress?.city)}
+                {...register('shippingAddress.city')}
               />
-              {errors.shippingAddress?.state && (
-                <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.state.message}</p>
+              {errors.shippingAddress?.city && (
+                <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.city.message}</p>
               )}
             </div>
-            <div>
-              <input
-                type="text"
-                placeholder="ZIP code"
-                autoComplete="postal-code"
-                className={inputClassName(!!errors.shippingAddress?.postalCode)}
-                {...register('shippingAddress.postalCode')}
-              />
-              {errors.shippingAddress?.postalCode && (
-                <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.postalCode.message}</p>
-              )}
+
+            {/* State, ZIP, Country - 3 column on desktop */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <input
+                  type="text"
+                  placeholder="State"
+                  autoComplete="address-level1"
+                  className={inputClassName(!!errors.shippingAddress?.state)}
+                  {...register('shippingAddress.state')}
+                />
+                {errors.shippingAddress?.state && (
+                  <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.state.message}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="ZIP code"
+                  autoComplete="postal-code"
+                  className={inputClassName(!!errors.shippingAddress?.postalCode)}
+                  {...register('shippingAddress.postalCode')}
+                />
+                {errors.shippingAddress?.postalCode && (
+                  <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.postalCode.message}</p>
+                )}
+              </div>
+              <div>
+                <select
+                  autoComplete="country"
+                  className={inputClassName(!!errors.shippingAddress?.country)}
+                  {...register('shippingAddress.country')}
+                >
+                  {COUNTRIES.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.shippingAddress?.country && (
+                  <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.country.message}</p>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Country */}
-          <div>
-            <select
-              autoComplete="country"
-              className={inputClassName(!!errors.shippingAddress?.country)}
-              {...register('shippingAddress.country')}
-            >
-              {COUNTRIES.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
-            {errors.shippingAddress?.country && (
-              <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.country.message}</p>
-            )}
-          </div>
-
-          {/* Phone */}
-          <div>
+            {/* Phone */}
             <input
               type="tel"
               placeholder="Phone (optional)"
@@ -423,60 +403,64 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
             />
           </div>
         </div>
-      </div>
 
-      {/* Shipping Method */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
-        <h2 className="text-base font-semibold text-gray-900 mb-3">Shipping Method</h2>
-        <div className="space-y-2">
-          <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:border-brand-500 transition-colors">
-            <div className="flex items-center gap-3">
-              <input
-                type="radio"
-                value="standard"
-                className="w-4 h-4 text-brand-500 focus:ring-brand-500"
-                {...register('shippingMethod')}
-              />
-              <div>
-                <p className="font-medium text-gray-900">
-                  {qualifiesForFreeShipping ? 'FREE Standard Shipping' : 'Standard Shipping'}
-                </p>
-                <p className="text-sm text-gray-500">5-7 business days</p>
-              </div>
-            </div>
-            <span className="font-medium">
-              {qualifiesForFreeShipping ? (
-                <span className="text-green-600">FREE</span>
-              ) : (
-                formatPrice(PRODUCT.shipping.standard)
-              )}
-            </span>
-          </label>
+        {/* Divider */}
+        <div className="border-t border-gray-100 mb-5" />
 
-          <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:border-brand-500 transition-colors">
-            <div className="flex items-center gap-3">
-              <input
-                type="radio"
-                value="express"
-                className="w-4 h-4 text-brand-500 focus:ring-brand-500"
-                {...register('shippingMethod')}
-              />
-              <div>
-                <p className="font-medium text-gray-900">Express Shipping</p>
-                <p className="text-sm text-gray-500">1-3 business days</p>
+        {/* Delivery */}
+        <div className="pb-5">
+          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Delivery</h2>
+          <div className="space-y-2">
+            <label className="flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer hover:border-brand-400 transition-colors has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div className="flex items-center gap-3">
+                <input
+                  type="radio"
+                  value="standard"
+                  className="w-4 h-4 text-brand-500 focus:ring-brand-500"
+                  {...register('shippingMethod')}
+                />
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">
+                    {qualifiesForFreeShipping ? 'FREE Standard Shipping' : 'Standard Shipping'}
+                  </p>
+                  <p className="text-xs text-gray-500">5-7 business days</p>
+                </div>
               </div>
-            </div>
-            <span className="font-medium">
-              {formatPrice(qualifiesForFreeShipping ? PRODUCT.shipping.standard : PRODUCT.shipping.express)}
-            </span>
-          </label>
+              <span className="font-medium text-sm">
+                {qualifiesForFreeShipping ? (
+                  <span className="text-green-600">FREE</span>
+                ) : (
+                  formatPrice(PRODUCT.shipping.standard)
+                )}
+              </span>
+            </label>
+
+            <label className="flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer hover:border-brand-400 transition-colors has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div className="flex items-center gap-3">
+                <input
+                  type="radio"
+                  value="express"
+                  className="w-4 h-4 text-brand-500 focus:ring-brand-500"
+                  {...register('shippingMethod')}
+                />
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">Express Shipping</p>
+                  <p className="text-xs text-gray-500">1-3 business days</p>
+                </div>
+              </div>
+              <span className="font-medium text-sm">
+                {formatPrice(qualifiesForFreeShipping ? PRODUCT.shipping.standard : PRODUCT.shipping.express)}
+              </span>
+            </label>
+          </div>
         </div>
-      </div>
 
-      {/* Payment - Card only (express methods shown above) */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-5">
-        <h2 className="text-base font-semibold text-gray-900 mb-3">Card Details</h2>
-        <div>
+        {/* Divider */}
+        <div className="border-t border-gray-100 mb-5" />
+
+        {/* Payment */}
+        <div className="pb-5">
+          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Payment</h2>
           <PaymentElement
             onReady={() => setIsPaymentReady(true)}
             options={{
@@ -488,38 +472,38 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
             }}
           />
         </div>
-      </div>
 
-      {/* Error */}
-      {paymentError && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{paymentError}</p>
-        </div>
-      )}
-
-      {/* Submit */}
-      <button
-        type="submit"
-        disabled={isSubmitting || !isPaymentReady || !stripe || !elements}
-        className="w-full py-4 px-6 bg-brand-500 hover:bg-brand-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            Processing...
-          </>
-        ) : (
-          <>
-            Complete Purchase - {formatPrice(total)}
-          </>
+        {/* Error */}
+        {paymentError && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+            <p className="text-sm text-red-600">{paymentError}</p>
+          </div>
         )}
-      </button>
 
-      {/* Trust badge */}
-      <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-        <Lock className="w-4 h-4" />
-        <span>Secure 256-bit SSL encryption</span>
-      </div>
-    </form>
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={isSubmitting || !isPaymentReady || !stripe || !elements}
+          className="w-full py-4 px-6 bg-brand-500 hover:bg-brand-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              Complete Purchase - {formatPrice(total)}
+            </>
+          )}
+        </button>
+
+        {/* Trust badge */}
+        <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mt-4">
+          <Lock className="w-4 h-4" />
+          <span>Secure 256-bit SSL encryption</span>
+        </div>
+      </form>
+    </div>
   )
 }
