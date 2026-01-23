@@ -28,6 +28,9 @@ export function CartDrawer() {
     isCartEmpty,
     hasBundle,
     upgradeToBundle,
+    shippingInsurance,
+    setShippingInsurance,
+    getInsuranceCost,
   } = useCartStore()
 
   // Check if cart has card-only bundle (upgradeable)
@@ -150,10 +153,23 @@ export function CartDrawer() {
                       )}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Shipping Insurance</span>
-                    <span className="font-medium">{formatPrice(SHIPPING_INSURANCE_PRICE)}</span>
-                  </div>
+                  {/* Shipping Insurance Toggle */}
+                  <label className="flex items-center justify-between text-sm cursor-pointer group">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={shippingInsurance}
+                        onChange={(e) => setShippingInsurance(e.target.checked)}
+                        className="w-4 h-4 text-brand-500 rounded focus:ring-brand-500 focus:ring-offset-0"
+                      />
+                      <span className="text-gray-600 group-hover:text-gray-900 transition-colors">
+                        Shipping Insurance
+                      </span>
+                    </div>
+                    <span className="font-medium text-gray-600">
+                      {shippingInsurance ? formatPrice(getInsuranceCost()) : formatPrice(0)}
+                    </span>
+                  </label>
                   <div className="flex justify-between text-base font-semibold pt-2 border-t border-gray-200">
                     <span>Total</span>
                     <span>{formatPrice(getTotal())}</span>

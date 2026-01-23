@@ -64,6 +64,13 @@ export function PostPurchaseOffer({ customerId, originalDesignId }: PostPurchase
   const [timeRemaining, setTimeRemaining] = useState(COUNTDOWN_DURATION)
   const [isExpired, setIsExpired] = useState(false)
 
+  // Track analytics event helper
+  const trackEvent = useCallback((eventName: string, params?: Record<string, unknown>) => {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', eventName, params)
+    }
+  }, [])
+
   // Fetch customer info
   useEffect(() => {
     if (!customerId) {
@@ -80,6 +87,13 @@ export function PostPurchaseOffer({ customerId, originalDesignId }: PostPurchase
         }
         const data = await response.json()
         setCustomerInfo(data)
+
+        // Track offer viewed
+        trackEvent('post_purchase_offer_viewed', {
+          offer_type: 'card_only_20_off',
+          original_price: ORIGINAL_PRICE / 100,
+          discounted_price: DISCOUNTED_PRICE / 100,
+        })
       } catch (err) {
         setError('Unable to load offer')
         console.error('Error fetching customer info:', err)
@@ -89,7 +103,7 @@ export function PostPurchaseOffer({ customerId, originalDesignId }: PostPurchase
     }
 
     fetchCustomerInfo()
-  }, [customerId])
+  }, [customerId, trackEvent])
 
   // Countdown timer
   useEffect(() => {
@@ -100,6 +114,10 @@ export function PostPurchaseOffer({ customerId, originalDesignId }: PostPurchase
         if (prev <= 1) {
           setIsExpired(true)
           clearInterval(interval)
+          // Track offer expired
+          trackEvent('post_purchase_offer_expired', {
+            offer_type: 'card_only_20_off',
+          })
           return 0
         }
         return prev - 1
@@ -107,7 +125,7 @@ export function PostPurchaseOffer({ customerId, originalDesignId }: PostPurchase
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [isExpired, purchaseSuccess])
+  }, [isExpired, purchaseSuccess, trackEvent])
 
   // Format time remaining
   const formatTime = useCallback((seconds: number) => {
@@ -121,6 +139,13 @@ export function PostPurchaseOffer({ customerId, originalDesignId }: PostPurchase
     if (!customerId || !customerInfo?.hasPaymentMethod || !customerInfo?.shippingAddress) {
       return
     }
+
+    // Track click event
+    trackEvent('post_purchase_offer_clicked', {
+      offer_type: 'card_only_20_off',
+      design_id: selectedDesignId,
+      design_name: PRODUCT.designs.find(d => d.id === selectedDesignId)?.name,
+    })
 
     setIsPurchasing(true)
     setPurchaseError(null)
@@ -162,20 +187,29 @@ export function PostPurchaseOffer({ customerId, originalDesignId }: PostPurchase
 
       setPurchaseSuccess(true)
 
-      // Track analytics
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'purchase', {
-          transaction_id: data.paymentIntentId,
-          value: data.amount / 100,
-          currency: 'USD',
-          items: [{
-            item_id: `card-only-${selectedDesignId}`,
-            item_name: `Card Only - ${PRODUCT.designs.find(d => d.id === selectedDesignId)?.name}`,
-            price: data.discountedPrice / 100,
-            quantity: 1,
-          }],
-        })
-      }
+      // Track post-purchase order completed (specific event per plan)
+      trackEvent('post_purchase_order_completed', {
+        transaction_id: data.paymentIntentId,
+        value: data.amount / 100,
+        currency: 'USD',
+        offer_type: 'card_only_20_off',
+        design_id: selectedDesignId,
+        design_name: PRODUCT.designs.find(d => d.id === selectedDesignId)?.name,
+        discount_percent: DISCOUNT_PERCENT,
+      })
+
+      // Also track as standard purchase for GA4 ecommerce
+      trackEvent('purchase', {
+        transaction_id: data.paymentIntentId,
+        value: data.amount / 100,
+        currency: 'USD',
+        items: [{
+          item_id: `card-only-${selectedDesignId}`,
+          item_name: `Card Only - ${PRODUCT.designs.find(d => d.id === selectedDesignId)?.name}`,
+          price: data.discountedPrice / 100,
+          quantity: 1,
+        }],
+      })
     } catch (err) {
       console.error('Purchase error:', err)
       setPurchaseError('Something went wrong. Please try again.')
