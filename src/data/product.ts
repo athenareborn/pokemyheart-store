@@ -1,6 +1,6 @@
 export const PRODUCT = {
   id: 'eternal-love-card',
-  name: 'The Ultimate Valentines Gamer Gift',
+  name: 'Ultimate Valentine\'s Gift',
   slug: 'i-choose-you-the-ultimate-valentines-gift',
   shortDescription: 'Premium holographic Valentine\'s card with display case',
 

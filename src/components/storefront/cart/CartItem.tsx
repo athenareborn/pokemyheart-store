@@ -33,10 +33,7 @@ export function CartItem({ item }: CartItemProps) {
 
       {/* Product Details */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-gray-900 text-sm truncate">{PRODUCT.name}</h4>
-        <p className="text-xs text-gray-500 mt-0.5">
-          Design: {design.name} | {bundle.name}
-        </p>
+        <h4 className="font-medium text-gray-900 text-sm truncate">{bundle.name}</h4>
         <p className="font-semibold text-gray-900 mt-1">{formatPrice(item.price)}</p>
 
         {/* Quantity controls */}
