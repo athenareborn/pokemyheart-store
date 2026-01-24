@@ -64,7 +64,7 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
               <Image
                 src="/images/logo.png"
                 alt="UltraRareLove"
-                width={32}
+                width={81}
                 height={32}
                 className="w-8 h-8 object-contain"
               />
@@ -72,8 +72,8 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
               <Image
                 src="/images/logo.png"
                 alt="UltraRareLove"
-                width={120}
-                height={30}
+                width={71}
+                height={28}
                 className="h-7 w-auto"
               />
             )}

@@ -47,7 +47,7 @@ export function Header() {
                       <Image
                         src="/images/logo.png"
                         alt="UltraRareLove"
-                        width={130}
+                        width={81}
                         height={32}
                         className="h-8 w-auto"
                       />
@@ -87,7 +87,7 @@ export function Header() {
               <Image
                 src="/images/logo.png"
                 alt="UltraRareLove"
-                width={160}
+                width={101}
                 height={40}
                 className="h-10 w-auto"
                 priority
@@ -113,8 +113,8 @@ export function Header() {
             <Image
               src="/images/logo.png"
               alt="UltraRareLove"
-              width={140}
-              height={35}
+              width={91}
+              height={36}
               className="h-9 w-auto"
               priority
             />

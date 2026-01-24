@@ -73,6 +73,10 @@ else
   fail "FB_CONVERSIONS_API_TOKEN not set"
 fi
 
+# Normalize quoted env values from .env.local
+PIXEL_ID_CLEAN=$(echo "$NEXT_PUBLIC_FB_PIXEL_ID" | tr -d '"')
+FB_TOKEN_CLEAN=$(echo "$FB_CONVERSIONS_API_TOKEN" | tr -d '"')
+
 # Check FB Test Event Code (optional but useful for testing)
 if [ -n "$FB_TEST_EVENT_CODE" ]; then
   pass "FB_TEST_EVENT_CODE is set: $FB_TEST_EVENT_CODE"
@@ -271,7 +275,7 @@ fi
 # ============================================
 header "5. DIRECT FACEBOOK API TEST"
 
-if [ -n "$NEXT_PUBLIC_FB_PIXEL_ID" ] && [ -n "$FB_CONVERSIONS_API_TOKEN" ]; then
+if [ -n "$PIXEL_ID_CLEAN" ] && [ -n "$FB_TOKEN_CLEAN" ]; then
   info "Testing direct connection to Facebook Graph API..."
 
   # Build test payload
@@ -280,6 +284,11 @@ if [ -n "$NEXT_PUBLIC_FB_PIXEL_ID" ] && [ -n "$FB_CONVERSIONS_API_TOKEN" ]; then
 
   # Hash email for test
   EMAIL_HASH=$(echo -n "test@example.com" | openssl dgst -sha256 | awk '{print $2}')
+
+  TEST_EVENT_CODE_JSON=""
+  if [ -n "$FB_TEST_EVENT_CODE" ]; then
+    TEST_EVENT_CODE_JSON=$',\n  "test_event_code": "'"$FB_TEST_EVENT_CODE"'"'
+  fi
 
   PAYLOAD=$(cat <<EOF
 {
@@ -295,21 +304,14 @@ if [ -n "$NEXT_PUBLIC_FB_PIXEL_ID" ] && [ -n "$FB_CONVERSIONS_API_TOKEN" ]; then
         "client_user_agent": "Test Script/1.0"
       }
     }
-  ]
+  ]${TEST_EVENT_CODE_JSON}
+}
 EOF
 )
 
-  # Add test event code if available
-  if [ -n "$FB_TEST_EVENT_CODE" ]; then
-    PAYLOAD=$(echo "$PAYLOAD" | sed 's/}$/,"test_event_code":"'$FB_TEST_EVENT_CODE'"}/')
-  fi
-
-  # Close JSON
-  PAYLOAD="${PAYLOAD}}"
-
   # Make request to Facebook
   FB_RESPONSE=$(curl -s -X POST \
-    "https://graph.facebook.com/v21.0/${NEXT_PUBLIC_FB_PIXEL_ID}/events?access_token=${FB_CONVERSIONS_API_TOKEN}" \
+    "https://graph.facebook.com/v21.0/${PIXEL_ID_CLEAN}/events?access_token=${FB_TOKEN_CLEAN}" \
     -H "Content-Type: application/json" \
     -d "$PAYLOAD")
 
@@ -331,7 +333,7 @@ EOF
     echo ""
     info "To verify in Events Manager:"
     echo "   1. Go to: https://business.facebook.com/events_manager"
-    echo "   2. Select your pixel: $NEXT_PUBLIC_FB_PIXEL_ID"
+    echo "   2. Select your pixel: $PIXEL_ID_CLEAN"
     echo "   3. Click 'Test Events' tab"
     echo "   4. Look for event_id: $DIRECT_EVENT_ID"
     echo "   5. Test code: $FB_TEST_EVENT_CODE"

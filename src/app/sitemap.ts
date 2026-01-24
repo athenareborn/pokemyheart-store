@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 import { PRODUCT } from '@/data/product'
 
-const BASE_URL = 'https://ultrararelove.com'
+const BASE_URL = 'https://www.ultrararelove.com'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const currentDate = new Date()

@@ -30,8 +30,8 @@ export function Footer() {
               <Image
                 src="/images/logo.png"
                 alt="UltraRareLove"
-                width={150}
-                height={38}
+                width={91}
+                height={36}
                 className="h-9 w-auto"
               />
             </Link>

@@ -20,6 +20,7 @@
 ### Ad Sets
 - **Static** - 3 winner images x 5 copy variants
 - **Video** - 3 winner videos x 5 copy variants
+- **G Ads Winner** - "Remember the Thrill" video (separate tracking)
 
 ---
 
@@ -123,10 +124,13 @@ Order NOW for Valentine's delivery!
 | Campaign | 120241180475110096 |
 | Static Ad Set | 120241186969590096 |
 | Video Ad Set | 120241186970850096 |
+| **G Ads Winner Ad Set** | **120241204953890096** |
 | Static Ad | 120241186973440096 |
 | Video Ad | 120241186975240096 |
+| **G Ads Winner Ad** | **120241204955700096** |
 | Static Creative | 902382358936137 |
 | Video Creative | 4285470921740489 |
+| G Ads Winner Creative | 1370509715116922 |
 
 **Settings:**
 - Budget: $200/day (CBO)

@@ -129,8 +129,8 @@ function CheckoutSuccessContent() {
             <Image
               src="/images/logo.png"
               alt="UltraRareLove"
-              width={140}
-              height={40}
+              width={81}
+              height={32}
               className="h-8 w-auto"
               priority
             />
