@@ -471,36 +471,19 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         {/* Contact */}
         <div className="pb-5">
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Contact</h2>
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-            <div>
-              <input
-                type="email"
-                placeholder="Email"
-                autoComplete="email"
-                className={inputClassName(!!errors.email)}
-                {...register('email')}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-              )}
-            </div>
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest text-center">
-              or
-            </div>
-            <div>
-              <input
-                type="tel"
-                placeholder="Phone"
-                autoComplete="tel"
-                className={inputClassName(!!errors.shippingAddress?.phone)}
-                {...register('shippingAddress.phone')}
-              />
-              {errors.shippingAddress?.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.phone.message}</p>
-              )}
-            </div>
+          <div>
+            <input
+              type="text"
+              placeholder="Email or phone number"
+              autoComplete="email tel"
+              className={inputClassName(!!errors.email)}
+              {...register('email')}
+            />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+            )}
           </div>
-          <p className="mt-2 text-xs text-gray-500">We'll send updates to the contact you provide.</p>
+          <p className="mt-2 text-xs text-gray-500">For order updates and shipping notifications</p>
         </div>
 
         {/* Divider */}
@@ -543,7 +526,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               <input
                 type="text"
                 placeholder="Street address"
-                autoComplete="shipping address-line1"
+                autoComplete="street-address"
                 className={inputClassName(!!errors.shippingAddress?.address1)}
                 {...address1Register}
                 onBlur={(event) => {
@@ -554,38 +537,35 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               {errors.shippingAddress?.address1 && (
                 <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.address1.message}</p>
               )}
-              <p className="mt-1 text-xs text-gray-400">Paste your full address to auto-fill city, state, and ZIP.</p>
             </div>
 
             <input
               type="text"
               placeholder="Apartment, suite, etc. (optional)"
-              autoComplete="shipping address-line2"
+              autoComplete="address-line2"
               className={inputClassName(false)}
               {...register('shippingAddress.address2')}
             />
 
-            {/* City */}
-            <div>
-              <input
-                type="text"
-                placeholder="City"
-                autoComplete="shipping address-level2"
-                className={inputClassName(!!errors.shippingAddress?.city)}
-                {...register('shippingAddress.city')}
-              />
-              {errors.shippingAddress?.city && (
-                <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.city.message}</p>
-              )}
-            </div>
-
-            {/* State and ZIP */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* City, State, ZIP row */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="col-span-2 sm:col-span-1">
+                <input
+                  type="text"
+                  placeholder="City"
+                  autoComplete="address-level2"
+                  className={inputClassName(!!errors.shippingAddress?.city)}
+                  {...register('shippingAddress.city')}
+                />
+                {errors.shippingAddress?.city && (
+                  <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.city.message}</p>
+                )}
+              </div>
               <div>
                 <input
                   type="text"
                   placeholder="State"
-                  autoComplete="shipping address-level1"
+                  autoComplete="address-level1"
                   className={inputClassName(!!errors.shippingAddress?.state)}
                   {...register('shippingAddress.state')}
                 />
@@ -596,8 +576,9 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               <div>
                 <input
                   type="text"
-                  placeholder="ZIP code"
-                  autoComplete="shipping postal-code"
+                  placeholder="ZIP"
+                  autoComplete="postal-code"
+                  inputMode="numeric"
                   className={inputClassName(!!errors.shippingAddress?.postalCode)}
                   {...register('shippingAddress.postalCode')}
                 />
@@ -613,40 +594,40 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         {/* Divider */}
         <div className="border-t border-gray-100 mb-5" />
 
-        {/* Delivery */}
+        {/* Delivery - styled to match Stripe payment tabs */}
         <div className="pb-5">
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Delivery</h2>
-          <div className="space-y-2">
-            <label className="flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer hover:border-brand-400 transition-colors has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+          <div className="rounded-lg border border-gray-200 overflow-hidden divide-y divide-gray-200">
+            <label className="flex items-center justify-between p-4 cursor-pointer bg-white hover:bg-gray-50 transition-colors has-[:checked]:bg-brand-50">
               <div className="flex items-center gap-3">
                 <input
                   type="radio"
                   value="standard"
-                  className="w-4 h-4 text-brand-500 focus:ring-brand-500"
+                  className="w-4 h-4 text-brand-500 focus:ring-brand-500 focus:ring-offset-0"
                   {...register('shippingMethod')}
                 />
                 <div>
                   <p className="font-medium text-gray-900 text-sm">
-                    {qualifiesForFreeShipping ? 'FREE Standard Shipping' : 'Standard Shipping'}
+                    {qualifiesForFreeShipping ? 'Free Standard Shipping' : 'Standard Shipping'}
                   </p>
                   <p className="text-xs text-gray-500">5-7 business days</p>
                 </div>
               </div>
-              <span className="font-medium text-sm">
+              <span className="font-semibold text-sm">
                 {qualifiesForFreeShipping ? (
-                  <span className="text-green-600">FREE</span>
+                  <span className="text-green-600">Free</span>
                 ) : (
                   formatPrice(PRODUCT.shipping.standard)
                 )}
               </span>
             </label>
 
-            <label className="flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer hover:border-brand-400 transition-colors has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+            <label className="flex items-center justify-between p-4 cursor-pointer bg-white hover:bg-gray-50 transition-colors has-[:checked]:bg-brand-50">
               <div className="flex items-center gap-3">
                 <input
                   type="radio"
                   value="express"
-                  className="w-4 h-4 text-brand-500 focus:ring-brand-500"
+                  className="w-4 h-4 text-brand-500 focus:ring-brand-500 focus:ring-offset-0"
                   {...register('shippingMethod')}
                 />
                 <div>
@@ -654,7 +635,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
                   <p className="text-xs text-gray-500">1-3 business days</p>
                 </div>
               </div>
-              <span className="font-medium text-sm">
+              <span className="font-semibold text-sm">
                 {formatPrice(qualifiesForFreeShipping ? PRODUCT.shipping.standard : PRODUCT.shipping.express)}
               </span>
             </label>
@@ -664,13 +645,13 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         {/* Divider */}
         <div className="border-t border-gray-100 mb-5" />
 
-        {/* Protect Your Order - Add-on Section */}
+        {/* Protect Your Order */}
         <div className="pb-5">
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Protect Your Order</h2>
-          <label className={`flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all ${
+          <label className={`flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all border ${
             shippingInsurance
-              ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-400 shadow-sm'
-              : 'bg-gray-50 border border-gray-200 hover:border-gray-300'
+              ? 'bg-emerald-50 border-emerald-300'
+              : 'bg-white border-gray-200 hover:border-gray-300'
           }`}>
             <input
               type="checkbox"
@@ -680,9 +661,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                {/* Shield Icon */}
                 <svg
-                  className={`w-5 h-5 flex-shrink-0 ${shippingInsurance ? 'text-emerald-600' : 'text-gray-500'}`}
+                  className={`w-5 h-5 flex-shrink-0 ${shippingInsurance ? 'text-emerald-600' : 'text-gray-400'}`}
                   viewBox="0 0 24 24"
                   fill="currentColor"
                 >
@@ -691,12 +671,12 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
                 <span className={`font-semibold text-sm ${shippingInsurance ? 'text-emerald-900' : 'text-gray-900'}`}>
                   Package Protection
                 </span>
-                <span className={`font-bold text-sm ml-auto ${shippingInsurance ? 'text-emerald-700' : 'text-gray-700'}`}>
+                <span className={`font-bold text-sm ml-auto ${shippingInsurance ? 'text-emerald-700' : 'text-gray-600'}`}>
                   {formatPrice(SHIPPING_INSURANCE_PRICE)}
                 </span>
               </div>
-              <p className={`text-xs mt-1.5 ${shippingInsurance ? 'text-emerald-700' : 'text-gray-500'}`}>
-                Full coverage against loss, theft, or damage during shipping. Get a free replacement or full refund.
+              <p className={`text-xs mt-1 ${shippingInsurance ? 'text-emerald-700' : 'text-gray-500'}`}>
+                Full coverage against loss, theft, or damage. Free replacement or refund.
               </p>
             </div>
           </label>
@@ -763,7 +743,31 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               )
             })}
           </div>
-          <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between text-sm font-semibold">
+          {/* Line items breakdown */}
+          <div className="mt-3 pt-3 border-t border-gray-200 space-y-2 text-sm">
+            <div className="flex justify-between text-gray-600">
+              <span>Subtotal</span>
+              <span>{formatPrice(subtotal)}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>Shipping</span>
+              <span>{shippingCost === 0 ? <span className="text-green-600">Free</span> : formatPrice(shippingCost)}</span>
+            </div>
+            {shippingInsurance && (
+              <div className="flex justify-between text-gray-600">
+                <span>Package Protection</span>
+                <span>{formatPrice(SHIPPING_INSURANCE_PRICE)}</span>
+              </div>
+            )}
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Discount</span>
+                <span>-{formatPrice(discountAmount)}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between text-base font-semibold">
             <span>Total</span>
             <span>{formatPrice(total)}</span>
           </div>

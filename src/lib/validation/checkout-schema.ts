@@ -5,11 +5,20 @@ export const emailSchema = z
   .min(1, 'Email is required')
   .email('Please enter a valid email address')
 
-export const optionalEmailSchema = z
+// Accepts email OR phone number in a single field
+export const contactFieldSchema = z
   .string()
   .transform((val) => val.trim())
-  .refine((val) => val === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
-    message: 'Please enter a valid email address',
+  .refine((val) => {
+    if (val === '') return true
+    // Check if it's a valid email
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
+    // Check if it's a valid phone (10+ digits, allows formatting)
+    const digitsOnly = val.replace(/\D/g, '')
+    const isPhone = digitsOnly.length >= 10 && digitsOnly.length <= 15
+    return isEmail || isPhone
+  }, {
+    message: 'Please enter a valid email or phone number',
   })
 
 export const shippingAddressSchema = z.object({
@@ -54,20 +63,11 @@ export const contactSchema = z.object({
 })
 
 export const checkoutFormSchema = z.object({
-  email: optionalEmailSchema,
+  email: contactFieldSchema.refine((val) => val.length > 0, {
+    message: 'Email or phone is required',
+  }),
   shippingAddress: shippingAddressSchema,
   shippingMethod: z.enum(['standard', 'express']),
-}).superRefine((data, ctx) => {
-  const hasEmail = typeof data.email === 'string' && data.email.length > 0
-  const hasPhone = typeof data.shippingAddress.phone === 'string' && data.shippingAddress.phone.trim().length > 0
-
-  if (!hasEmail && !hasPhone) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Email or phone is required',
-      path: ['email'],
-    })
-  }
 })
 
 export type ShippingAddressInput = z.infer<typeof shippingAddressSchema>
