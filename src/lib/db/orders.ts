@@ -10,7 +10,7 @@ export async function getOrders(options?: {
 
   let query = supabase
     .from('orders')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
 
   if (options?.status) {
@@ -95,13 +95,26 @@ export async function updateOrderStatus(id: string, status: OrderStatus) {
 export async function updateOrderTracking(id: string, trackingNumber: string) {
   const supabase = await createClient()
 
+  // First check if already fulfilled to preserve original fulfilled_at
+  const { data: existing } = await supabase
+    .from('orders')
+    .select('fulfilled_at')
+    .eq('id', id)
+    .single()
+
+  const updates: { tracking_number: string; status: string; fulfilled_at?: string } = {
+    tracking_number: trackingNumber,
+    status: 'fulfilled',
+  }
+
+  // Only set fulfilled_at if not already set
+  if (!existing?.fulfilled_at) {
+    updates.fulfilled_at = new Date().toISOString()
+  }
+
   const { data, error } = await supabase
     .from('orders')
-    .update({
-      tracking_number: trackingNumber,
-      status: 'fulfilled',
-      fulfilled_at: new Date().toISOString()
-    })
+    .update(updates)
     .eq('id', id)
     .select()
     .single()
@@ -117,28 +130,25 @@ export async function updateOrderTracking(id: string, trackingNumber: string) {
 export async function getOrderStats() {
   const supabase = await createClient()
 
-  // Get total revenue and order count
-  const { data: orders } = await supabase
-    .from('orders')
-    .select('total, status, created_at')
+  // Use parallel queries with SQL aggregation instead of loading all orders
+  const [totalsResult, unfulfilledResult, processingResult, fulfilledResult] = await Promise.all([
+    supabase.from('orders').select('total.sum(), id', { count: 'exact' }),
+    supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'unfulfilled'),
+    supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'processing'),
+    supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'fulfilled'),
+  ])
 
-  if (!orders) return { revenue: 0, orderCount: 0, averageOrderValue: 0 }
-
-  const revenue = orders.reduce((sum, o) => sum + o.total, 0)
-  const orderCount = orders.length
+  const orderCount = totalsResult.count ?? 0
+  const revenue = totalsResult.data?.[0]?.sum ?? 0
   const averageOrderValue = orderCount > 0 ? revenue / orderCount : 0
-
-  const unfulfilled = orders.filter(o => o.status === 'unfulfilled').length
-  const processing = orders.filter(o => o.status === 'processing').length
-  const fulfilled = orders.filter(o => o.status === 'fulfilled').length
 
   return {
     revenue,
     orderCount,
     averageOrderValue,
-    unfulfilled,
-    processing,
-    fulfilled,
+    unfulfilled: unfulfilledResult.count ?? 0,
+    processing: processingResult.count ?? 0,
+    fulfilled: fulfilledResult.count ?? 0,
   }
 }
 

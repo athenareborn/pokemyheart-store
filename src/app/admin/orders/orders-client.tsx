@@ -152,58 +152,66 @@ export function OrdersClient({ initialOrders }: OrdersClientProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredOrders.map((order) => {
-                const { bundle, design } = getPrimaryItemInfo(order)
-                return (
-                  <TableRow key={order.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedOrders.includes(order.id)}
-                        onCheckedChange={() => toggleOrder(order.id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Link href={`/admin/orders/${order.order_number}`} className="font-medium hover:underline">
-                        {order.order_number}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">{formatDate(order.created_at)}</p>
-                    </TableCell>
-                    <TableCell>
-                      <p className="font-medium">{order.customer_name || 'Unknown'}</p>
-                      <p className="text-xs text-muted-foreground">{order.customer_email}</p>
-                    </TableCell>
-                    <TableCell>
-                      <p>{bundle}</p>
-                      <p className="text-xs text-muted-foreground">{design}</p>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={order.status} />
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatPrice(order.total)}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/orders/${order.order_number}`}>View details</Link>
-                          </DropdownMenuItem>
-                          {order.status !== 'fulfilled' && (
-                            <DropdownMenuItem>Fulfill order</DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">Cancel</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+              {filteredOrders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    {searchQuery ? 'No orders match your search' : 'No orders yet'}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredOrders.map((order) => {
+                  const { bundle, design } = getPrimaryItemInfo(order)
+                  return (
+                    <TableRow key={order.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedOrders.includes(order.id)}
+                          onCheckedChange={() => toggleOrder(order.id)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Link href={`/admin/orders/${order.order_number}`} className="font-medium hover:underline">
+                          {order.order_number}
+                        </Link>
+                        <p className="text-xs text-muted-foreground">{formatDate(order.created_at)}</p>
+                      </TableCell>
+                      <TableCell>
+                        <p className="font-medium">{order.customer_name || 'Unknown'}</p>
+                        <p className="text-xs text-muted-foreground">{order.customer_email}</p>
+                      </TableCell>
+                      <TableCell>
+                        <p>{bundle}</p>
+                        <p className="text-xs text-muted-foreground">{design}</p>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={order.status} />
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatPrice(order.total)}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/orders/${order.order_number}`}>View details</Link>
+                            </DropdownMenuItem>
+                            {order.status !== 'fulfilled' && (
+                              <DropdownMenuItem>Fulfill order</DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive">Cancel</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
             </TableBody>
           </Table>
         </CardContent>

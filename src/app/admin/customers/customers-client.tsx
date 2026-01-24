@@ -18,6 +18,16 @@ import { StatCard } from '@/components/admin'
 import { formatPrice, formatDate } from '@/lib/utils'
 import type { Customer } from '@/lib/supabase/types'
 
+// Proper CSV escaping - handles commas, quotes, and newlines
+function escapeCSV(value: string | null | undefined): string {
+  if (value == null) return ''
+  const str = String(value)
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+    return `"${str.replace(/"/g, '""')}"`
+  }
+  return str
+}
+
 interface CustomerStats {
   total: number
   subscribers: number
@@ -57,14 +67,14 @@ export function CustomersClient({ initialCustomers, stats }: CustomersClientProp
     // Meta Ads format: email, fn (first name), ln (last name), value
     const headers = ['email', 'fn', 'ln', 'value']
     const rows = customersToExport.map(c => {
-      const nameParts = (c.name || '').split(' ')
+      const nameParts = (c.name || '').trim().split(/\s+/)
       const firstName = nameParts[0] || ''
       const lastName = nameParts.slice(1).join(' ') || ''
       return [
-        c.email,
-        firstName,
-        lastName,
-        (c.total_spent / 100).toFixed(2) // Convert cents to dollars
+        escapeCSV(c.email),
+        escapeCSV(firstName),
+        escapeCSV(lastName),
+        ((c.total_spent || 0) / 100).toFixed(2) // Convert cents to dollars
       ]
     })
 
@@ -152,37 +162,45 @@ export function CustomersClient({ initialCustomers, stats }: CustomersClientProp
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCustomers.map((customer) => (
-                <TableRow key={customer.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{customer.name || 'Unknown'}</p>
-                      <p className="text-sm text-muted-foreground">{customer.email}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-muted-foreground" />
-                      {customer.orders_count}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 font-medium">
-                      {formatPrice(customer.total_spent)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {customer.accepts_marketing ? (
-                      <Badge variant="default">Subscribed</Badge>
-                    ) : (
-                      <Badge variant="secondary">Not subscribed</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(customer.created_at)}
+              {filteredCustomers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                    {searchQuery ? 'No customers match your search' : 'No customers yet'}
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredCustomers.map((customer) => (
+                  <TableRow key={customer.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{customer.name || 'Unknown'}</p>
+                        <p className="text-sm text-muted-foreground">{customer.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                        {customer.orders_count}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 font-medium">
+                        {formatPrice(customer.total_spent)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {customer.accepts_marketing ? (
+                        <Badge variant="default">Subscribed</Badge>
+                      ) : (
+                        <Badge variant="secondary">Not subscribed</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatDate(customer.created_at)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
