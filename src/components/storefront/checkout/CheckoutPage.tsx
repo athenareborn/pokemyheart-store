@@ -276,8 +276,8 @@ export function CheckoutPage() {
             <Image
               src="/images/logo.png"
               alt="UltraRareLove"
-              width={140}
-              height={40}
+              width={81}
+              height={32}
               className="h-8 w-auto"
               priority
             />
@@ -290,7 +290,21 @@ export function CheckoutPage() {
       {/* Main content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-12">
-          {/* Left: Form */}
+          {/* Order Summary */}
+          <div className="order-1 lg:order-2 mb-8 lg:mb-0">
+            <div className="lg:sticky lg:top-8">
+              <CheckoutOrderSummary
+                shippingMethod={shippingMethod}
+                discountCode={discountCode}
+                discountAmount={discountAmount}
+                insuranceAmount={shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0}
+                onApplyDiscount={handleApplyDiscount}
+                onRemoveDiscount={handleRemoveDiscount}
+              />
+            </div>
+          </div>
+
+          {/* Form */}
           <div className="order-2 lg:order-1">
             <Elements
               stripe={stripePromise}
@@ -313,20 +327,6 @@ export function CheckoutPage() {
                 discountAmount={discountAmount}
               />
             </Elements>
-          </div>
-
-          {/* Right: Order Summary */}
-          <div className="order-1 lg:order-2 mb-8 lg:mb-0">
-            <div className="lg:sticky lg:top-8">
-              <CheckoutOrderSummary
-                shippingMethod={shippingMethod}
-                discountCode={discountCode}
-                discountAmount={discountAmount}
-                insuranceAmount={shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0}
-                onApplyDiscount={handleApplyDiscount}
-                onRemoveDiscount={handleRemoveDiscount}
-              />
-            </div>
           </div>
         </div>
       </main>
