@@ -35,8 +35,20 @@ function AnalyticsTracker() {
   const sessionInitializedRef = useRef(false)
 
   useEffect(() => {
-    // Initialize PostHog on mount
-    initPostHog()
+    // Initialize PostHog after idle to reduce main-thread work on first load
+    let idleId: number | null = null
+    const schedulePostHog = () => initPostHog()
+    if (typeof window !== 'undefined') {
+      const idleWindow = window as Window & {
+        requestIdleCallback?: (cb: () => void) => number
+        cancelIdleCallback?: (id: number) => void
+      }
+      if (idleWindow.requestIdleCallback) {
+        idleId = idleWindow.requestIdleCallback(schedulePostHog)
+      } else {
+        idleId = window.setTimeout(schedulePostHog, 2000)
+      }
+    }
 
     // Initialize session on first load
     if (!sessionInitializedRef.current) {
@@ -66,6 +78,19 @@ function AnalyticsTracker() {
             create_session: true,
           }),
         }).catch(() => {})
+      }
+    }
+    return () => {
+      if (idleId === null || typeof window === 'undefined') {
+        return
+      }
+      const idleWindow = window as Window & {
+        cancelIdleCallback?: (id: number) => void
+      }
+      if (idleWindow.cancelIdleCallback) {
+        idleWindow.cancelIdleCallback(idleId)
+      } else {
+        window.clearTimeout(idleId)
       }
     }
   }, [pathname])
