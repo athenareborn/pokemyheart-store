@@ -66,7 +66,6 @@ export function UrgencyBadge() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-wrap items-center gap-2"
     >
       {/* Selling Fast badge */}
       <div className="inline-flex items-center gap-2 bg-gray-900 text-white pl-2.5 pr-3.5 py-1.5 rounded-full text-sm font-medium">
@@ -90,14 +89,6 @@ export function UrgencyBadge() {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
         </span>
-      </div>
-
-      {/* Delivery guarantee */}
-      <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-sm font-medium border border-green-200">
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-        <span>Order today for guaranteed Valentine's delivery</span>
       </div>
     </motion.div>
   )

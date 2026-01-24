@@ -138,7 +138,7 @@ export function RecentPurchaseToast() {
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.3}
           onDragEnd={handleDragEnd}
-          className="fixed z-40 bottom-24 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-auto"
+          className="fixed z-40 bottom-28 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-auto"
         >
           <Link
             href="/products/i-choose-you-the-ultimate-valentines-gift"

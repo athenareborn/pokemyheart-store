@@ -99,20 +99,34 @@ export default function ProductPage() {
 
   const selectedDesign = PRODUCT.designs[selectedDesignIndex]
 
-  // Intersection Observer for sticky cart
+  // Intersection Observer for sticky cart - only after user scrolls
   useEffect(() => {
+    let hasScrolled = false
+
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        hasScrolled = true
+      }
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setShowStickyCart(!entry.isIntersecting)
+        // Only show sticky bar if user has scrolled AND AddToCart is out of view
+        setShowStickyCart(hasScrolled && !entry.isIntersecting)
       },
       { threshold: 0, rootMargin: '0px 0px 0px 0px' }
     )
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
 
     if (addToCartRef.current) {
       observer.observe(addToCartRef.current)
     }
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
 
   // Track ViewContent on page load (Facebook + GA4)
@@ -217,24 +231,27 @@ export default function ProductPage() {
             <div className="space-y-5">
               {/* Title & Rating */}
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
                   {PRODUCT.name}
                 </h1>
-                <div className="flex items-center gap-1 mt-2">
-                  <div className="flex items-center">
+                <div className="flex items-center gap-3 mt-3">
+                  <div className="flex items-center gap-0.5">
                     {[...Array(5)].map((_, i) => (
                       <Heart
                         key={i}
-                        className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                        className={`w-4 h-4 ${
                           i < Math.round(averageRating)
-                            ? 'text-yellow-400 fill-yellow-400'
-                            : 'text-gray-300'
+                            ? 'text-brand-500 fill-brand-500'
+                            : 'text-gray-200'
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="text-sm text-gray-600 ml-1">
-                    {averageRating.toFixed(1)} ({reviewCount} reviews)
+                  <span className="text-sm font-medium text-gray-900">
+                    {averageRating.toFixed(1)}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    ({reviewCount} reviews)
                   </span>
                 </div>
               </div>
@@ -242,14 +259,16 @@ export default function ProductPage() {
               {/* Urgency Badge */}
               <UrgencyBadge />
 
-              {/* Taglines - Full text on all devices */}
-              <div className="space-y-2 sm:space-y-3">
+              {/* Value Props - cleaner grid */}
+              <div className="grid grid-cols-1 gap-2">
                 {PRODUCT.taglines.map((tagline, index) => (
-                  <p key={index} className="text-sm sm:text-base text-gray-700">
-                    <span className="mr-1">{tagline.emoji}</span>
-                    <span className="font-semibold">{tagline.title}</span>{' '}
-                    <span className="text-gray-600">{tagline.description}</span>
-                  </p>
+                  <div key={index} className="flex items-start gap-2">
+                    <span className="text-lg">{tagline.emoji}</span>
+                    <p className="text-sm text-gray-700">
+                      <span className="font-semibold text-gray-900">{tagline.title}</span>{' '}
+                      {tagline.description}
+                    </p>
+                  </div>
                 ))}
               </div>
 
