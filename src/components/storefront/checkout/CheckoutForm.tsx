@@ -327,6 +327,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       }
       sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
 
+      // For express checkout, don't send shippingAddress - Apple Pay already set it correctly on the PI
+      // Just update amount, insurance, and customer for post-purchase offers
       const patchResponse = await fetch('/api/payment-intent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -340,7 +342,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           fbEventId: purchaseEventId,
           email,
           customerName: name,
-          shippingAddress,
+          // Don't send shippingAddress - let Stripe keep Apple Pay's data
         }),
       })
 
