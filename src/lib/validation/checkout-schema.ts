@@ -5,14 +5,12 @@ export const emailSchema = z
   .min(1, 'Email is required')
   .email('Please enter a valid email address')
 
-export const optionalEmailSchema = z.preprocess(
-  (value) => {
-    if (typeof value !== 'string') return value
-    const trimmed = value.trim()
-    return trimmed === '' ? undefined : trimmed
-  },
-  z.string().email('Please enter a valid email address').optional()
-)
+export const optionalEmailSchema = z
+  .string()
+  .transform((val) => val.trim())
+  .refine((val) => val === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+    message: 'Please enter a valid email address',
+  })
 
 export const shippingAddressSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
