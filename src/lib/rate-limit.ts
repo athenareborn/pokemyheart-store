@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
 interface RateLimitOptions {
   keyPrefix: string
@@ -6,7 +8,12 @@ interface RateLimitOptions {
   windowMs: number
 }
 
+const upstashEnabled = Boolean(
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+)
+
 const localBuckets = new Map<string, { count: number; resetAt: number }>()
+const limiterCache = new Map<string, Ratelimit>()
 
 const getClientIp = (request: Request) => {
   const forwardedFor = request.headers.get('x-forwarded-for')
@@ -27,22 +34,46 @@ const getClientIp = (request: Request) => {
   return 'unknown'
 }
 
+const getLimiter = (limit: number, windowMs: number) => {
+  const key = `${limit}:${windowMs}`
+  const cached = limiterCache.get(key)
+  if (cached) {
+    return cached
+  }
+
+  const windowSeconds = Math.max(1, Math.ceil(windowMs / 1000))
+  const limiter = new Ratelimit({
+    redis: Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(limit, `${windowSeconds} s`),
+  })
+  limiterCache.set(key, limiter)
+  return limiter
+}
+
 export async function rateLimit(request: Request, options: RateLimitOptions) {
   try {
     const identifier = `${options.keyPrefix}:${getClientIp(request)}`
     let success = true
     let remaining = options.limit
     let resetAt = Date.now() + options.windowMs
-    const now = Date.now()
-    const existing = localBuckets.get(identifier)
-    if (!existing || existing.resetAt <= now) {
-      localBuckets.set(identifier, { count: 1, resetAt: now + options.windowMs })
-      remaining = options.limit - 1
+    if (upstashEnabled) {
+      const limiter = getLimiter(options.limit, options.windowMs)
+      const result = await limiter.limit(identifier)
+      success = result.success
+      remaining = result.remaining
+      resetAt = result.reset
     } else {
-      existing.count += 1
-      remaining = Math.max(0, options.limit - existing.count)
-      resetAt = existing.resetAt
-      success = existing.count <= options.limit
+      const now = Date.now()
+      const existing = localBuckets.get(identifier)
+      if (!existing || existing.resetAt <= now) {
+        localBuckets.set(identifier, { count: 1, resetAt: now + options.windowMs })
+        remaining = options.limit - 1
+      } else {
+        existing.count += 1
+        remaining = Math.max(0, options.limit - existing.count)
+        resetAt = existing.resetAt
+        success = existing.count <= options.limit
+      }
     }
 
     if (success) {
