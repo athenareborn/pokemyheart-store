@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { PRODUCT } from '@/data/product'
 import { BUNDLES } from '@/data/bundles'
+import { rateLimit } from '@/lib/rate-limit'
 
 // Shipping insurance price in cents - must match cart.ts
 const SHIPPING_INSURANCE_PRICE = 299 // $2.99
@@ -54,6 +55,15 @@ export interface PaymentIntentRequest {
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = await rateLimit(req, {
+      keyPrefix: 'payment-intent',
+      limit: 20,
+      windowMs: 60_000,
+    })
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const stripe = getStripe()
     const body: PaymentIntentRequest = await req.json()
 
@@ -206,6 +216,15 @@ export async function POST(req: NextRequest) {
 // Update existing Payment Intent
 export async function PATCH(req: NextRequest) {
   try {
+    const rateLimitResponse = await rateLimit(req, {
+      keyPrefix: 'payment-intent',
+      limit: 30,
+      windowMs: 60_000,
+    })
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const stripe = getStripe()
     const body = await req.json()
 

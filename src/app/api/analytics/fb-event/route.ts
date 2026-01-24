@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendServerEvent, type EventName } from '@/lib/analytics/facebook-capi'
+import { rateLimit } from '@/lib/rate-limit'
 
 /**
  * Generic Facebook Conversions API endpoint
@@ -45,6 +46,15 @@ interface FBEventRequest {
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = await rateLimit(req, {
+      keyPrefix: 'fb-event',
+      limit: 120,
+      windowMs: 60_000,
+    })
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body: FBEventRequest = await req.json()
 
     // Validate required fields

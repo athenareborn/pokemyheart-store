@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PRODUCT } from '@/data/product'
 import { BUNDLES } from '@/data/bundles'
+import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = await rateLimit(req, {
+      keyPrefix: 'checkout-session',
+      limit: 20,
+      windowMs: 60_000,
+    })
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const key = process.env.STRIPE_SECRET_KEY
     if (!key || key.startsWith('sk_test_placeholder')) {
       throw new Error('Stripe secret key not configured')
