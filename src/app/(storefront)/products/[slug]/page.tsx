@@ -231,7 +231,7 @@ export default function ProductPage() {
             <div className="space-y-5">
               {/* Title & Rating */}
               <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
+                <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
                   {PRODUCT.name}
                 </h1>
                 <div className="flex items-center gap-3 mt-3">
