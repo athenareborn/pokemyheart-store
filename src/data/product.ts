@@ -43,12 +43,12 @@ export const PRODUCT = {
   ],
 
   // Free shipping threshold (cents)
-  freeShippingThreshold: 3500, // $35
+  freeShippingThreshold: 0, // $0 (temporary live test)
 
   // Shipping rates (cents)
   shipping: {
-    standard: 495, // $4.95
-    express: 995,  // $9.95
+    standard: 0, // $0.00 (temporary live test)
+    express: 0,  // $0.00 (temporary live test)
   },
 
   // Allowed shipping countries (env var for testing, defaults to US only)
