@@ -26,7 +26,8 @@ function CartExpressCheckoutInner() {
   const [paymentRequest, setPaymentRequest] = useState<StripePaymentRequest | null>(null)
   const [canMakePayment, setCanMakePayment] = useState<boolean | null>(null)
 
-  const { items, getTotal, isFreeShipping, clearCart, closeCart, shippingInsurance, getInsuranceCost } = useCartStore()
+  const { items, getSubtotal, getTotal, isFreeShipping, clearCart, closeCart, shippingInsurance, getInsuranceCost } = useCartStore()
+  const subtotal = getSubtotal()
   const total = getTotal()
   const insuranceCost = getInsuranceCost()
 
@@ -52,30 +53,42 @@ function CartExpressCheckoutInner() {
       return
     }
 
-    // Build displayItems to show line items in Apple Pay/Google Pay sheet
-    const displayItems = items.map(item => {
-      const bundle = BUNDLES.find(b => b.id === item.bundleId)
-      const design = PRODUCT.designs.find(d => d.id === item.designId)
-      return {
-        label: `${design?.name || 'Card'} - ${bundle?.name || 'Bundle'}`,
-        amount: item.price * item.quantity,
-      }
-    })
-
-    // Add shipping line - use PRODUCT constants for consistency
-    const shippingAmount = isFreeShipping() ? 0 : PRODUCT.shipping.standard
-    displayItems.push({
-      label: isFreeShipping() ? 'Free Shipping' : 'Standard Shipping',
-      amount: shippingAmount,
-    })
-
-    // Add shipping insurance if enabled
-    if (shippingInsurance && insuranceCost > 0) {
-      displayItems.push({
-        label: 'Shipping Insurance',
-        amount: insuranceCost,
+    const buildDisplayItems = (shippingAmount: number, shippingLabel: string) => {
+      const lineItems = items.map(item => {
+        const bundle = BUNDLES.find(b => b.id === item.bundleId)
+        const design = PRODUCT.designs.find(d => d.id === item.designId)
+        return {
+          label: `${design?.name || 'Card'} - ${bundle?.name || 'Bundle'}`,
+          amount: item.price * item.quantity,
+        }
       })
+
+      lineItems.push({
+        label: shippingLabel,
+        amount: shippingAmount,
+      })
+
+      if (shippingInsurance && insuranceCost > 0) {
+        lineItems.push({
+          label: 'Shipping Insurance',
+          amount: insuranceCost,
+        })
+      }
+
+      return lineItems
     }
+
+    const getShippingDetails = (shippingOptionId?: string) => {
+      if (isFreeShipping()) {
+        return { amount: 0, label: 'Free Shipping' }
+      }
+      if (shippingOptionId === 'express') {
+        return { amount: PRODUCT.shipping.express, label: 'Express Shipping' }
+      }
+      return { amount: PRODUCT.shipping.standard, label: 'Standard Shipping' }
+    }
+
+    const getTotalAmount = (shippingAmount: number) => subtotal + shippingAmount + insuranceCost
 
     const pr = stripe.paymentRequest({
       country: 'US',
@@ -84,7 +97,10 @@ function CartExpressCheckoutInner() {
         label: 'UltraRareLove Order',
         amount: total,
       },
-      displayItems,
+      displayItems: buildDisplayItems(
+        isFreeShipping() ? 0 : PRODUCT.shipping.standard,
+        isFreeShipping() ? 'Free Shipping' : 'Standard Shipping'
+      ),
       requestPayerName: true,
       requestPayerEmail: true,
       requestShipping: true,
@@ -94,6 +110,36 @@ function CartExpressCheckoutInner() {
         { id: 'standard', label: 'Standard Shipping', detail: '5-7 business days', amount: PRODUCT.shipping.standard },
         { id: 'express', label: 'Express Shipping', detail: '1-3 business days', amount: PRODUCT.shipping.express },
       ],
+    })
+
+    pr.on('shippingaddresschange', (ev) => {
+      const shippingDetails = getShippingDetails()
+      ev.updateWith({
+        status: 'success',
+        total: {
+          label: 'UltraRareLove Order',
+          amount: getTotalAmount(shippingDetails.amount),
+        },
+        displayItems: buildDisplayItems(shippingDetails.amount, shippingDetails.label),
+        shippingOptions: isFreeShipping() ? [
+          { id: 'free', label: 'Free Shipping', detail: '5-7 business days', amount: 0 },
+        ] : [
+          { id: 'standard', label: 'Standard Shipping', detail: '5-7 business days', amount: PRODUCT.shipping.standard },
+          { id: 'express', label: 'Express Shipping', detail: '1-3 business days', amount: PRODUCT.shipping.express },
+        ],
+      })
+    })
+
+    pr.on('shippingoptionchange', (ev) => {
+      const shippingDetails = getShippingDetails(ev.shippingOption?.id)
+      ev.updateWith({
+        status: 'success',
+        total: {
+          label: 'UltraRareLove Order',
+          amount: getTotalAmount(shippingDetails.amount),
+        },
+        displayItems: buildDisplayItems(shippingDetails.amount, shippingDetails.label),
+      })
     })
 
     pr.canMakePayment().then(result => {
@@ -139,7 +185,37 @@ function CartExpressCheckoutInner() {
           return
         }
 
-        const { clientSecret } = await response.json()
+        const { clientSecret, paymentIntentId } = await response.json()
+
+        const shippingOptionId = ev.shippingOption?.id || (isFreeShipping() ? 'free' : 'standard')
+        const shippingMethod = shippingOptionId === 'express' ? 'express' : 'standard'
+        const shippingAddress = ev.shippingAddress ? {
+          name: ev.shippingAddress.recipient || ev.payerName || '',
+          address: {
+            line1: ev.shippingAddress.addressLine?.[0] || '',
+            line2: ev.shippingAddress.addressLine?.[1] || undefined,
+            city: ev.shippingAddress.city || '',
+            state: ev.shippingAddress.region || '',
+            postal_code: ev.shippingAddress.postalCode || '',
+            country: ev.shippingAddress.country || 'US',
+          },
+        } : undefined
+
+        const updateResponse = await fetch('/api/express-checkout', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentIntentId,
+            email: ev.payerEmail,
+            shippingAddress,
+            shippingMethod,
+          }),
+        })
+
+        if (!updateResponse.ok) {
+          ev.complete('fail')
+          return
+        }
 
         const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
           clientSecret,
@@ -181,8 +257,10 @@ function CartExpressCheckoutInner() {
 
     return () => {
       pr.off('paymentmethod')
+      pr.off('shippingaddresschange')
+      pr.off('shippingoptionchange')
     }
-  }, [stripe, items, total, isFreeShipping, shippingInsurance, insuranceCost, clearCart, closeCart, router, getTrackingProducts])
+  }, [stripe, items, subtotal, total, isFreeShipping, shippingInsurance, insuranceCost, clearCart, closeCart, router, getTrackingProducts])
 
   // Don't render anything if wallet payments aren't available
   if (!canMakePayment || !paymentRequest) {

@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProducts, createProduct, generateSlug } from '@/lib/db/products'
 import type { ProductStatus, ProductInsert } from '@/lib/supabase/types'
+import { getAdminUser } from '@/lib/auth/admin'
 
 export async function GET(request: NextRequest) {
   try {
+    const user = await getAdminUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status') as ProductStatus | null
     const limit = searchParams.get('limit')
@@ -36,6 +42,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getAdminUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { name, slug, description, short_description, price, compare_at_price, images, designs, stock, status, sku } = body as ProductInsert
 

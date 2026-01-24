@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { updateTodoStatus, updateTodoNotes, bulkUpdateStatus } from '@/lib/db/todos'
 import type { TodoStatus } from '@/lib/supabase/types'
+import { getAdminUser } from '@/lib/auth/admin'
 
 export async function PATCH(request: NextRequest) {
   try {
+    const user = await getAdminUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { id, ids, status, notes } = body
 
