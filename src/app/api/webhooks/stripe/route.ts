@@ -454,14 +454,11 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent) {
   const customerPhone = paymentIntent.shipping?.phone || undefined
 
   // Shipping address: check metadata first (regular checkout), then paymentIntent.shipping (ExpressCheckout)
+  // For ExpressCheckout, metadata.shipping_address may exist but be empty - prefer Stripe's native shipping
   let shippingAddress = null
-  if (metadata.shipping_address) {
-    try {
-      shippingAddress = JSON.parse(metadata.shipping_address)
-    } catch (error) {
-      console.error('Failed to parse shipping_address metadata:', error)
-    }
-  } else if (paymentIntent.shipping?.address) {
+
+  // First try paymentIntent.shipping (set by Apple Pay/Express checkout)
+  if (paymentIntent.shipping?.address?.line1) {
     shippingAddress = {
       name: paymentIntent.shipping.name || '',
       line1: paymentIntent.shipping.address.line1 || '',
@@ -470,6 +467,17 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent) {
       state: paymentIntent.shipping.address.state || '',
       postal_code: paymentIntent.shipping.address.postal_code || '',
       country: paymentIntent.shipping.address.country || '',
+    }
+  } else if (metadata.shipping_address) {
+    // Fall back to metadata (regular checkout flow)
+    try {
+      const parsed = JSON.parse(metadata.shipping_address)
+      // Only use if it has actual address data
+      if (parsed.line1) {
+        shippingAddress = parsed
+      }
+    } catch (error) {
+      console.error('Failed to parse shipping_address metadata:', error)
     }
   }
 

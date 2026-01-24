@@ -182,21 +182,11 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         successUrl.searchParams.set('customer', stripeCustomerId)
       }
 
+      // Don't include shipping in confirmParams - it was already set server-side via PATCH
+      // Stripe doesn't allow changing shipping set with secret key using publishable key
       const confirmParams = {
         return_url: successUrl.toString(),
         ...(email ? { receipt_email: email } : {}),
-        shipping: {
-          name: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`,
-          address: {
-            line1: data.shippingAddress.address1,
-            line2: data.shippingAddress.address2 || undefined,
-            city: data.shippingAddress.city,
-            state: data.shippingAddress.state,
-            postal_code: data.shippingAddress.postalCode,
-            country: data.shippingAddress.country,
-          },
-          phone: phone || undefined,
-        },
       }
 
       const { error } = await stripe.confirmPayment({
@@ -211,11 +201,9 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           // sessionStorage may not be available
         }
 
-        if (error.type === 'card_error' || error.type === 'validation_error') {
-          setPaymentError(error.message || 'Payment failed. Please try again.')
-        } else {
-          setPaymentError('An unexpected error occurred. Please try again.')
-        }
+        // Always show the actual error message from Stripe for better debugging
+        console.error('Stripe payment error:', error.type, error.message)
+        setPaymentError(error.message || 'Payment failed. Please try again.')
         setIsSubmitting(false)
       }
     } catch {
@@ -597,8 +585,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               <div className="mt-3">
                 <select
                   className={inputClassName(!!errors.shippingAddress?.country)}
-                  value={watch('shippingAddress.country') || defaultCountry}
-                  onChange={(e) => setValue('shippingAddress.country', e.target.value as 'US' | 'AU' | 'CA' | 'GB', { shouldValidate: true })}
+                  {...register('shippingAddress.country')}
                 >
                   {allowedCountries.map((country) => (
                     <option key={country} value={country}>
