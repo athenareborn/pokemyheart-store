@@ -50,6 +50,9 @@ export const PRODUCT = {
     standard: 495, // $4.95
     express: 995,  // $9.95
   },
+
+  // Allowed shipping countries (env var for testing, defaults to US only)
+  allowedShippingCountries: (process.env.NEXT_PUBLIC_ALLOWED_COUNTRIES?.split(',') || ['US']) as ('US' | 'AU' | 'CA' | 'GB')[],
 }
 
 export type Design = typeof PRODUCT.designs[number]

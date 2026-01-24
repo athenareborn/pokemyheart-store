@@ -412,7 +412,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               shippingAddressRequired: true,
               billingAddressRequired: true,
               phoneNumberRequired: true,
-              allowedShippingCountries: ['US'],
+              allowedShippingCountries: PRODUCT.allowedShippingCountries,
               shippingRates: qualifiesForFreeShipping
                 ? [
                     {

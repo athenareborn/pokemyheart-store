@@ -205,7 +205,7 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
           shippingAddressRequired: true,
           billingAddressRequired: true,
           phoneNumberRequired: true,
-          allowedShippingCountries: ['US', 'AU', 'CA', 'GB'],
+          allowedShippingCountries: PRODUCT.allowedShippingCountries,
           shippingRates: bundle && bundle.price >= PRODUCT.freeShippingThreshold
             ? [
                 {
