@@ -595,7 +595,6 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               <div className="mt-3">
                 <select
                   className={inputClassName(!!errors.shippingAddress?.country)}
-                  defaultValue={defaultCountry}
                   {...register('shippingAddress.country')}
                 >
                   {allowedCountries.map((country) => (
