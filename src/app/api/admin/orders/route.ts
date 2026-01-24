@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { updateOrderStatus, updateOrderTracking } from '@/lib/db/orders'
 import type { OrderStatus } from '@/lib/supabase/types'
+import { getAdminUser } from '@/lib/auth/admin'
 
 export async function PATCH(request: NextRequest) {
   try {
+    const user = await getAdminUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { orderId, status, trackingNumber } = body as {
       orderId: string

@@ -70,6 +70,14 @@ export async function POST(req: NextRequest) {
 
     // SECURITY: Validate and calculate subtotal using server-side prices
     let subtotal = 0
+    const orderItemsSummary: Array<{
+      bundle_id: string
+      bundle_name: string
+      design_id: string
+      design_name: string
+      quantity: number
+      price: number
+    }> = []
     for (const item of items) {
       // Validate quantity
       if (!Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 99) {
@@ -88,8 +96,24 @@ export async function POST(req: NextRequest) {
         )
       }
 
+      const design = PRODUCT.designs.find(d => d.id === item.designId)
+      if (!design) {
+        return NextResponse.json(
+          { error: 'Invalid design', details: `Design ${item.designId} not found` },
+          { status: 400 }
+        )
+      }
+
       // Use server-side price, not client-provided price
       subtotal += bundle.price * item.quantity
+      orderItemsSummary.push({
+        bundle_id: bundle.id,
+        bundle_name: bundle.name,
+        design_id: design.id,
+        design_name: design.name,
+        quantity: item.quantity,
+        price: bundle.price,
+      })
     }
 
     // Calculate shipping
@@ -109,16 +133,6 @@ export async function POST(req: NextRequest) {
 
     // Calculate total
     const total = subtotal + shippingCost - validDiscountAmount
-
-    // Build order summary for metadata
-    const orderItemsSummary = items.map((item) => ({
-      bundle_id: item.bundleId,
-      bundle_name: item.bundleName,
-      design_id: item.designId,
-      design_name: item.designName,
-      quantity: item.quantity,
-      price: item.price,
-    }))
 
     // Build shipping object only if we have address data
     const hasShippingData = shippingAddress.firstName && shippingAddress.address1
@@ -208,8 +222,15 @@ export async function PATCH(req: NextRequest) {
       shippingAddress,
     } = body
 
+    // Retrieve existing PaymentIntent to preserve metadata and trust server-side subtotal
+    const existingIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    const existingMetadata = existingIntent.metadata || {}
+    const storedSubtotal = parseInt(existingMetadata.subtotal || '0')
+    const requestedSubtotal = typeof subtotal === 'number' && Number.isFinite(subtotal) ? subtotal : 0
+    const effectiveSubtotal = storedSubtotal > 0 ? storedSubtotal : requestedSubtotal
+
     // Calculate shipping
-    const qualifiesForFreeShipping = subtotal >= PRODUCT.freeShippingThreshold
+    const qualifiesForFreeShipping = effectiveSubtotal >= PRODUCT.freeShippingThreshold
     let shippingCost = 0
 
     if (shippingMethod === 'express') {
@@ -224,10 +245,10 @@ export async function PATCH(req: NextRequest) {
     const insuranceCost = shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0
 
     // Validate discount amount in PATCH as well
-    const validDiscountAmount = Math.max(0, Math.min(discountAmount, subtotal))
+    const validDiscountAmount = Math.max(0, Math.min(discountAmount, effectiveSubtotal))
 
     // Calculate new total (subtotal + shipping + insurance - discount)
-    const total = subtotal + shippingCost + insuranceCost - validDiscountAmount
+    const total = effectiveSubtotal + shippingCost + insuranceCost - validDiscountAmount
 
     // Create or find Stripe Customer for 1-click post-purchase offers
     let stripeCustomerId: string | undefined
@@ -263,10 +284,6 @@ export async function PATCH(req: NextRequest) {
         stripeCustomerId = newCustomer.id
       }
     }
-
-    // First, retrieve existing PaymentIntent to preserve its metadata
-    const existingIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
-    const existingMetadata = existingIntent.metadata || {}
 
     // Update Payment Intent with customer and setup_future_usage to save payment method
     // IMPORTANT: Merge with existing metadata to preserve items, source, etc.
@@ -326,7 +343,7 @@ export async function PATCH(req: NextRequest) {
       paymentIntentId: paymentIntent.id,
       stripeCustomerId,
       amount: total,
-      subtotal,
+      subtotal: effectiveSubtotal,
       shippingCost,
       insuranceCost,
       discountAmount: validDiscountAmount,

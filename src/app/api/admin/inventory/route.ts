@@ -6,9 +6,15 @@ import {
   updateLowStockThreshold,
   getInventoryAdjustments,
 } from '@/lib/db/inventory'
+import { getAdminUser } from '@/lib/auth/admin'
 
 export async function GET(request: NextRequest) {
   try {
+    const user = await getAdminUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const searchParams = request.nextUrl.searchParams
     const includeAdjustments = searchParams.get('includeAdjustments') === 'true'
     const inventoryId = searchParams.get('inventoryId')
@@ -22,7 +28,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    let response: Record<string, unknown> = { inventory }
+    const response: Record<string, unknown> = { inventory }
 
     if (includeAdjustments) {
       const { adjustments } = await getInventoryAdjustments(inventoryId || undefined)
@@ -41,6 +47,11 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const user = await getAdminUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { id, quantity, adjustment, adjustmentType, threshold, reason } = body as {
       id: string

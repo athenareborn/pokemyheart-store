@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { sendShippingNotification } from '@/lib/email'
 import type { Order, OrderStatus } from '@/lib/supabase/types'
+import { getAdminUser } from '@/lib/auth/admin'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -10,6 +11,11 @@ interface RouteParams {
 // GET - Fetch single order by ID
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const user = await getAdminUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { id } = await params
     const supabase = createAdminClient()
 
@@ -39,6 +45,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // PATCH - Update order (status, tracking, fulfillment)
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
+    const user = await getAdminUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { id } = await params
     const body = await request.json()
     const {

@@ -193,6 +193,7 @@ export async function PATCH(req: NextRequest) {
     // Get current Payment Intent to access metadata
     const currentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
     const subtotal = parseInt(currentIntent.metadata?.subtotal || '0')
+    const insuranceCost = parseInt(currentIntent.metadata?.shipping_insurance_amount || '0')
 
     // Calculate shipping
     const qualifiesForFreeShipping = subtotal >= PRODUCT.freeShippingThreshold
@@ -206,7 +207,7 @@ export async function PATCH(req: NextRequest) {
       shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
     }
 
-    const total = subtotal + shippingCost
+    const total = subtotal + shippingCost + insuranceCost
 
     // Update Payment Intent
     const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
@@ -246,6 +247,7 @@ export async function PATCH(req: NextRequest) {
       amount: total,
       subtotal,
       shippingCost,
+      insuranceCost,
     })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
