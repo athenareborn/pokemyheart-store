@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/rate-limit'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Email validation regex
@@ -6,6 +7,15 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitResponse = await rateLimit(request, {
+      keyPrefix: 'newsletter',
+      limit: 10,
+      windowMs: 60_000,
+    })
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = await request.json()
     const { email } = body
 

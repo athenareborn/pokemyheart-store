@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rateLimit } from '@/lib/rate-limit'
 
 // Discount codes configuration
 // In production, this would come from a database
@@ -29,6 +30,15 @@ const DISCOUNT_CODES: Record<
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = await rateLimit(req, {
+      keyPrefix: 'discount-validate',
+      limit: 30,
+      windowMs: 60_000,
+    })
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = await req.json()
     const { code, subtotal } = body
 
