@@ -15,7 +15,7 @@ export interface CartItem {
 }
 
 // Shipping insurance price in cents
-export const SHIPPING_INSURANCE_PRICE = 0 // $0.00 (temporary live test)
+export const SHIPPING_INSURANCE_PRICE = 299 // $2.99
 
 interface CartState {
   items: CartItem[]

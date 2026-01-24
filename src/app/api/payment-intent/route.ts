@@ -5,7 +5,7 @@ import { BUNDLES } from '@/data/bundles'
 import { rateLimit } from '@/lib/rate-limit'
 
 // Shipping insurance price in cents - must match cart.ts
-const SHIPPING_INSURANCE_PRICE = 0 // $0.00 (temporary live test)
+const SHIPPING_INSURANCE_PRICE = 299 // $2.99
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
