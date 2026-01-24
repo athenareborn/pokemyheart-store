@@ -700,62 +700,54 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           />
         </div>
 
-        {/* Order recap */}
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-gray-900">Order recap</h3>
-            <span className="text-xs text-gray-500">
-              {itemCount} item{itemCount === 1 ? '' : 's'}
-            </span>
-          </div>
-          <div className="mt-3 space-y-3">
-            {items.map((item) => {
-              const bundle = BUNDLES.find(b => b.id === item.bundleId)
-              const design = PRODUCT.designs.find(d => d.id === item.designId)
-              return (
-                <div key={item.id} className="flex items-center gap-3">
-                  <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-gray-200 bg-white flex-shrink-0">
+        {/* Order recap - compact */}
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          {/* Product thumbnails row */}
+          <div className="flex items-center gap-2">
+            <div className="flex -space-x-2">
+              {items.map((item) => {
+                const design = PRODUCT.designs.find(d => d.id === item.designId)
+                return (
+                  <div key={item.id} className="relative w-10 h-10 rounded-md overflow-hidden border-2 border-white bg-white flex-shrink-0 shadow-sm">
                     {design?.thumbnail && (
                       <Image
                         src={design.thumbnail}
                         alt={design.name}
                         fill
                         className="object-cover"
-                        sizes="44px"
+                        sizes="40px"
                       />
                     )}
-                    <div className="absolute -bottom-1 -right-1 rounded-full bg-gray-900 text-white text-[10px] font-semibold px-1.5 py-0.5 shadow-sm ring-2 ring-white">
-                      x{item.quantity}
-                    </div>
+                    {item.quantity > 1 && (
+                      <div className="absolute top-0 right-0 bg-gray-900 text-white text-[9px] font-bold min-w-[14px] h-[14px] flex items-center justify-center rounded-bl-sm">
+                        {item.quantity}
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">
-                      {bundle?.name || "Valentine's Pack"}
-                    </p>
-                    <p className="text-[11px] text-gray-500 truncate">
-                      {design?.name || 'Design'}
-                    </p>
-                  </div>
-                  <span className="text-xs font-semibold text-gray-900">
-                    {formatPrice(item.price * item.quantity)}
-                  </span>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
+            <div className="flex-1 min-w-0 ml-1">
+              <p className="text-xs text-gray-600">{itemCount} item{itemCount === 1 ? '' : 's'}</p>
+            </div>
+            <span className="text-sm font-semibold text-gray-900">
+              {formatPrice(total)}
+            </span>
           </div>
-          {/* Line items breakdown */}
-          <div className="mt-3 pt-3 border-t border-gray-200 space-y-2 text-sm">
-            <div className="flex justify-between text-gray-600">
+
+          {/* Expandable breakdown - just key lines */}
+          <div className="mt-2 pt-2 border-t border-gray-200 space-y-1 text-xs text-gray-500">
+            <div className="flex justify-between">
               <span>Subtotal</span>
               <span>{formatPrice(subtotal)}</span>
             </div>
-            <div className="flex justify-between text-gray-600">
+            <div className="flex justify-between">
               <span>Shipping</span>
-              <span>{shippingCost === 0 ? <span className="text-green-600">Free</span> : formatPrice(shippingCost)}</span>
+              <span>{shippingCost === 0 ? 'Free' : formatPrice(shippingCost)}</span>
             </div>
             {shippingInsurance && (
-              <div className="flex justify-between text-gray-600">
-                <span>Package Protection</span>
+              <div className="flex justify-between">
+                <span>Protection</span>
                 <span>{formatPrice(SHIPPING_INSURANCE_PRICE)}</span>
               </div>
             )}
@@ -765,11 +757,6 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
                 <span>-{formatPrice(discountAmount)}</span>
               </div>
             )}
-          </div>
-
-          <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between text-base font-semibold">
-            <span>Total</span>
-            <span>{formatPrice(total)}</span>
           </div>
         </div>
 

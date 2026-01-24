@@ -35,10 +35,12 @@ const OrderItem = memo(function OrderItem({ item }: OrderItemProps) {
             sizes="64px"
           />
         )}
-        {/* Quantity badge */}
-        <div className="absolute -bottom-2 -right-2 rounded-full bg-gray-900 text-white text-[10px] font-semibold px-2 py-0.5 shadow-sm ring-2 ring-white">
-          Qty {item.quantity}
-        </div>
+        {/* Quantity badge - top right corner */}
+        {item.quantity > 1 && (
+          <div className="absolute top-0 right-0 bg-gray-900 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-bl-md">
+            {item.quantity}
+          </div>
+        )}
       </div>
 
       {/* Item details */}

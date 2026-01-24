@@ -444,11 +444,11 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
       <Button
         onClick={handleBuyNow}
         className={compact
-          ? 'w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm'
-          : 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 font-semibold'
+          ? 'w-full h-11 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm'
+          : 'w-full bg-brand-500 hover:bg-brand-600 text-white py-6 text-lg font-semibold'
         }
       >
-        <Zap className="mr-1.5 h-4 w-4" />
+        <Zap className="mr-2 h-5 w-5" />
         Buy Now
       </Button>
     )
@@ -483,11 +483,11 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
           <Button
             onClick={handleBuyNow}
             className={compact
-              ? 'w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm'
-              : 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 font-semibold'
+              ? 'w-full h-11 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm'
+              : 'w-full bg-brand-500 hover:bg-brand-600 text-white py-6 text-lg font-semibold'
             }
           >
-            <Zap className="mr-1.5 h-4 w-4" />
+            <Zap className="mr-2 h-5 w-5" />
             Buy Now
           </Button>
         )}
