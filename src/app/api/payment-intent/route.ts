@@ -151,11 +151,13 @@ export async function POST(req: NextRequest) {
     // Build shipping object only if we have address data
     const hasShippingData = shippingAddress.firstName && shippingAddress.address1
 
-    // Create Payment Intent - card only (no Link)
+    // Create Payment Intent with automatic payment methods (supports Apple Pay, Google Pay, cards)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: total,
       currency: 'usd',
-      payment_method_types: ['card'],
+      automatic_payment_methods: {
+        enabled: true,
+      },
       metadata: {
         source: 'ultrararelove-store',
         items: JSON.stringify(orderItemsSummary),
