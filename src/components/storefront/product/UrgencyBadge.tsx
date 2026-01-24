@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
-// Generate high-urgency "sold today" numbers
+// Generate believable "sold today" numbers
 function getSoldToday() {
   const now = new Date()
   const hour = now.getHours()
@@ -13,33 +13,32 @@ function getSoldToday() {
   const valentinesDate = new Date('2026-02-14')
   const daysUntil = Math.ceil((valentinesDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
-  // Aggressive Valentine's multipliers
-  let seasonMultiplier = 1.5
-  if (daysUntil <= 3) seasonMultiplier = 6
-  else if (daysUntil <= 7) seasonMultiplier = 5
-  else if (daysUntil <= 14) seasonMultiplier = 4
-  else if (daysUntil <= 21) seasonMultiplier = 3
-  else if (daysUntil <= 30) seasonMultiplier = 2.5
+  // Modest Valentine's multipliers
+  let seasonMultiplier = 1.0
+  if (daysUntil <= 3) seasonMultiplier = 1.6
+  else if (daysUntil <= 7) seasonMultiplier = 1.4
+  else if (daysUntil <= 14) seasonMultiplier = 1.25
+  else if (daysUntil <= 30) seasonMultiplier = 1.1
 
-  // Higher base numbers - cumulative throughout the day
+  // Realistic base numbers - builds throughout day
   const hourlyPattern: Record<number, number> = {
-    0: 18, 1: 19, 2: 20, 3: 21, 4: 22, 5: 24,
-    6: 28, 7: 34, 8: 42, 9: 52, 10: 64, 11: 78,
-    12: 94, 13: 112, 14: 132, 15: 154, 16: 178, 17: 204,
-    18: 232, 19: 262, 20: 294, 21: 328, 22: 364, 23: 402
+    0: 8, 1: 8, 2: 9, 3: 9, 4: 10, 5: 11,
+    6: 13, 7: 16, 8: 19, 9: 23, 10: 27, 11: 31,
+    12: 35, 13: 39, 14: 43, 15: 47, 16: 51, 17: 55,
+    18: 58, 19: 62, 20: 65, 21: 68, 22: 71, 23: 74
   }
 
-  let baseSold = hourlyPattern[hour] || 18
-  if (isWeekend) baseSold = Math.floor(baseSold * 1.4)
+  let baseSold = hourlyPattern[hour] || 12
+  if (isWeekend) baseSold = Math.floor(baseSold * 1.15)
   baseSold = Math.floor(baseSold * seasonMultiplier)
 
   // Add some variance so it doesn't look static
   const seed = Math.floor(Date.now() / 60000)
-  const variance = ((seed % 15) - 7) / 100
+  const variance = ((seed % 10) - 5) / 100
   baseSold = Math.floor(baseSold * (1 + variance))
 
-  // Minimum 18 at any hour
-  return Math.max(18, baseSold)
+  // Range: ~8-85 depending on time/season
+  return Math.max(8, Math.min(baseSold, 89))
 }
 
 export function UrgencyBadge() {
