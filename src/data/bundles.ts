@@ -2,7 +2,7 @@ export const BUNDLES = [
   {
     id: 'card-only',
     name: 'Card Only',
-    price: 100,      // $1.00 in cents (temporary live test)
+    price: 2495,      // $24.95 in cents
     compareAt: 2995,  // $29.95 in cents
     description: 'Simple, sleek, unforgettable',
     includes: ['Premium Holographic Card', 'Envelope'],
@@ -12,7 +12,7 @@ export const BUNDLES = [
   {
     id: 'love-pack',
     name: "Valentine's Pack",
-    price: 100,      // $1.00 in cents (temporary live test)
+    price: 3795,      // $37.95 in cents
     compareAt: 4995,  // $49.95 in cents
     description: 'Card + premium display case to showcase your love!',
     includes: ['Premium Holographic Card', 'Display Case', 'Display Stand', 'Envelope'],
@@ -22,7 +22,7 @@ export const BUNDLES = [
   {
     id: 'deluxe-love',
     name: 'Deluxe Valentine',
-    price: 100,      // $1.00 in cents (temporary live test)
+    price: 5495,      // $54.95 in cents
     compareAt: 7495,  // $74.95 in cents
     description: "Everything in the Valentine's Pack, plus a luxury gift box for a special touch.",
     includes: ['Premium Holographic Card', 'Premium Display Case', 'Premium Stand', 'Luxury Gift Box', 'Tissue Paper', 'Envelope'],
