@@ -51,8 +51,10 @@ export const PRODUCT = {
     express: 0,  // $0.00 (temporary live test)
   },
 
-  // Allowed shipping countries (env var for testing, defaults to US only)
-  allowedShippingCountries: (process.env.NEXT_PUBLIC_ALLOWED_COUNTRIES?.split(',') || ['US']) as ('US' | 'AU' | 'CA' | 'GB')[],
+  // Allowed shipping countries (force AU during test even if env is stale)
+  allowedShippingCountries: Array.from(
+    new Set(['US', 'AU', ...(process.env.NEXT_PUBLIC_ALLOWED_COUNTRIES?.split(',') || [])])
+  ) as ('US' | 'AU' | 'CA' | 'GB')[],
 }
 
 export type Design = typeof PRODUCT.designs[number]
