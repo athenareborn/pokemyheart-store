@@ -62,6 +62,10 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
   const { items, getSubtotal, isFreeShipping, shippingInsurance, setShippingInsurance } = useCartStore()
   const subtotal = getSubtotal()
   const qualifiesForFreeShipping = isFreeShipping()
+  const allowedCountries = PRODUCT.allowedShippingCountries.length
+    ? PRODUCT.allowedShippingCountries
+    : (['US'] as Array<'US' | 'AU' | 'CA' | 'GB'>)
+  const defaultCountry = allowedCountries[0] ?? 'US'
 
   const {
     register,
@@ -82,7 +86,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         city: '',
         state: '',
         postalCode: '',
-        country: 'US',
+        country: defaultCountry,
         phone: '',
       },
       shippingMethod: 'standard',
@@ -587,7 +591,26 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
                 )}
               </div>
             </div>
-            <input type="hidden" defaultValue="US" {...register('shippingAddress.country')} />
+            {allowedCountries.length > 1 ? (
+              <div className="mt-3">
+                <select
+                  className={inputClassName(!!errors.shippingAddress?.country)}
+                  defaultValue={defaultCountry}
+                  {...register('shippingAddress.country')}
+                >
+                  {allowedCountries.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
+                {errors.shippingAddress?.country && (
+                  <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.country.message}</p>
+                )}
+              </div>
+            ) : (
+              <input type="hidden" value={defaultCountry} {...register('shippingAddress.country')} />
+            )}
           </div>
         </div>
 
