@@ -597,7 +597,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               <div className="mt-3">
                 <select
                   className={inputClassName(!!errors.shippingAddress?.country)}
-                  {...register('shippingAddress.country')}
+                  value={watch('shippingAddress.country') || defaultCountry}
+                  onChange={(e) => setValue('shippingAddress.country', e.target.value as 'US' | 'AU' | 'CA' | 'GB', { shouldValidate: true })}
                 >
                   {allowedCountries.map((country) => (
                     <option key={country} value={country}>
