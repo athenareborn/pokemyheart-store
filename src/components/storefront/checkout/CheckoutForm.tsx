@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PaymentElement, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import type { StripeExpressCheckoutElementConfirmEvent } from '@stripe/stripe-js'
 import { Loader2, Lock } from 'lucide-react'
 import { checkoutFormSchema, type CheckoutFormInput } from '@/lib/validation/checkout-schema'
 import { useCartStore, SHIPPING_INSURANCE_PRICE } from '@/lib/store/cart'
@@ -13,12 +15,34 @@ import { formatPrice } from '@/lib/utils'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
 import { saveUserData } from '@/lib/analytics/user-data-store'
 
-const COUNTRIES = [
-  { code: 'US', name: 'United States' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'AU', name: 'Australia' },
-] as const
+const splitName = (fullName: string | null | undefined) => {
+  const trimmed = fullName?.trim() || ''
+  if (!trimmed) {
+    return { firstName: '', lastName: '' }
+  }
+  const parts = trimmed.split(/\s+/)
+  return {
+    firstName: parts[0] || '',
+    lastName: parts.slice(1).join(' '),
+  }
+}
+
+const parseUsAddress = (value: string) => {
+  const parts = value.split(',').map(part => part.trim()).filter(Boolean)
+  if (parts.length < 3) return null
+
+  const city = parts[parts.length - 2]
+  const stateZip = parts[parts.length - 1].split(/\s+/).filter(Boolean)
+  if (stateZip.length < 2) return null
+
+  const state = stateZip[0].toUpperCase()
+  const postalCode = stateZip.slice(1).join(' ')
+
+  if (!/^[A-Z]{2}$/.test(state)) return null
+  if (!/^\d{5}(-\d{4})?$/.test(postalCode)) return null
+
+  return { city, state, postalCode }
+}
 
 interface CheckoutFormProps {
   onShippingMethodChange: (method: 'standard' | 'express') => void
@@ -43,6 +67,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
     register,
     handleSubmit,
     watch,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<CheckoutFormInput>({
     resolver: zodResolver(checkoutFormSchema),
@@ -79,6 +105,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
 
   const insuranceCost = shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0
   const total = subtotal + shippingCost + insuranceCost - discountAmount
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+  const showExpressCheckout = !hideExpressCheckout
 
   const onSubmit = async (data: CheckoutFormInput) => {
     if (!stripe || !elements || !clientSecret) {
@@ -89,9 +117,12 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
     setIsSubmitting(true)
     setPaymentError(null)
 
+    const email = typeof data.email === 'string' ? data.email.trim() : ''
+    const phone = data.shippingAddress.phone?.trim() || ''
+
     saveUserData({
-      email: data.email,
-      phone: data.shippingAddress.phone,
+      ...(email ? { email } : {}),
+      ...(phone ? { phone } : {}),
       firstName: data.shippingAddress.firstName,
       lastName: data.shippingAddress.lastName,
       city: data.shippingAddress.city,
@@ -132,7 +163,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           discountCode,
           shippingInsurance,
           fbEventId: purchaseEventId,
-          email: data.email,
+          ...(email ? { email } : {}),
           customerName: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`.trim(),
           shippingAddress: data.shippingAddress,
         }),
@@ -147,24 +178,26 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         successUrl.searchParams.set('customer', stripeCustomerId)
       }
 
+      const confirmParams = {
+        return_url: successUrl.toString(),
+        ...(email ? { receipt_email: email } : {}),
+        shipping: {
+          name: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`,
+          address: {
+            line1: data.shippingAddress.address1,
+            line2: data.shippingAddress.address2 || undefined,
+            city: data.shippingAddress.city,
+            state: data.shippingAddress.state,
+            postal_code: data.shippingAddress.postalCode,
+            country: data.shippingAddress.country,
+          },
+          phone: phone || undefined,
+        },
+      }
+
       const { error } = await stripe.confirmPayment({
         elements,
-        confirmParams: {
-          return_url: successUrl.toString(),
-          receipt_email: data.email,
-          shipping: {
-            name: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`,
-            address: {
-              line1: data.shippingAddress.address1,
-              line2: data.shippingAddress.address2 || undefined,
-              city: data.shippingAddress.city,
-              state: data.shippingAddress.state,
-              postal_code: data.shippingAddress.postalCode,
-              country: data.shippingAddress.country,
-            },
-            phone: data.shippingAddress.phone || undefined,
-          },
-        },
+        confirmParams,
       })
 
       if (error) {
@@ -192,11 +225,82 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       hasError ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
     }`
 
-  const onExpressCheckoutConfirm = async () => {
-    if (!stripe || !elements) return
+  const handleAddressBlur = (value: string) => {
+    const trimmed = value.trim()
+    if (!trimmed) return
+
+    const parsed = parseUsAddress(trimmed)
+    if (!parsed) return
+
+    const current = getValues('shippingAddress')
+    if (!current.city) {
+      setValue('shippingAddress.city', parsed.city, { shouldValidate: true, shouldDirty: true })
+    }
+    if (!current.state) {
+      setValue('shippingAddress.state', parsed.state, { shouldValidate: true, shouldDirty: true })
+    }
+    if (!current.postalCode) {
+      setValue('shippingAddress.postalCode', parsed.postalCode, { shouldValidate: true, shouldDirty: true })
+    }
+  }
+
+  const address1Register = register('shippingAddress.address1')
+
+  const onExpressCheckoutConfirm = async (event: StripeExpressCheckoutElementConfirmEvent) => {
+    if (!stripe || !elements || !clientSecret) {
+      event.paymentFailed({ reason: 'fail', message: 'Payment system not ready. Please refresh and try again.' })
+      setPaymentError('Payment system not ready. Please refresh and try again.')
+      return
+    }
 
     setIsSubmitting(true)
     setPaymentError(null)
+
+    const billingDetails = event.billingDetails
+    const shippingDetails = event.shippingAddress
+    const shippingRateId = event.shippingRate?.id || (qualifiesForFreeShipping ? 'free-shipping' : 'standard-shipping')
+    const shippingMethod = shippingRateId === 'express-shipping' ? 'express' : 'standard'
+    const email = billingDetails?.email || ''
+    const phone = billingDetails?.phone || ''
+    const name = shippingDetails?.name || billingDetails?.name || ''
+    const { firstName, lastName } = splitName(name)
+
+    if (!shippingDetails) {
+      event.paymentFailed({ reason: 'invalid_shipping_address', message: 'Shipping address is required.' })
+      setPaymentError('Shipping address is required for express checkout.')
+      setIsSubmitting(false)
+      return
+    }
+
+    if (!email) {
+      event.paymentFailed({ reason: 'invalid_payment_data', message: 'Email is required.' })
+      setPaymentError('Email is required for express checkout.')
+      setIsSubmitting(false)
+      return
+    }
+
+    const shippingAddress = {
+      firstName,
+      lastName,
+      address1: shippingDetails.address.line1,
+      address2: shippingDetails.address.line2 || '',
+      city: shippingDetails.address.city,
+      state: shippingDetails.address.state,
+      postalCode: shippingDetails.address.postal_code,
+      country: shippingDetails.address.country,
+      phone,
+    }
+
+    saveUserData({
+      email,
+      phone,
+      firstName,
+      lastName,
+      city: shippingDetails.address.city,
+      state: shippingDetails.address.state,
+      postalCode: shippingDetails.address.postal_code,
+      country: shippingDetails.address.country,
+    })
 
     try {
       const purchaseEventId = generateEventId('purchase')
@@ -219,33 +323,70 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       }
       sessionStorage.setItem('fb_purchase_data', JSON.stringify(purchaseData))
 
-      await fetch('/api/payment-intent', {
+      const patchResponse = await fetch('/api/payment-intent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          paymentIntentId: clientSecret?.split('_secret_')[0],
-          shippingMethod: 'standard',
+          paymentIntentId: clientSecret.split('_secret_')[0],
+          shippingMethod,
           subtotal,
           discountAmount,
           discountCode,
           shippingInsurance,
           fbEventId: purchaseEventId,
+          email,
+          customerName: name,
+          shippingAddress,
         }),
       })
+
+      if (!patchResponse.ok) {
+        event.paymentFailed({ reason: 'fail', message: 'Failed to update shipping details. Please try again.' })
+        setPaymentError('Failed to update shipping details. Please try again.')
+        setIsSubmitting(false)
+        return
+      }
+
+      const patchData = await patchResponse.json()
+      const stripeCustomerId = patchData.stripeCustomerId
+
+      const successUrl = new URL(`${window.location.origin}/checkout/success`)
+      if (stripeCustomerId) {
+        successUrl.searchParams.set('customer', stripeCustomerId)
+      }
 
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/checkout/success`,
+          return_url: successUrl.toString(),
+          receipt_email: email,
+          shipping: {
+            name: name || `${firstName} ${lastName}`.trim(),
+            address: {
+              line1: shippingDetails.address.line1,
+              line2: shippingDetails.address.line2 || undefined,
+              city: shippingDetails.address.city,
+              state: shippingDetails.address.state,
+              postal_code: shippingDetails.address.postal_code,
+              country: shippingDetails.address.country,
+            },
+            phone: phone || undefined,
+          },
         },
       })
 
       if (error) {
-        sessionStorage.removeItem('fb_purchase_data')
+        try {
+          sessionStorage.removeItem('fb_purchase_data')
+        } catch {
+          // sessionStorage may not be available
+        }
+        event.paymentFailed({ reason: 'fail', message: error.message || 'Express checkout failed.' })
         setPaymentError(error.message || 'Express checkout failed. Please try again.')
         setIsSubmitting(false)
       }
     } catch {
+      event.paymentFailed({ reason: 'fail', message: 'Express checkout failed. Please try again.' })
       setPaymentError('Express checkout failed. Please try again.')
       setIsSubmitting(false)
     }
@@ -254,22 +395,74 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
   return (
     <div className="space-y-4">
       {/* Express Checkout - Hidden if no Apple Pay / Google Pay available */}
-      {!hideExpressCheckout && (
-        <div className="mb-4">
+      {showExpressCheckout && (
+        <div className="rounded-xl border border-gray-200 bg-white p-4 lg:p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Express checkout</p>
           <ExpressCheckoutElement
             onReady={({ availablePaymentMethods }) => {
               if (!availablePaymentMethods || Object.keys(availablePaymentMethods).length === 0) {
                 setHideExpressCheckout(true)
               }
             }}
+            onShippingAddressChange={({ resolve }) => resolve({})}
+            onShippingRateChange={({ resolve }) => resolve({})}
             onConfirm={onExpressCheckoutConfirm}
             options={{
+              emailRequired: true,
+              shippingAddressRequired: true,
+              billingAddressRequired: true,
+              phoneNumberRequired: true,
+              allowedShippingCountries: ['US'],
+              shippingRates: qualifiesForFreeShipping
+                ? [
+                    {
+                      id: 'free-shipping',
+                      displayName: 'Free Shipping',
+                      amount: 0,
+                      deliveryEstimate: {
+                        minimum: { unit: 'day', value: 5 },
+                        maximum: { unit: 'day', value: 7 },
+                      },
+                    },
+                  ]
+                : [
+                    {
+                      id: 'standard-shipping',
+                      displayName: 'Standard Shipping',
+                      amount: PRODUCT.shipping.standard,
+                      deliveryEstimate: {
+                        minimum: { unit: 'day', value: 5 },
+                        maximum: { unit: 'day', value: 7 },
+                      },
+                    },
+                    {
+                      id: 'express-shipping',
+                      displayName: 'Express Shipping',
+                      amount: PRODUCT.shipping.express,
+                      deliveryEstimate: {
+                        minimum: { unit: 'day', value: 1 },
+                        maximum: { unit: 'day', value: 3 },
+                      },
+                    },
+                  ],
               buttonType: {
                 applePay: 'buy',
                 googlePay: 'buy',
               },
+              layout: {
+                maxColumns: 1,
+                maxRows: 2,
+              },
             }}
           />
+        </div>
+      )}
+
+      {showExpressCheckout && (
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs font-semibold text-gray-400">OR</span>
+          <div className="h-px flex-1 bg-gray-200" />
         </div>
       )}
 
@@ -278,16 +471,36 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
         {/* Contact */}
         <div className="pb-5">
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Contact</h2>
-          <input
-            type="email"
-            placeholder="Email"
-            autoComplete="email"
-            className={inputClassName(!!errors.email)}
-            {...register('email')}
-          />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-          )}
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+            <div>
+              <input
+                type="email"
+                placeholder="Email"
+                autoComplete="email"
+                className={inputClassName(!!errors.email)}
+                {...register('email')}
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
+            </div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest text-center">
+              or
+            </div>
+            <div>
+              <input
+                type="tel"
+                placeholder="Phone"
+                autoComplete="tel"
+                className={inputClassName(!!errors.shippingAddress?.phone)}
+                {...register('shippingAddress.phone')}
+              />
+              {errors.shippingAddress?.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.phone.message}</p>
+              )}
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-gray-500">We'll send updates to the contact you provide.</p>
         </div>
 
         {/* Divider */}
@@ -329,20 +542,25 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
             <div>
               <input
                 type="text"
-                placeholder="Address"
-                autoComplete="address-line1"
+                placeholder="Street address"
+                autoComplete="shipping address-line1"
                 className={inputClassName(!!errors.shippingAddress?.address1)}
-                {...register('shippingAddress.address1')}
+                {...address1Register}
+                onBlur={(event) => {
+                  address1Register.onBlur(event)
+                  handleAddressBlur(event.target.value)
+                }}
               />
               {errors.shippingAddress?.address1 && (
                 <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.address1.message}</p>
               )}
+              <p className="mt-1 text-xs text-gray-400">Paste your full address to auto-fill city, state, and ZIP.</p>
             </div>
 
             <input
               type="text"
               placeholder="Apartment, suite, etc. (optional)"
-              autoComplete="address-line2"
+              autoComplete="shipping address-line2"
               className={inputClassName(false)}
               {...register('shippingAddress.address2')}
             />
@@ -352,7 +570,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               <input
                 type="text"
                 placeholder="City"
-                autoComplete="address-level2"
+                autoComplete="shipping address-level2"
                 className={inputClassName(!!errors.shippingAddress?.city)}
                 {...register('shippingAddress.city')}
               />
@@ -361,13 +579,13 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               )}
             </div>
 
-            {/* State, ZIP, Country - 3 column on desktop */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* State and ZIP */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <input
                   type="text"
                   placeholder="State"
-                  autoComplete="address-level1"
+                  autoComplete="shipping address-level1"
                   className={inputClassName(!!errors.shippingAddress?.state)}
                   {...register('shippingAddress.state')}
                 />
@@ -379,7 +597,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
                 <input
                   type="text"
                   placeholder="ZIP code"
-                  autoComplete="postal-code"
+                  autoComplete="shipping postal-code"
                   className={inputClassName(!!errors.shippingAddress?.postalCode)}
                   {...register('shippingAddress.postalCode')}
                 />
@@ -387,32 +605,8 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
                   <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.postalCode.message}</p>
                 )}
               </div>
-              <div>
-                <select
-                  autoComplete="country"
-                  className={inputClassName(!!errors.shippingAddress?.country)}
-                  {...register('shippingAddress.country')}
-                >
-                  {COUNTRIES.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.shippingAddress?.country && (
-                  <p className="mt-1 text-sm text-red-600">{errors.shippingAddress.country.message}</p>
-                )}
-              </div>
             </div>
-
-            {/* Phone */}
-            <input
-              type="tel"
-              placeholder="Phone (optional)"
-              autoComplete="tel"
-              className={inputClassName(false)}
-              {...register('shippingAddress.phone')}
-            />
+            <input type="hidden" defaultValue="US" {...register('shippingAddress.country')} />
           </div>
         </div>
 
@@ -526,9 +720,58 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           />
         </div>
 
+        {/* Order recap */}
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-gray-900">Order recap</h3>
+            <span className="text-xs text-gray-500">
+              {itemCount} item{itemCount === 1 ? '' : 's'}
+            </span>
+          </div>
+          <div className="mt-3 space-y-3">
+            {items.map((item) => {
+              const bundle = BUNDLES.find(b => b.id === item.bundleId)
+              const design = PRODUCT.designs.find(d => d.id === item.designId)
+              return (
+                <div key={item.id} className="flex items-center gap-3">
+                  <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-gray-200 bg-white flex-shrink-0">
+                    {design?.thumbnail && (
+                      <Image
+                        src={design.thumbnail}
+                        alt={design.name}
+                        fill
+                        className="object-cover"
+                        sizes="44px"
+                      />
+                    )}
+                    <div className="absolute -bottom-1 -right-1 rounded-full bg-gray-900 text-white text-[10px] font-semibold px-1.5 py-0.5 shadow-sm ring-2 ring-white">
+                      x{item.quantity}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-900 truncate">
+                      {bundle?.name || "Valentine's Pack"}
+                    </p>
+                    <p className="text-[11px] text-gray-500 truncate">
+                      {design?.name || 'Design'}
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-900">
+                    {formatPrice(item.price * item.quantity)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between text-sm font-semibold">
+            <span>Total</span>
+            <span>{formatPrice(total)}</span>
+          </div>
+        </div>
+
         {/* Error */}
         {paymentError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
             <p className="text-sm text-red-600">{paymentError}</p>
           </div>
         )}
@@ -545,9 +788,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               Processing...
             </>
           ) : (
-            <>
-              Complete Purchase - {formatPrice(total)}
-            </>
+            'Pay now'
           )}
         </button>
 

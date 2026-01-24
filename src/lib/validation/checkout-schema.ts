@@ -5,6 +5,15 @@ export const emailSchema = z
   .min(1, 'Email is required')
   .email('Please enter a valid email address')
 
+export const optionalEmailSchema = z.preprocess(
+  (value) => {
+    if (typeof value !== 'string') return value
+    const trimmed = value.trim()
+    return trimmed === '' ? undefined : trimmed
+  },
+  z.string().email('Please enter a valid email address').optional()
+)
+
 export const shippingAddressSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
@@ -47,9 +56,20 @@ export const contactSchema = z.object({
 })
 
 export const checkoutFormSchema = z.object({
-  email: emailSchema,
+  email: optionalEmailSchema,
   shippingAddress: shippingAddressSchema,
   shippingMethod: z.enum(['standard', 'express']),
+}).superRefine((data, ctx) => {
+  const hasEmail = typeof data.email === 'string' && data.email.length > 0
+  const hasPhone = typeof data.shippingAddress.phone === 'string' && data.shippingAddress.phone.trim().length > 0
+
+  if (!hasEmail && !hasPhone) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Email or phone is required',
+      path: ['email'],
+    })
+  }
 })
 
 export type ShippingAddressInput = z.infer<typeof shippingAddressSchema>

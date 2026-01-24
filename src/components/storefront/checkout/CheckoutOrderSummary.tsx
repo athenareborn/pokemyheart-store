@@ -36,8 +36,8 @@ const OrderItem = memo(function OrderItem({ item }: OrderItemProps) {
           />
         )}
         {/* Quantity badge */}
-        <div className="absolute -top-1 -right-1 w-5 h-5 bg-gray-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-          {item.quantity}
+        <div className="absolute -bottom-2 -right-2 rounded-full bg-gray-900 text-white text-[10px] font-semibold px-2 py-0.5 shadow-sm ring-2 ring-white">
+          Qty {item.quantity}
         </div>
       </div>
 
