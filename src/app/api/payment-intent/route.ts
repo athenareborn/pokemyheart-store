@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
       email,
       shippingAddress,
       shippingMethod,
+      shippingInsurance = true, // Default to true (pre-selected on checkout)
       discountCode,
       discountAmount = 0,
       fbData,
@@ -141,8 +142,11 @@ export async function POST(req: NextRequest) {
     // Validate discount amount - must be non-negative and not exceed subtotal
     const validDiscountAmount = Math.max(0, Math.min(discountAmount, subtotal))
 
-    // Calculate total
-    const total = subtotal + shippingCost - validDiscountAmount
+    // Calculate insurance cost
+    const insuranceCost = shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0
+
+    // Calculate total (subtotal + shipping + insurance - discount)
+    const total = subtotal + shippingCost + insuranceCost - validDiscountAmount
 
     // Build shipping object only if we have address data
     const hasShippingData = shippingAddress.firstName && shippingAddress.address1
@@ -157,6 +161,8 @@ export async function POST(req: NextRequest) {
         items: JSON.stringify(orderItemsSummary),
         subtotal: String(subtotal),
         shipping: String(shippingCost),
+        shipping_insurance: shippingInsurance ? 'true' : 'false',
+        shipping_insurance_amount: String(insuranceCost),
         discount_code: discountCode || '',
         discount_amount: String(validDiscountAmount),
         customer_email: email || '',
@@ -201,6 +207,7 @@ export async function POST(req: NextRequest) {
       amount: total,
       subtotal,
       shippingCost,
+      insuranceCost,
       discountAmount: validDiscountAmount,
     })
   } catch (error) {
