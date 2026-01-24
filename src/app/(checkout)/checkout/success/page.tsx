@@ -86,8 +86,15 @@ function CheckoutSuccessContent() {
               })) || purchaseData.contentIds?.map((id: string) => ({ id, quantity: 1 })),
             },
           }),
-        }).catch(() => {
-          // Silent fail - webhook also tracks purchase as backup
+        }).then(res => {
+          if (!res.ok) {
+            console.error('[Success] CAPI Purchase failed:', res.status, res.statusText)
+          } else {
+            console.log('[Success] CAPI Purchase sent successfully')
+          }
+        }).catch((err) => {
+          // Log error but don't break UX - webhook is backup
+          console.error('[Success] CAPI Purchase network error:', err.message)
         })
 
         // Google Analytics 4 (client-side redundancy)

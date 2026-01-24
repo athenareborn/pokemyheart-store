@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Elements, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Zap, Loader2 } from 'lucide-react'
 import { getStripe } from '@/lib/stripe/client'
@@ -10,8 +11,8 @@ import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
 import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
+import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
-import { EmbeddedCheckoutModal } from '@/components/storefront/checkout/EmbeddedCheckoutModal'
 
 // Safe sessionStorage helpers for iOS private browsing mode
 function safeSetSessionStorage(key: string, value: string) {
@@ -149,7 +150,6 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
                   content_name: productName,
                   content_type: 'product',
                   content_category: 'Valentine Cards',
-                  // Per Meta: use contents (not content_ids) when we have full product info
                   contents: [{ id: `${designId}-${bundleId}`, quantity: 1, item_price: price }],
                 },
               }),
@@ -187,7 +187,6 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
                   content_type: 'product',
                   content_category: 'Valentine Cards',
                   num_items: 1,
-                  // Per Meta: use contents (not content_ids) when we have full product info
                   contents: [{ id: `${designId}-${bundleId}`, quantity: 1, item_price: price }],
                 },
               }),
@@ -195,15 +194,57 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
           }
           resolve()
         }}
+        onShippingAddressChange={({ resolve }) => {
+          // Just validate - shipping rates are set in options
+          resolve({})
+        }}
         onConfirm={handleConfirm}
         options={{
+          // Collect all customer data for order fulfillment + CAPI matching
+          emailRequired: true,
+          shippingAddressRequired: true,
+          billingAddressRequired: true,
+          phoneNumberRequired: true,
+          allowedShippingCountries: ['US', 'AU', 'CA', 'GB'],
+          shippingRates: bundle && bundle.price >= PRODUCT.freeShippingThreshold
+            ? [
+                {
+                  id: 'free-shipping',
+                  displayName: 'Free Shipping',
+                  amount: 0,
+                  deliveryEstimate: {
+                    minimum: { unit: 'day', value: 5 },
+                    maximum: { unit: 'day', value: 7 },
+                  },
+                },
+              ]
+            : [
+                {
+                  id: 'standard-shipping',
+                  displayName: 'Standard Shipping',
+                  amount: PRODUCT.shipping.standard,
+                  deliveryEstimate: {
+                    minimum: { unit: 'day', value: 5 },
+                    maximum: { unit: 'day', value: 7 },
+                  },
+                },
+                {
+                  id: 'express-shipping',
+                  displayName: 'Express Shipping',
+                  amount: PRODUCT.shipping.express,
+                  deliveryEstimate: {
+                    minimum: { unit: 'day', value: 1 },
+                    maximum: { unit: 'day', value: 3 },
+                  },
+                },
+              ],
           buttonType: {
             applePay: 'buy',
             googlePay: 'buy',
           },
           layout: {
             maxColumns: 1,
-            maxRows: 3,
+            maxRows: 2,
           },
         }}
       />
@@ -214,38 +255,21 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
 /**
  * Smart Express Checkout Component
  *
- * Shows Apple Pay / Google Pay buttons when available.
- * Falls back to a "Buy Now" button that redirects to Stripe checkout.
+ * Shows Apple Pay / Google Pay buttons when available (newer GPay with card digits).
+ * Falls back to a "Buy Now" button that redirects to /checkout.
  *
  * Desktop: Shows below Add to Cart with "or checkout with" divider
  * Mobile (compact): Shows just the button, suitable for sticky bars
  */
 export function ExpressCheckout({ designId, bundleId, compact = false }: ExpressCheckoutProps) {
+  const router = useRouter()
+  const { addItem } = useCartStore()
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showFallback, setShowFallback] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [isBuyingNow, setIsBuyingNow] = useState(false)
-  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
-  const [checkoutItems, setCheckoutItems] = useState<Array<{
-    name: string
-    description: string
-    price: number
-    quantity: number
-    designId: string
-    designName: string
-    bundleId: string
-    bundleName: string
-    bundleSku: string
-  }> | null>(null)
-  const [checkoutFbData, setCheckoutFbData] = useState<{
-    fbc?: string
-    fbp?: string
-    eventId?: string
-  } | null>(null)
   // Store the purchase eventId for deduplication between client and server
   const [purchaseEventId, setPurchaseEventId] = useState<string | null>(null)
-
 
   // Warn if not HTTPS - Apple Pay requires HTTPS
   useEffect(() => {
@@ -298,7 +322,7 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
     createIntent()
   }, [designId, bundleId])
 
-  // Handle Buy Now - opens embedded checkout modal (highest conversion)
+  // Handle Buy Now fallback - add to cart and redirect to /checkout
   const handleBuyNow = () => {
     const bundle = BUNDLES.find(b => b.id === bundleId)
     const design = PRODUCT.designs.find(d => d.id === designId)
@@ -341,7 +365,6 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
           content_name: productName,
           content_type: 'product',
           content_category: 'Valentine Cards',
-          // Per Meta: use contents (not content_ids) when we have full product info
           contents: [{ id: `${designId}-${bundleId}`, quantity: 1, item_price: price }],
         },
       }),
@@ -379,20 +402,19 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
           content_type: 'product',
           content_category: 'Valentine Cards',
           num_items: 1,
-          // Per Meta: use contents (not content_ids) when we have full product info
           contents: [{ id: `${designId}-${bundleId}`, quantity: 1, item_price: price }],
         },
       }),
     }).catch(() => {})
 
     // Store purchase data for success page tracking
-    const purchaseEventId = generateEventId('purchase')
+    const purchaseEvtId = generateEventId('purchase')
     const purchaseData = {
       value: price,
       numItems: 1,
       contentIds: [`${designId}-${bundleId}`],
       currency: 'USD',
-      eventId: purchaseEventId,
+      eventId: purchaseEvtId,
       items: [{
         itemId: `${designId}-${bundleId}`,
         itemName: productName,
@@ -402,24 +424,9 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
     }
     safeSetSessionStorage('fb_purchase_data', JSON.stringify(purchaseData))
 
-    // Set up checkout data and open modal (reuse fbc/fbp from above)
-    setCheckoutItems([{
-      name: productName,
-      description: bundle.description || 'Premium Valentine Card',
-      price: bundle.price,
-      quantity: 1,
-      designId,
-      designName: design.name,
-      bundleId,
-      bundleName: bundle.name,
-      bundleSku: bundle.sku,
-    }])
-    setCheckoutFbData({
-      fbc,
-      fbp,
-      eventId: purchaseEventId,
-    })
-    setShowCheckoutModal(true)
+    // Add to cart and redirect to checkout
+    addItem(designId, bundleId)
+    router.push('/checkout')
   }
 
   // Show loading spinner initially
@@ -434,28 +441,16 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
   // Show fallback Buy Now button if wallet methods not available or there's an error
   if (showFallback || error || !clientSecret) {
     return (
-      <>
-        <Button
-          onClick={handleBuyNow}
-          className={compact
-            ? 'w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm'
-            : 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 font-semibold'
-          }
-        >
-          <Zap className="mr-1.5 h-4 w-4" />
-          Buy Now
-        </Button>
-
-        {/* Embedded Checkout Modal */}
-        {checkoutItems && (
-          <EmbeddedCheckoutModal
-            isOpen={showCheckoutModal}
-            onClose={() => setShowCheckoutModal(false)}
-            items={checkoutItems}
-            fbData={checkoutFbData || undefined}
-          />
-        )}
-      </>
+      <Button
+        onClick={handleBuyNow}
+        className={compact
+          ? 'w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm'
+          : 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 font-semibold'
+        }
+      >
+        <Zap className="mr-1.5 h-4 w-4" />
+        Buy Now
+      </Button>
     )
   }
 
@@ -497,16 +492,6 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
           </Button>
         )}
       </Elements>
-
-      {/* Embedded Checkout Modal */}
-      {checkoutItems && (
-        <EmbeddedCheckoutModal
-          isOpen={showCheckoutModal}
-          onClose={() => setShowCheckoutModal(false)}
-          items={checkoutItems}
-          fbData={checkoutFbData || undefined}
-        />
-      )}
     </>
   )
 }

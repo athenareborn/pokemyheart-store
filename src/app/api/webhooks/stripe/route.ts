@@ -145,8 +145,9 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, request:
   // Use same eventId from client for deduplication, or generate new one
   const eventId = metadata.fb_event_id || generateEventId('purchase')
 
-  const contentIds = items.map((item: { bundleId: string; designId: string }) =>
-    `${item.designId}-${item.bundleId}`
+  // Items in metadata use snake_case (bundle_id, design_id)
+  const contentIds = items.map((item: { bundle_id: string; design_id: string }) =>
+    `${item.design_id}-${item.bundle_id}`
   )
 
   // Get IP and UserAgent from request headers
@@ -182,9 +183,9 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, request:
     userAgent: userAgent,
     fbc: metadata.fb_fbc || undefined,  // Facebook Click ID
     fbp: metadata.fb_fbp || undefined,  // Facebook Browser ID
-    // Dynamic Ads: detailed product info
-    contents: items.map((item: { bundleId: string; designId: string; price: number; quantity?: number }) => ({
-      id: `${item.designId}-${item.bundleId}`,
+    // Dynamic Ads: detailed product info (snake_case from metadata)
+    contents: items.map((item: { bundle_id: string; design_id: string; price: number; quantity?: number }) => ({
+      id: `${item.design_id}-${item.bundle_id}`,
       quantity: item.quantity || 1,
       item_price: item.price / 100,
     })),
@@ -200,8 +201,8 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session, request:
     transactionId: orderNumber,
     value: (session.amount_total || 0) / 100,
     currency: 'USD',
-    items: items.map((item: { designId: string; bundleId: string; bundle_name?: string; price: number; quantity?: number }) => ({
-      itemId: `${item.designId}-${item.bundleId}`,
+    items: items.map((item: { design_id: string; bundle_id: string; bundle_name?: string; price: number; quantity?: number }) => ({
+      itemId: `${item.design_id}-${item.bundle_id}`,
       itemName: item.bundle_name || 'Product',
       price: item.price / 100,
       quantity: item.quantity || 1,
@@ -233,16 +234,58 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent, r
   }
 
   const items = JSON.parse(metadata.items || '[]')
-  const customerEmail = metadata.customer_email
-  const customerName = metadata.customer_name || null
-  const shippingAddress = JSON.parse(metadata.shipping_address || 'null')
-  // Phone is stored in paymentIntent.shipping, not in metadata
+
+  // For ExpressCheckout: customer data is on paymentIntent directly, not in metadata
+  // For regular checkout: data is in metadata
+  // Also try latest_charge billing_details as last resort
+  let customerEmail = metadata.customer_email || paymentIntent.receipt_email || null
+
+  // If still no email, try to get from the charge's billing details
+  if (!customerEmail && paymentIntent.latest_charge) {
+    try {
+      const stripe = getStripe()
+      const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string)
+      customerEmail = charge.billing_details?.email || null
+    } catch (e) {
+      console.warn('Could not retrieve charge for email:', e)
+    }
+  }
+  const customerName = metadata.customer_name || paymentIntent.shipping?.name || null
   const customerPhone = paymentIntent.shipping?.phone || undefined
 
+  // Shipping address: check metadata first (regular checkout), then paymentIntent.shipping (ExpressCheckout)
+  let shippingAddress = null
+  if (metadata.shipping_address) {
+    shippingAddress = JSON.parse(metadata.shipping_address)
+  } else if (paymentIntent.shipping?.address) {
+    shippingAddress = {
+      name: paymentIntent.shipping.name || '',
+      line1: paymentIntent.shipping.address.line1 || '',
+      line2: paymentIntent.shipping.address.line2 || undefined,
+      city: paymentIntent.shipping.address.city || '',
+      state: paymentIntent.shipping.address.state || '',
+      postal_code: paymentIntent.shipping.address.postal_code || '',
+      country: paymentIntent.shipping.address.country || '',
+    }
+  }
+
   if (!customerEmail) {
-    console.error('No customer email in payment intent metadata')
+    console.error('No customer email found in payment intent:', {
+      metadataEmail: metadata.customer_email,
+      receiptEmail: paymentIntent.receipt_email,
+      hasShipping: !!paymentIntent.shipping,
+      paymentIntentId: paymentIntent.id,
+    })
     return
   }
+
+  console.log('[Webhook] Processing order:', {
+    email: customerEmail,
+    name: customerName,
+    phone: customerPhone ? 'yes' : 'no',
+    hasShippingAddress: !!shippingAddress,
+    checkoutType: metadata.checkout_type || 'unknown',
+  })
 
   // Generate order number
   const { count } = await supabase

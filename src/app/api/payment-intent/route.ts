@@ -264,19 +264,57 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
+    // First, retrieve existing PaymentIntent to preserve its metadata
+    const existingIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    const existingMetadata = existingIntent.metadata || {}
+
     // Update Payment Intent with customer and setup_future_usage to save payment method
+    // IMPORTANT: Merge with existing metadata to preserve items, source, etc.
     const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
       amount: total,
       ...(stripeCustomerId ? {
         customer: stripeCustomerId,
         setup_future_usage: 'off_session', // Enables saving payment method for future charges
       } : {}),
+      // Update receipt_email and shipping if provided
+      ...(email ? { receipt_email: email } : {}),
+      ...(shippingAddress ? {
+        shipping: {
+          name: customerName || '',
+          address: {
+            line1: shippingAddress.address1 || '',
+            line2: shippingAddress.address2 || undefined,
+            city: shippingAddress.city || '',
+            state: shippingAddress.state || '',
+            postal_code: shippingAddress.postalCode || '',
+            country: shippingAddress.country || 'US',
+          },
+          phone: shippingAddress.phone || undefined,
+        },
+      } : {}),
       metadata: {
+        // Preserve existing metadata (items, source, subtotal, etc.)
+        ...existingMetadata,
+        // Update/add new fields
         shipping: String(shippingCost),
         shipping_method: shippingMethod,
         shipping_insurance: shippingInsurance ? 'true' : 'false',
         shipping_insurance_amount: String(insuranceCost),
         discount_amount: String(validDiscountAmount),
+        // Update customer info
+        ...(email ? { customer_email: email } : {}),
+        ...(customerName ? { customer_name: customerName } : {}),
+        ...(shippingAddress ? {
+          shipping_address: JSON.stringify({
+            name: customerName || '',
+            line1: shippingAddress.address1 || '',
+            line2: shippingAddress.address2 || '',
+            city: shippingAddress.city || '',
+            state: shippingAddress.state || '',
+            postal_code: shippingAddress.postalCode || '',
+            country: shippingAddress.country || 'US',
+          }),
+        } : {}),
         ...(discountCode ? { discount_code: discountCode } : {}),
         ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
         // Update fb_event_id with purchase eventId for proper deduplication

@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     }))
 
     // Build order items summary for session metadata
+    // IMPORTANT: Include bundle_id and design_id for CAPI contentIds
     const orderItemsSummary = items.map((item: {
       name: string
       description: string
@@ -42,7 +43,9 @@ export async function POST(req: NextRequest) {
       quantity: number
       price: number
     }) => ({
+      bundle_id: item.bundleId || '',
       bundle_name: item.bundleName || item.name,
+      design_id: item.designId || '',
       design_name: item.designName || item.description,
       quantity: item.quantity,
       price: item.price,
