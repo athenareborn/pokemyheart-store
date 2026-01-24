@@ -3,5 +3,8 @@
     "src/app/api/**/*.ts": {
       "maxDuration": 30
     }
+  },
+  "env": {
+    "NEXT_PUBLIC_ALLOWED_COUNTRIES": "US,AU"
   }
 }
