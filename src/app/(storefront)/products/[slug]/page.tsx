@@ -104,7 +104,7 @@ export default function ProductPage() {
     let hasScrolled = false
 
     const handleScroll = () => {
-      if (window.scrollY > 100) {
+      if (window.scrollY > 10) {
         hasScrolled = true
       }
     }
@@ -114,7 +114,7 @@ export default function ProductPage() {
         // Only show sticky bar if user has scrolled AND AddToCart is out of view
         setShowStickyCart(hasScrolled && !entry.isIntersecting)
       },
-      { threshold: 0, rootMargin: '0px 0px 0px 0px' }
+      { threshold: 0, rootMargin: '0px 0px -50px 0px' }
     )
 
     window.addEventListener('scroll', handleScroll, { passive: true })
