@@ -313,13 +313,13 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    // Update Payment Intent with customer and setup_future_usage to save payment method
+    // Update Payment Intent with customer
+    // NOTE: Cannot set setup_future_usage after creation when using automatic_payment_methods
     // IMPORTANT: Merge with existing metadata to preserve items, source, etc.
     const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
       amount: total,
       ...(stripeCustomerId ? {
         customer: stripeCustomerId,
-        setup_future_usage: 'off_session', // Enables saving payment method for future charges
       } : {}),
       // Update receipt_email and shipping if provided
       ...(email ? { receipt_email: email } : {}),
