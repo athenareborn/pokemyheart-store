@@ -11,6 +11,7 @@ import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 import { getFbCookies } from '@/lib/analytics/facebook-capi'
 import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
+import { analytics as supabaseAnalytics } from '@/lib/analytics/tracker'
 import { PostPurchaseOffer } from '@/components/storefront/checkout/PostPurchaseOffer'
 
 function CheckoutSuccessContent() {
@@ -38,6 +39,12 @@ function CheckoutSuccessContent() {
         const orderId = searchParams.get('session_id') ||
                         searchParams.get('payment_intent') ||
                         'unknown'
+
+        const analyticsItems = Array.isArray(purchaseData.items)
+          ? purchaseData.items
+          : (purchaseData.contentIds || []).map((id: string) => ({ id, quantity: 1 }))
+
+        supabaseAnalytics.purchase(orderId, purchaseData.value, analyticsItems)
 
         // Facebook Pixel (client-side)
         fbPixel.purchase(

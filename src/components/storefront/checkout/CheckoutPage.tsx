@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -14,6 +14,7 @@ import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
 import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
+import { analytics as supabaseAnalytics } from '@/lib/analytics/tracker'
 import { CheckoutForm } from './CheckoutForm'
 import { CheckoutOrderSummary } from './CheckoutOrderSummary'
 
@@ -27,6 +28,7 @@ export function CheckoutPage() {
   const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard')
   const [discountCode, setDiscountCode] = useState<string | null>(null)
   const [discountAmount, setDiscountAmount] = useState(0)
+  const hasTrackedCheckoutStart = useRef(false)
 
   const { items, isCartEmpty, getSubtotal, isFreeShipping, shippingInsurance } = useCartStore()
 
@@ -72,6 +74,11 @@ export function CheckoutPage() {
       const contentIds = items.map(item => `${item.designId}-${item.bundleId}`)
 
       fbPixel.initiateCheckout(total / 100, items.length, contentIds, 'USD', eventId)
+
+      if (!hasTrackedCheckoutStart.current) {
+        supabaseAnalytics.checkoutStart(total / 100, items.length)
+        hasTrackedCheckoutStart.current = true
+      }
 
       // Track InitiateCheckout server-side (CAPI) for improved match quality
       const userData = getUserData()

@@ -11,6 +11,7 @@ import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
 import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
 import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
+import { analytics as supabaseAnalytics } from '@/lib/analytics/tracker'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 
@@ -159,6 +160,7 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
             const icEventId = generateEventId('ic')
             fbPixel.initiateCheckout(price, 1, [`${designId}-${bundleId}`], 'USD', icEventId)
             ga4.beginCheckout({ value: price, items: [{ itemId: `${designId}-${bundleId}`, itemName: productName, price, quantity: 1 }] })
+            supabaseAnalytics.checkoutStart(price, 1)
 
             // Server-side CAPI for InitiateCheckout
             fetch('/api/analytics/fb-event', {

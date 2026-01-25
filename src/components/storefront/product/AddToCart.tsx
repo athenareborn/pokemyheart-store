@@ -11,6 +11,7 @@ import { fbPixel } from '@/lib/analytics/fpixel'
 import { generateEventId, getFbCookies } from '@/lib/analytics/facebook-capi'
 import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 import { ga4 } from '@/lib/analytics/ga4'
+import { analytics as supabaseAnalytics } from '@/lib/analytics/tracker'
 import { ExpressCheckout } from './ExpressCheckout'
 
 interface AddToCartProps {
@@ -91,6 +92,9 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
         price,
         quantity: 1,
       })
+
+      // Track Supabase analytics funnel
+      supabaseAnalytics.addToCart(PRODUCT.id, productName, price, 1)
 
       // Reset animation after a short delay
       setTimeout(() => setIsAdding(false), 600)

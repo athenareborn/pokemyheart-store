@@ -12,9 +12,10 @@ import { useCartStore } from '@/lib/store/cart'
 import { BUNDLES } from '@/data/bundles'
 import { PRODUCT } from '@/data/product'
 // Import PRODUCT for consistent shipping constants
-import { analytics } from '@/lib/analytics'
+import { analytics as marketingAnalytics } from '@/lib/analytics'
 import { getFbCookies, generateEventId } from '@/lib/analytics/facebook-capi'
 import { ga4 } from '@/lib/analytics/ga4'
+import { analytics as supabaseAnalytics } from '@/lib/analytics/tracker'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -153,8 +154,9 @@ function CartExpressCheckoutInner() {
 
     pr.on('paymentmethod', async (ev) => {
       try {
-        analytics.trackInitiateCheckout(getTrackingProducts(), total / 100)
-        analytics.trackAddPaymentInfo(total / 100, ev.paymentMethod.card?.brand || 'wallet')
+        marketingAnalytics.trackInitiateCheckout(getTrackingProducts(), total / 100)
+        marketingAnalytics.trackAddPaymentInfo(total / 100, ev.paymentMethod.card?.brand || 'wallet')
+        supabaseAnalytics.checkoutStart(total / 100, items.length)
 
         // Get tracking data for attribution
         const { fbc, fbp } = getFbCookies()
@@ -245,7 +247,7 @@ function CartExpressCheckoutInner() {
             // sessionStorage may not be available in iOS private browsing
           }
 
-          analytics.trackPurchase(getTrackingProducts(), total / 100, paymentIntent.id)
+          marketingAnalytics.trackPurchase(getTrackingProducts(), total / 100, paymentIntent.id)
           clearCart()
           closeCart()
           router.push(`/checkout/success?payment_intent=${paymentIntent.id}`)
