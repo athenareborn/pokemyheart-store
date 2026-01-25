@@ -30,6 +30,17 @@ echo $NEXT_PUBLIC_POSTHOG_KEY
 - [ ] Browser DevTools Network tab
 - [ ] Incognito/Private browser window
 
+### Reconciliation Report (Supabase + Meta)
+Generate a cross-check report for orders vs analytics events:
+```bash
+node scripts/analytics-reconciliation.js --days 7
+```
+
+Quick PostHog ingestion smoke test:
+```bash
+NEXT_PUBLIC_POSTHOG_KEY=phc_xxx bash scripts/test-posthog-event.sh
+```
+
 ---
 
 ## PHASE 1: Environment & Configuration Validation
