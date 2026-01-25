@@ -13,6 +13,7 @@ import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 import { ga4 } from '@/lib/analytics/ga4'
 import { analytics as supabaseAnalytics } from '@/lib/analytics/tracker'
 import { ExpressCheckout } from './ExpressCheckout'
+import { DeliveryTimeline } from './DeliveryTimeline'
 
 interface AddToCartProps {
   designId: string
@@ -109,6 +110,8 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
           </svg>
           <span>Order today for guaranteed Valentine's delivery</span>
         </div>
+
+        <DeliveryTimeline />
 
         {/* Main CTA Button */}
         <Button
