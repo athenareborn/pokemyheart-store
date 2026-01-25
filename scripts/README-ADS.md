@@ -42,12 +42,17 @@ node scripts/get-top-ads.js
 ```
 
 **What it shows:**
-- ✅ Top 5 ads by ROAS (Return on Ad Spend)
-- ✅ Top 5 ads by CTR (Click-Through Rate)
-- ✅ Top 5 ads by Conversions
-- ✅ Full metrics: spend, impressions, clicks, purchases
+- ✅ Top 5 by the sort you choose (default: ROAS)
+- ✅ Full metrics: spend, impressions, clicks, purchases, CPA, CPM
+- ✅ Supports ad, adset, or campaign level insights
 
-**Output:** `facebook-ads-report.json` with all data
+**Output:** `facebook-ads-report-<level>-<start>-to-<end>.json` (or `.csv` / both)
+
+**Useful flags:**
+```bash
+node scripts/get-top-ads.js --level campaign --days 30
+node scripts/get-top-ads.js --min-spend 50 --sort cpa --format both
+```
 
 ---
 
