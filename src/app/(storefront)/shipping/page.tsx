@@ -42,7 +42,7 @@ export default function ShippingPolicyPage() {
                 <tr>
                   <td className="px-4 py-3 text-gray-900">Standard Shipping</td>
                   <td className="px-4 py-3 text-gray-600">5-7 business days</td>
-                  <td className="px-4 py-3 text-right text-gray-900">$4.99</td>
+                  <td className="px-4 py-3 text-right text-gray-900">$5.95</td>
                 </tr>
                 <tr className="bg-brand-50">
                   <td className="px-4 py-3 text-gray-900">
@@ -53,14 +53,9 @@ export default function ShippingPolicyPage() {
                   <td className="px-4 py-3 text-right text-brand-600 font-semibold">FREE</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 text-gray-900">Expedited Shipping</td>
-                  <td className="px-4 py-3 text-gray-600">2-3 business days</td>
-                  <td className="px-4 py-3 text-right text-gray-900">$9.99</td>
-                </tr>
-                <tr>
                   <td className="px-4 py-3 text-gray-900">Express Shipping</td>
-                  <td className="px-4 py-3 text-gray-600">1-2 business days</td>
-                  <td className="px-4 py-3 text-right text-gray-900">$14.99</td>
+                  <td className="px-4 py-3 text-gray-600">1-3 business days</td>
+                  <td className="px-4 py-3 text-right text-gray-900">$9.95</td>
                 </tr>
               </tbody>
             </table>
@@ -92,9 +87,8 @@ export default function ShippingPolicyPage() {
               and begin after your order has been processed and shipped.
             </p>
             <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
-              <li><strong>Standard Shipping:</strong> 5-7 business days - $4.99 (FREE on orders over $35)</li>
-              <li><strong>Expedited Shipping:</strong> 2-3 business days - $9.99</li>
-              <li><strong>Express Shipping:</strong> 1-2 business days - $14.99</li>
+              <li><strong>Standard Shipping:</strong> 5-7 business days - $5.95 (FREE on orders over $35)</li>
+              <li><strong>Express Shipping:</strong> 1-3 business days - $9.95</li>
             </ul>
             <p className="text-gray-600 mb-6">
               Note: Delivery to Alaska, Hawaii, and U.S. territories may take additional time.
@@ -105,19 +99,15 @@ export default function ShippingPolicyPage() {
               International Shipping
             </h2>
             <p className="text-gray-600 mb-4">
-              We ship to most countries worldwide! International shipping rates and delivery times vary
-              by destination.
+              We ship to the U.S. and select international destinations. International shipping rates and
+              delivery times vary by destination and will be shown at checkout.
             </p>
 
             <div className="bg-gray-50 p-6 rounded-xl mb-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Estimated International Shipping Times:</h3>
-              <ul className="list-disc pl-6 text-gray-600 space-y-2">
-                <li><strong>Canada:</strong> 7-14 business days</li>
-                <li><strong>Europe (UK, EU):</strong> 10-20 business days</li>
-                <li><strong>Australia/New Zealand:</strong> 14-25 business days</li>
-                <li><strong>Asia:</strong> 14-25 business days</li>
-                <li><strong>Rest of World:</strong> 14-30 business days</li>
-              </ul>
+              <h3 className="font-semibold text-gray-900 mb-3">Estimated International Shipping Time</h3>
+              <p className="text-gray-600">
+                Typical delivery is 10-20 business days, depending on destination and customs processing.
+              </p>
             </div>
 
             <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl mb-6">

@@ -245,6 +245,7 @@ export async function PATCH(req: NextRequest) {
       discountCode,
       subtotal,
       fbEventId,
+      gaData,
       email,
       customerName,
       shippingAddress,
@@ -364,6 +365,7 @@ export async function PATCH(req: NextRequest) {
         ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
         // Update fb_event_id with purchase eventId for proper deduplication
         ...(fbEventId ? { fb_event_id: fbEventId } : {}),
+        ...(gaData?.clientId ? { ga_client_id: gaData.clientId } : {}),
       },
     })
 

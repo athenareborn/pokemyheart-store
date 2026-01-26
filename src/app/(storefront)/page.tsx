@@ -190,7 +190,7 @@ export default function HomePage() {
                 {[
                   'Premium holographic printing',
                   'High-quality card stock',
-                  'Protective display case included',
+                  'Premium display case in select bundles',
                   'Gift-ready packaging',
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3 text-gray-700">

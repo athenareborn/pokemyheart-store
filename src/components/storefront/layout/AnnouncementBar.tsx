@@ -11,7 +11,7 @@ export function AnnouncementBar() {
             <span key={i} className="flex items-center gap-8">
               <span className="text-pink-400">💖</span>
               <span className="text-white text-sm font-medium uppercase tracking-wider">
-                Order now for free shipping on $35+ today only
+                Order now for free shipping on $35+
               </span>
             </span>
           ))}

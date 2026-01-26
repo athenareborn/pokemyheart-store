@@ -10,11 +10,11 @@ import {
 const FAQ_ITEMS = [
   {
     question: 'What makes this card special?',
-    answer: 'Our cards feature premium holographic finishes that shimmer and shift in the light, creating a stunning visual effect. Each card is printed on high-quality card stock and comes with a protective sleeve to preserve its condition.',
+    answer: 'Our cards feature premium holographic finishes that shimmer and shift in the light, creating a stunning visual effect. Each card is printed on high-quality card stock and packaged to protect it in transit.',
   },
   {
     question: 'How long does shipping take?',
-    answer: 'Standard shipping takes 5-7 business days within the US. Express shipping (1-3 business days) is also available at checkout. International shipping typically takes 10-14 business days.',
+    answer: 'Standard shipping takes 5-7 business days within the US. Express shipping (1-3 business days) is available at checkout. International delivery typically takes 10-20 business days depending on destination.',
   },
   {
     question: 'What comes in each bundle?',
@@ -26,7 +26,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'Is this a real collectible card?',
-    answer: 'Yes! Our cards are designed to look and feel like authentic collectible trading cards. They feature the same premium materials and printing techniques used in professional card production.',
+    answer: 'Our cards are original designs inspired by classic trading card aesthetics. They\'re made with premium materials and printing techniques for a true collectible feel.',
   },
   {
     question: 'Do you offer gift wrapping?',

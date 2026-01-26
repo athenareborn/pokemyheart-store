@@ -28,7 +28,7 @@ const faqCategories = [
       {
         question: 'What are the shipping costs?',
         answer:
-          'We offer FREE standard shipping on orders over $35! For orders under $35, standard shipping is $4.99. Expedited shipping options are available at checkout for an additional fee.',
+          'We offer FREE standard shipping on orders over $35! For orders under $35, standard shipping is $5.95. Express shipping (1-3 business days) is available at checkout for $9.95.',
       },
       {
         question: 'How can I track my order?',
@@ -38,7 +38,7 @@ const faqCategories = [
       {
         question: 'Do you ship internationally?',
         answer:
-          'Yes! We ship to most countries worldwide. International shipping rates and delivery times vary by destination. Please note that international orders may be subject to customs duties and taxes, which are the responsibility of the recipient.',
+          'We ship to the U.S. and select international destinations. International shipping rates and delivery times vary by destination and are shown at checkout. Please note that international orders may be subject to customs duties and taxes, which are the responsibility of the recipient.',
       },
       {
         question: 'Can I change my shipping address after placing an order?',
@@ -75,7 +75,7 @@ const faqCategories = [
       {
         question: 'Is the display case included?',
         answer:
-          'Yes! Every card comes with a protective acrylic display case, making it gift-ready right out of the box. The case protects your card from dust and damage while showcasing it beautifully.',
+          'The display case is included with the Valentine\'s Pack and Deluxe Valentine bundles. The Card Only bundle includes the card and envelope.',
       },
     ],
   },

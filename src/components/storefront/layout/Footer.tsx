@@ -108,21 +108,26 @@ export function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} UltraRareLove. All rights reserved.
-          </p>
-          <div className="flex gap-4">
-            {FOOTER_LINKS.legal.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm text-gray-400 hover:text-brand-500 transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+        <div className="border-t border-gray-800 mt-12 pt-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-400">
+              &copy; {new Date().getFullYear()} UltraRareLove. All rights reserved.
+            </p>
+            <div className="flex gap-4">
+              {FOOTER_LINKS.legal.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm text-gray-400 hover:text-brand-500 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
+          <p className="mt-4 text-xs text-gray-500 text-center sm:text-left">
+            UltraRareLove is an independent brand and is not affiliated with, endorsed by, or sponsored by Nintendo, The Pokemon Company, or any of their affiliates.
+          </p>
         </div>
       </div>
     </footer>

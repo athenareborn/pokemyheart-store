@@ -261,7 +261,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
           <tr>
             <td style="padding: 32px 16px; text-align: center;">
               <p style="margin: 0 0 8px; font-size: 13px; color: #999;">
-                <a href="${siteUrl}" style="color: #999; text-decoration: none;">UltraRareLove</a> · Premium Pokemon Valentine's Cards
+                <a href="${siteUrl}" style="color: #999; text-decoration: none;">UltraRareLove</a> · Premium Valentine's Cards
               </p>
               <p style="margin: 0; font-size: 12px; color: #ccc;">
                 Made with love 💕
@@ -432,7 +432,7 @@ export async function sendShippingNotification(data: {
           <tr>
             <td style="padding: 32px 16px; text-align: center;">
               <p style="margin: 0 0 8px; font-size: 13px; color: #999;">
-                <a href="${siteUrl}" style="color: #999; text-decoration: none;">UltraRareLove</a> · Premium Pokemon Valentine's Cards
+                <a href="${siteUrl}" style="color: #999; text-decoration: none;">UltraRareLove</a> · Premium Valentine's Cards
               </p>
               <p style="margin: 0; font-size: 12px; color: #ccc;">
                 Made with love 💕

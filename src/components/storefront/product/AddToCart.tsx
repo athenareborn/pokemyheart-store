@@ -139,12 +139,12 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
           <ExpressCheckout designId={designId} bundleId={bundleId} />
         </div>
 
-        {/* Primary Trust Badge - Money Back Guarantee */}
+        {/* Primary Trust Badge - Returns */}
         <div className="flex items-center justify-center gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
           <Shield className="w-6 h-6 text-green-600 flex-shrink-0" />
           <div className="text-left">
-            <p className="font-semibold text-green-800 text-sm">30-Day Money Back Guarantee</p>
-            <p className="text-xs text-green-600">Not happy? Full refund, no questions asked.</p>
+            <p className="font-semibold text-green-800 text-sm">30-Day Returns</p>
+            <p className="text-xs text-green-600">Eligible unused items in original packaging.</p>
           </div>
         </div>
 
@@ -162,7 +162,7 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
             <Clock className="w-5 h-5 text-brand-500 flex-shrink-0" />
             <div className="text-left">
               <p className="text-xs font-medium text-gray-700">Fast Shipping</p>
-              <p className="text-xs text-gray-500">Ships in 24 hours</p>
+              <p className="text-xs text-gray-500">Processing in 1-2 business days</p>
             </div>
           </div>
 
