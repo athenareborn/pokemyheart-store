@@ -1,0 +1,61 @@
+{
+  "generated_at": "2026-01-26T06:26:29.704Z",
+  "period": {
+    "start": "2026-01-20",
+    "end": "2026-01-26",
+    "timezone": "UTC"
+  },
+  "supabase": {
+    "orders": {
+      "count": 1,
+      "revenue_cents": 4094,
+      "revenue_usd": 40.94
+    },
+    "events": {
+      "page_view": 534,
+      "product_view": 71,
+      "add_to_cart": 1,
+      "checkout_start": 1,
+      "purchase": 0
+    },
+    "sessions": {
+      "total": 693,
+      "viewed_product": 147,
+      "added_to_cart": 9,
+      "started_checkout": 9,
+      "completed_purchase": 0,
+      "conversion_rate": 0
+    }
+  },
+  "meta": {
+    "status": "ok",
+    "spend": 225.91,
+    "impressions": 5018,
+    "clicks": 126,
+    "purchases": 2,
+    "purchase_value": 119.16,
+    "roas": 0.53
+  },
+  "ga4": {
+    "status": "not_configured",
+    "reason": "GA4 Data API not configured. GA_API_SECRET only sends events; it does not allow reporting."
+  },
+  "posthog": {
+    "status": "not_configured",
+    "reason": "PostHog reporting API key not set. Add POSTHOG_API_KEY to enable server-side reconciliation."
+  },
+  "discrepancies": {
+    "orders_vs_events_purchase": {
+      "delta": 1,
+      "percent": null
+    },
+    "orders_vs_sessions_purchase": {
+      "delta": 1,
+      "percent": null
+    },
+    "meta_purchases_vs_orders": {
+      "delta": -1,
+      "percent": -50
+    }
+  }
+}

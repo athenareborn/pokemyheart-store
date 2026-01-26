@@ -3,7 +3,8 @@ import { Header } from '@/components/storefront/layout/Header'
 import { Footer } from '@/components/storefront/layout/Footer'
 import { CartDrawer } from '@/components/storefront/cart/CartDrawer'
 import { ExitIntentPopup } from '@/components/storefront/popups/ExitIntentPopup'
-import { RecentPurchaseToast } from '@/components/storefront/popups/RecentPurchaseToast'
+// Disabled for GMC compliance - fake social proof
+// import { RecentPurchaseToast } from '@/components/storefront/popups/RecentPurchaseToast'
 
 export default function StorefrontLayout({
   children,
@@ -19,7 +20,8 @@ export default function StorefrontLayout({
       <CartDrawer />
       {/* Exit intent disabled for now - revisit later */}
       {/* <ExitIntentPopup /> */}
-      <RecentPurchaseToast />
+      {/* Disabled for GMC compliance - fake social proof */}
+      {/* <RecentPurchaseToast /> */}
     </div>
   )
 }

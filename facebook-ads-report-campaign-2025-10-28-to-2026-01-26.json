@@ -1,0 +1,46 @@
+{
+  "generated": "2026-01-26T05:15:49.552Z",
+  "period": {
+    "start": "2025-10-28",
+    "end": "2026-01-26"
+  },
+  "level": "campaign",
+  "minSpend": 0,
+  "sortBy": "roas",
+  "top": [
+    {
+      "id": "120241180475110096",
+      "name": "VDAY 2026 - US",
+      "campaign": "VDAY 2026 - US",
+      "spend": 223.64,
+      "impressions": 4987,
+      "clicks": 125,
+      "ctr": 2.506517,
+      "cpc": 1.78912,
+      "cpp": 51.888631,
+      "cpm": 44.84459594946862,
+      "purchases": 2,
+      "purchase_value": 119.16,
+      "roas": 0.26641,
+      "cpa": 111.82
+    }
+  ],
+  "all": [
+    {
+      "id": "120241180475110096",
+      "name": "VDAY 2026 - US",
+      "campaign": "VDAY 2026 - US",
+      "spend": 223.64,
+      "impressions": 4987,
+      "clicks": 125,
+      "ctr": 2.506517,
+      "cpc": 1.78912,
+      "cpp": 51.888631,
+      "cpm": 44.84459594946862,
+      "purchases": 2,
+      "purchase_value": 119.16,
+      "roas": 0.26641,
+      "cpa": 111.82
+    }
+  ]
+}
