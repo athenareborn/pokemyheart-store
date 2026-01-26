@@ -87,7 +87,14 @@ export default function ProductPage() {
     return 'love-pack' // Default to middle bundle
   }
 
-  const [selectedDesignIndex, setSelectedDesignIndex] = useState(0)
+  const getInitialDesignIndex = (): number => {
+    const designParam = searchParams.get('design')
+    if (!designParam) return 0
+    const index = PRODUCT.designs.findIndex(d => d.id === designParam)
+    return index >= 0 ? index : 0
+  }
+
+  const [selectedDesignIndex, setSelectedDesignIndex] = useState(getInitialDesignIndex())
   const [selectedBundle, setSelectedBundle] = useState<BundleId>(getInitialBundle())
   const [showStickyCart, setShowStickyCart] = useState(false)
   const [showAllReviews, setShowAllReviews] = useState(false)

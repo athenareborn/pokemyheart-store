@@ -103,17 +103,115 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
     onShippingMethodChange(shippingMethod)
   }, [shippingMethod, onShippingMethodChange])
 
-  const shippingCost = (() => {
-    if (shippingMethod === 'express') {
+  const getShippingCostForMethod = (method: 'standard' | 'express') => {
+    if (method === 'express') {
       return qualifiesForFreeShipping ? PRODUCT.shipping.standard : PRODUCT.shipping.express
     }
     return qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
-  })()
+  }
+
+  const getShippingLabel = (method: 'standard' | 'express', cost: number) => {
+    if (cost === 0) {
+      return 'Free Shipping'
+    }
+    return method === 'express' ? 'Express Shipping' : 'Standard Shipping'
+  }
+
+  const buildExpressShippingRates = (preferredMethod: 'standard' | 'express') => {
+    if (qualifiesForFreeShipping) {
+      return [
+        {
+          id: 'free-shipping',
+          displayName: 'Free Shipping',
+          amount: 0,
+          deliveryEstimate: {
+            minimum: { unit: 'day', value: 5 },
+            maximum: { unit: 'day', value: 7 },
+          },
+        },
+      ]
+    }
+
+    const standardRate = {
+      id: 'standard-shipping',
+      displayName: 'Standard Shipping',
+      amount: PRODUCT.shipping.standard,
+      deliveryEstimate: {
+        minimum: { unit: 'day', value: 5 },
+        maximum: { unit: 'day', value: 7 },
+      },
+    }
+
+    const expressRate = {
+      id: 'express-shipping',
+      displayName: 'Express Shipping',
+      amount: PRODUCT.shipping.express,
+      deliveryEstimate: {
+        minimum: { unit: 'day', value: 1 },
+        maximum: { unit: 'day', value: 3 },
+      },
+    }
+
+    return preferredMethod === 'express'
+      ? [expressRate, standardRate]
+      : [standardRate, expressRate]
+  }
+
+  const buildExpressLineItems = (
+    method: 'standard' | 'express',
+    overrides?: { subtotal?: number; shippingCost?: number; insuranceCost?: number; discountAmount?: number }
+  ) => {
+    const lineSubtotal = overrides?.subtotal ?? subtotal
+    const lineShippingCost = overrides?.shippingCost ?? getShippingCostForMethod(method)
+    const lineInsurance = overrides?.insuranceCost ?? (shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0)
+    const lineDiscount = overrides?.discountAmount ?? discountAmount
+    const lineItems = [
+      { name: 'Subtotal', amount: lineSubtotal },
+      { name: getShippingLabel(method, lineShippingCost), amount: lineShippingCost },
+    ]
+
+    if (lineInsurance > 0) {
+      lineItems.push({ name: 'Package Protection', amount: lineInsurance })
+    }
+
+    if (lineDiscount > 0) {
+      lineItems.push({ name: 'Discount', amount: -lineDiscount })
+    }
+
+    return lineItems
+  }
+
+  const syncExpressCheckoutIntent = async (method: 'standard' | 'express') => {
+    if (!clientSecret) return null
+
+    const res = await fetch('/api/payment-intent', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paymentIntentId: clientSecret.split('_secret_')[0],
+        shippingMethod: method,
+        subtotal,
+        discountAmount,
+        discountCode,
+        shippingInsurance,
+      }),
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      throw new Error(data.details || 'Failed to update totals for express checkout')
+    }
+
+    return data
+  }
+
+  const shippingCost = getShippingCostForMethod(shippingMethod)
 
   const insuranceCost = shippingInsurance ? SHIPPING_INSURANCE_PRICE : 0
   const total = subtotal + shippingCost + insuranceCost - discountAmount
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
   const showExpressCheckout = !hideExpressCheckout
+  const expressShippingRates = buildExpressShippingRates(shippingMethod)
 
   const onSubmit = async (data: CheckoutFormInput) => {
     if (!stripe || !elements || !clientSecret) {
@@ -429,8 +527,41 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
                 setHideExpressCheckout(true)
               }
             }}
+            onClick={({ resolve }) => {
+              const preferredMethod = qualifiesForFreeShipping ? 'standard' : shippingMethod
+              const lineItems = buildExpressLineItems(preferredMethod)
+              setPaymentError(null)
+
+              resolve({
+                lineItems,
+                shippingRates: expressShippingRates,
+              })
+
+              void syncExpressCheckoutIntent(preferredMethod).catch((err) => {
+                console.error('[ExpressCheckout] Failed to sync totals:', err)
+              })
+            }}
             onShippingAddressChange={({ resolve }) => resolve({})}
-            onShippingRateChange={({ resolve }) => resolve({})}
+            onShippingRateChange={async ({ shippingRate, resolve, reject }) => {
+              const nextMethod = shippingRate.id === 'express-shipping' ? 'express' : 'standard'
+              try {
+                const updated = await syncExpressCheckoutIntent(nextMethod)
+                setValue('shippingMethod', nextMethod, { shouldDirty: true })
+
+                resolve({
+                  lineItems: buildExpressLineItems(nextMethod, updated ? {
+                    subtotal: updated.subtotal,
+                    shippingCost: updated.shippingCost,
+                    insuranceCost: updated.insuranceCost,
+                    discountAmount: updated.discountAmount,
+                  } : undefined),
+                })
+              } catch (err) {
+                console.error('[ExpressCheckout] Failed to update shipping rate:', err)
+                setPaymentError('Unable to update shipping total. Please try again.')
+                reject()
+              }
+            }}
             onConfirm={onExpressCheckoutConfirm}
             options={{
               emailRequired: true,
@@ -438,38 +569,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
               billingAddressRequired: true,
               phoneNumberRequired: true,
               allowedShippingCountries: PRODUCT.allowedShippingCountries,
-              shippingRates: qualifiesForFreeShipping
-                ? [
-                    {
-                      id: 'free-shipping',
-                      displayName: 'Free Shipping',
-                      amount: 0,
-                      deliveryEstimate: {
-                        minimum: { unit: 'day', value: 5 },
-                        maximum: { unit: 'day', value: 7 },
-                      },
-                    },
-                  ]
-                : [
-                    {
-                      id: 'standard-shipping',
-                      displayName: 'Standard Shipping',
-                      amount: PRODUCT.shipping.standard,
-                      deliveryEstimate: {
-                        minimum: { unit: 'day', value: 5 },
-                        maximum: { unit: 'day', value: 7 },
-                      },
-                    },
-                    {
-                      id: 'express-shipping',
-                      displayName: 'Express Shipping',
-                      amount: PRODUCT.shipping.express,
-                      deliveryEstimate: {
-                        minimum: { unit: 'day', value: 1 },
-                        maximum: { unit: 'day', value: 3 },
-                      },
-                    },
-                  ],
+              shippingRates: expressShippingRates,
               buttonType: {
                 applePay: 'buy',
                 googlePay: 'buy',

@@ -231,33 +231,37 @@ export async function PATCH(req: NextRequest) {
     // Update Payment Intent
     const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
       amount: total,
-      receipt_email: email,
-      shipping: shippingAddress ? {
-        name: shippingAddress.name,
-        address: {
-          line1: shippingAddress.address?.line1,
-          line2: shippingAddress.address?.line2 || undefined,
-          city: shippingAddress.address?.city,
-          state: shippingAddress.address?.state,
-          postal_code: shippingAddress.address?.postal_code,
-          country: shippingAddress.address?.country,
+      ...(email ? { receipt_email: email } : {}),
+      ...(shippingAddress ? {
+        shipping: {
+          name: shippingAddress.name,
+          address: {
+            line1: shippingAddress.address?.line1,
+            line2: shippingAddress.address?.line2 || undefined,
+            city: shippingAddress.address?.city,
+            state: shippingAddress.address?.state,
+            postal_code: shippingAddress.address?.postal_code,
+            country: shippingAddress.address?.country,
+          },
         },
-      } : undefined,
+      } : {}),
       metadata: {
         ...currentIntent.metadata,
         shipping: String(shippingCost),
         shipping_method: shippingMethod,
-        customer_email: email || '',
-        customer_name: shippingAddress?.name || '',
-        shipping_address: shippingAddress ? JSON.stringify({
-          name: shippingAddress.name,
-          line1: shippingAddress.address?.line1,
-          line2: shippingAddress.address?.line2 || '',
-          city: shippingAddress.address?.city,
-          state: shippingAddress.address?.state,
-          postal_code: shippingAddress.address?.postal_code,
-          country: shippingAddress.address?.country,
-        }) : '',
+        ...(email ? { customer_email: email } : {}),
+        ...(shippingAddress?.name ? { customer_name: shippingAddress.name } : {}),
+        ...(shippingAddress ? {
+          shipping_address: JSON.stringify({
+            name: shippingAddress.name,
+            line1: shippingAddress.address?.line1,
+            line2: shippingAddress.address?.line2 || '',
+            city: shippingAddress.address?.city,
+            state: shippingAddress.address?.state,
+            postal_code: shippingAddress.address?.postal_code,
+            country: shippingAddress.address?.country,
+          }),
+        } : {}),
       },
     })
 

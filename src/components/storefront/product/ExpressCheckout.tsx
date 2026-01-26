@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Elements, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import type { StripeExpressCheckoutElementConfirmEvent } from '@stripe/stripe-js'
 import { Zap, Loader2 } from 'lucide-react'
 import { getStripe } from '@/lib/stripe/client'
 import { BUNDLES, type BundleId } from '@/data/bundles'
@@ -42,7 +43,18 @@ interface ExpressCheckoutProps {
 }
 
 // Inner component that uses Stripe hooks
-function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purchaseEventId }: ExpressCheckoutProps & { onFallback: () => void; purchaseEventId: string | null }) {
+function ExpressCheckoutButtons({
+  designId,
+  bundleId,
+  compact,
+  onFallback,
+  purchaseEventId,
+  clientSecret,
+}: ExpressCheckoutProps & {
+  onFallback: () => void
+  purchaseEventId: string | null
+  clientSecret: string
+}) {
   const stripe = useStripe()
   const elements = useElements()
   const [showFallback, setShowFallback] = useState(false)
@@ -50,18 +62,134 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
 
   const bundle = BUNDLES.find(b => b.id === bundleId)
   const design = PRODUCT.designs.find(d => d.id === designId)
+  const paymentIntentId = clientSecret.split('_secret_')[0]
+  const qualifiesForFreeShipping = bundle ? bundle.price >= PRODUCT.freeShippingThreshold : false
 
-  const handleConfirm = async () => {
-    if (!stripe || !elements || !bundle || !design) return
+  const getShippingCostForMethod = (method: 'standard' | 'express') => {
+    if (method === 'express') {
+      return qualifiesForFreeShipping ? PRODUCT.shipping.standard : PRODUCT.shipping.express
+    }
+    return qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
+  }
+
+  const getShippingLabel = (method: 'standard' | 'express', cost: number) => {
+    if (cost === 0) {
+      return 'Free Shipping'
+    }
+    return method === 'express' ? 'Express Shipping' : 'Standard Shipping'
+  }
+
+  const buildExpressShippingRates = (preferredMethod: 'standard' | 'express') => {
+    if (qualifiesForFreeShipping) {
+      return [
+        {
+          id: 'free-shipping',
+          displayName: 'Free Shipping',
+          amount: 0,
+          deliveryEstimate: {
+            minimum: { unit: 'day', value: 5 },
+            maximum: { unit: 'day', value: 7 },
+          },
+        },
+      ]
+    }
+
+    const standardRate = {
+      id: 'standard-shipping',
+      displayName: 'Standard Shipping',
+      amount: PRODUCT.shipping.standard,
+      deliveryEstimate: {
+        minimum: { unit: 'day', value: 5 },
+        maximum: { unit: 'day', value: 7 },
+      },
+    }
+
+    const expressRate = {
+      id: 'express-shipping',
+      displayName: 'Express Shipping',
+      amount: PRODUCT.shipping.express,
+      deliveryEstimate: {
+        minimum: { unit: 'day', value: 1 },
+        maximum: { unit: 'day', value: 3 },
+      },
+    }
+
+    return preferredMethod === 'express'
+      ? [expressRate, standardRate]
+      : [standardRate, expressRate]
+  }
+
+  const buildExpressLineItems = (
+    method: 'standard' | 'express',
+    overrides?: { subtotal?: number; shippingCost?: number }
+  ) => {
+    const lineSubtotal = overrides?.subtotal ?? (bundle?.price ?? 0)
+    const lineShippingCost = overrides?.shippingCost ?? getShippingCostForMethod(method)
+    return [
+      { name: 'Subtotal', amount: lineSubtotal },
+      { name: getShippingLabel(method, lineShippingCost), amount: lineShippingCost },
+    ]
+  }
+
+  const syncExpressCheckoutIntent = async (method: 'standard' | 'express') => {
+    const res = await fetch('/api/express-checkout', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paymentIntentId,
+        shippingMethod: method,
+      }),
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      throw new Error(data.details || 'Failed to update totals for express checkout')
+    }
+
+    return data
+  }
+
+  const handleConfirm = async (event: StripeExpressCheckoutElementConfirmEvent) => {
+    if (!stripe || !elements || !bundle || !design) {
+      event.paymentFailed({ reason: 'fail', message: 'Payment system not ready. Please refresh and try again.' })
+      return
+    }
 
     // Use the same eventId that was sent to PaymentIntent metadata for deduplication
     const eventId = purchaseEventId || generateEventId('purchase')
-    const price = bundle.price / 100
+    const shippingRateId = event.shippingRate?.id || (qualifiesForFreeShipping ? 'free-shipping' : 'standard-shipping')
+    const shippingMethod = shippingRateId === 'express-shipping' ? 'express' : 'standard'
+    const shippingCost = getShippingCostForMethod(shippingMethod)
+    const total = (bundle.price + shippingCost) / 100
     const productName = `${PRODUCT.name} - ${design.name}`
+    const email = event.billingDetails?.email || ''
+    const shippingDetails = event.shippingAddress
+
+    if (!shippingDetails) {
+      event.paymentFailed({ reason: 'invalid_shipping_address', message: 'Shipping address is required.' })
+      return
+    }
+
+    if (!email) {
+      event.paymentFailed({ reason: 'invalid_payment_data', message: 'Email is required.' })
+      return
+    }
+
+    const shippingAddress = {
+      name: shippingDetails.name,
+      address: {
+        line1: shippingDetails.address.line1,
+        line2: shippingDetails.address.line2 || undefined,
+        city: shippingDetails.address.city,
+        state: shippingDetails.address.state,
+        postal_code: shippingDetails.address.postal_code,
+        country: shippingDetails.address.country,
+      },
+    }
 
     // Store purchase data for success page tracking
     const purchaseData = {
-      value: price,
+      value: total,
       numItems: 1,
       contentIds: [`${designId}-${bundleId}`],
       currency: 'USD',
@@ -69,17 +197,46 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
       items: [{
         itemId: `${designId}-${bundleId}`,
         itemName: productName,
-        price,
+        price: bundle.price / 100,
         quantity: 1,
       }],
     }
     safeSetSessionStorage('fb_purchase_data', JSON.stringify(purchaseData))
+
+    const updateResponse = await fetch('/api/express-checkout', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paymentIntentId,
+        email,
+        shippingAddress,
+        shippingMethod,
+      }),
+    })
+
+    if (!updateResponse.ok) {
+      event.paymentFailed({ reason: 'fail', message: 'Failed to update shipping details. Please try again.' })
+      safeRemoveSessionStorage('fb_purchase_data')
+      return
+    }
 
     // Confirm payment
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/checkout/success`,
+        receipt_email: email,
+        shipping: {
+          name: shippingAddress.name,
+          address: {
+            line1: shippingAddress.address.line1,
+            line2: shippingAddress.address.line2,
+            city: shippingAddress.address.city,
+            state: shippingAddress.address.state,
+            postal_code: shippingAddress.address.postal_code,
+            country: shippingAddress.address.country,
+          },
+        },
       },
     })
 
@@ -194,11 +351,35 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
               }),
             }).catch(() => {})
           }
-          resolve()
+
+          const lineItems = buildExpressLineItems('standard')
+          resolve({
+            lineItems,
+            shippingRates: buildExpressShippingRates('standard'),
+          })
+
+          void syncExpressCheckoutIntent('standard').catch((err) => {
+            console.error('[ExpressCheckout] Failed to sync totals:', err)
+          })
         }}
         onShippingAddressChange={({ resolve }) => {
           // Just validate - shipping rates are set in options
           resolve({})
+        }}
+        onShippingRateChange={async ({ shippingRate, resolve, reject }) => {
+          const nextMethod = shippingRate.id === 'express-shipping' ? 'express' : 'standard'
+          try {
+            const updated = await syncExpressCheckoutIntent(nextMethod)
+            resolve({
+              lineItems: buildExpressLineItems(nextMethod, updated ? {
+                subtotal: updated.subtotal,
+                shippingCost: updated.shippingCost,
+              } : undefined),
+            })
+          } catch (err) {
+            console.error('[ExpressCheckout] Failed to update shipping rate:', err)
+            reject()
+          }
         }}
         onConfirm={handleConfirm}
         options={{
@@ -208,38 +389,7 @@ function ExpressCheckoutButtons({ designId, bundleId, compact, onFallback, purch
           billingAddressRequired: true,
           phoneNumberRequired: true,
           allowedShippingCountries: PRODUCT.allowedShippingCountries,
-          shippingRates: bundle && bundle.price >= PRODUCT.freeShippingThreshold
-            ? [
-                {
-                  id: 'free-shipping',
-                  displayName: 'Free Shipping',
-                  amount: 0,
-                  deliveryEstimate: {
-                    minimum: { unit: 'day', value: 5 },
-                    maximum: { unit: 'day', value: 7 },
-                  },
-                },
-              ]
-            : [
-                {
-                  id: 'standard-shipping',
-                  displayName: 'Standard Shipping',
-                  amount: PRODUCT.shipping.standard,
-                  deliveryEstimate: {
-                    minimum: { unit: 'day', value: 5 },
-                    maximum: { unit: 'day', value: 7 },
-                  },
-                },
-                {
-                  id: 'express-shipping',
-                  displayName: 'Express Shipping',
-                  amount: PRODUCT.shipping.express,
-                  deliveryEstimate: {
-                    minimum: { unit: 'day', value: 1 },
-                    maximum: { unit: 'day', value: 3 },
-                  },
-                },
-              ],
+          shippingRates: buildExpressShippingRates('standard'),
           buttonType: {
             applePay: 'buy',
             googlePay: 'buy',
@@ -462,6 +612,7 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
           compact={compact}
           onFallback={() => setShowFallback(true)}
           purchaseEventId={purchaseEventId}
+          clientSecret={clientSecret}
         />
         {/* Show Buy Now if Stripe says no wallet methods available */}
         {showFallback && (
