@@ -7,8 +7,6 @@ import {
   analytics,
   getSessionId,
   getVisitorId,
-  getDeviceType,
-  getUTMParams,
   type AnalyticsEventType
 } from '@/lib/analytics/tracker'
 
@@ -58,26 +56,6 @@ function AnalyticsTracker() {
       const existingSession = sessionStorage.getItem('pmh_session_id')
       if (!existingSession) {
         analytics.sessionStart()
-
-        // Create/update session in Supabase with UTM params
-        const utm = getUTMParams()
-        const sessionId = getSessionId()
-        const visitorId = getVisitorId()
-
-        fetch('/api/analytics/track', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event_type: 'session_start',
-            session_id: sessionId,
-            visitor_id: visitorId,
-            page_path: pathname,
-            device_type: getDeviceType(),
-            referrer: document.referrer,
-            event_data: utm,
-            create_session: true,
-          }),
-        }).catch(() => {})
       }
     }
     return () => {

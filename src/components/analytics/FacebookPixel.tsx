@@ -18,7 +18,7 @@ function captureFbcFromUrl() {
 
   if (fbclid) {
     // Generate fbc in the correct format: fb.1.timestamp.fbclid
-    const timestamp = Date.now()
+    const timestamp = Math.floor(Date.now() / 1000)
     const fbc = `fb.1.${timestamp}.${fbclid}`
 
     // Store in localStorage for persistence across pages

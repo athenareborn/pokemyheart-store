@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/store/cart'
 import { fbPixel } from '@/lib/analytics/fpixel'
 import { ga4 } from '@/lib/analytics/ga4'
-import { getFbCookies } from '@/lib/analytics/facebook-capi'
-import { getUserData, getExternalId } from '@/lib/analytics/user-data-store'
 import { analytics as supabaseAnalytics } from '@/lib/analytics/tracker'
 import { PostPurchaseOffer } from '@/components/storefront/checkout/PostPurchaseOffer'
 
@@ -55,54 +53,6 @@ function CheckoutSuccessContent() {
           purchaseData.currency,
           purchaseData.eventId
         )
-
-        // Facebook CAPI (server-side for iOS 14.5+ and improved EMQ)
-        const userData = getUserData()
-        const { fbc, fbp } = getFbCookies()
-
-        fetch('/api/analytics/fb-event', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            eventName: 'Purchase',
-            eventId: purchaseData.eventId, // Same eventId for deduplication
-            eventSourceUrl: window.location.href,
-            userData: {
-              email: userData?.email,
-              phone: userData?.phone,
-              firstName: userData?.firstName,
-              lastName: userData?.lastName,
-              city: userData?.city,
-              state: userData?.state,
-              postalCode: userData?.postalCode,
-              country: userData?.country,
-              externalId: getExternalId(),
-              fbc,
-              fbp,
-            },
-            customData: {
-              value: purchaseData.value,
-              currency: purchaseData.currency,
-              order_id: orderId,
-              num_items: purchaseData.numItems,
-              content_type: 'product',
-              contents: purchaseData.items?.map((item: { itemId: string; quantity: number; price: number }) => ({
-                id: item.itemId,
-                quantity: item.quantity,
-                item_price: item.price,
-              })) || purchaseData.contentIds?.map((id: string) => ({ id, quantity: 1 })),
-            },
-          }),
-        }).then(res => {
-          if (!res.ok) {
-            console.error('[Success] CAPI Purchase failed:', res.status, res.statusText)
-          } else {
-            console.log('[Success] CAPI Purchase sent successfully')
-          }
-        }).catch((err) => {
-          // Log error but don't break UX - webhook is backup
-          console.error('[Success] CAPI Purchase network error:', err.message)
-        })
 
         // Google Analytics 4 (client-side redundancy)
         if (purchaseData.items) {

@@ -139,7 +139,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       const purchaseEventId = generateEventId('purchase')
       const purchaseData = {
         value: total / 100,
-        numItems: items.length,
+        numItems: itemCount,
         contentIds: items.map(item => `${item.designId}-${item.bundleId}`),
         currency: 'USD',
         eventId: purchaseEventId,
@@ -298,7 +298,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       const purchaseEventId = generateEventId('purchase')
       const purchaseData = {
         value: total / 100,
-        numItems: items.length,
+        numItems: itemCount,
         contentIds: items.map(item => `${item.designId}-${item.bundleId}`),
         currency: 'USD',
         eventId: purchaseEventId,

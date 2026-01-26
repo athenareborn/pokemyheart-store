@@ -409,23 +409,6 @@ export function ExpressCheckout({ designId, bundleId, compact = false }: Express
       }),
     }).catch(() => {})
 
-    // Store purchase data for success page tracking
-    const purchaseEvtId = generateEventId('purchase')
-    const purchaseData = {
-      value: price,
-      numItems: 1,
-      contentIds: [`${designId}-${bundleId}`],
-      currency: 'USD',
-      eventId: purchaseEvtId,
-      items: [{
-        itemId: `${designId}-${bundleId}`,
-        itemName: productName,
-        price,
-        quantity: 1,
-      }],
-    }
-    safeSetSessionStorage('fb_purchase_data', JSON.stringify(purchaseData))
-
     // Add to cart and redirect to checkout
     addItem(designId, bundleId)
     router.push('/checkout')

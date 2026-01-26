@@ -198,6 +198,36 @@ async function upsertCustomerStats(
   }
 }
 
+async function recordPurchaseAnalytics(
+  supabase: Awaited<ReturnType<typeof getSupabaseClient>>,
+  params: {
+    orderNumber: string
+    total: number
+    currency: string
+    email?: string | null
+    source: string
+    sessionId?: string | null
+  }
+) {
+  const { error } = await supabase
+    .from('analytics_events')
+    .insert({
+      event_type: 'purchase',
+      session_id: params.sessionId || null,
+      event_data: {
+        order_number: params.orderNumber,
+        total: params.total / 100,
+        currency: params.currency,
+        email: params.email || null,
+        source: params.source,
+      },
+    })
+
+  if (error) {
+    console.error('Failed to record purchase analytics:', error)
+  }
+}
+
 export async function POST(request: Request) {
   const body = await request.text()
   const headersList = await headers()
@@ -295,6 +325,14 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     name: customerName,
     totalSpent: session.amount_total || 0,
     acceptsMarketing: metadata.acceptsMarketing === 'true',
+  })
+
+  await recordPurchaseAnalytics(supabase, {
+    orderNumber,
+    total: session.amount_total || 0,
+    currency: session.currency || 'usd',
+    email: customerEmail,
+    source: 'stripe_webhook_checkout_session',
   })
 
   console.log(`Order ${orderNumber} created successfully`)
@@ -512,6 +550,14 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent) {
     name: customerName,
     totalSpent: paymentIntent.amount,
     acceptsMarketing: false,
+  })
+
+  await recordPurchaseAnalytics(supabase, {
+    orderNumber,
+    total: paymentIntent.amount,
+    currency: paymentIntent.currency || 'usd',
+    email: customerEmail,
+    source: 'stripe_webhook_payment_intent',
   })
 
   console.log(`Order ${orderNumber} created from Payment Intent`)

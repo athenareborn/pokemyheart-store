@@ -31,6 +31,7 @@ function CartExpressCheckoutInner() {
   const subtotal = getSubtotal()
   const total = getTotal()
   const insuranceCost = getInsuranceCost()
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
   const getTrackingProducts = useCallback(() => {
     return items.map(item => {
@@ -156,7 +157,7 @@ function CartExpressCheckoutInner() {
       try {
         marketingAnalytics.trackInitiateCheckout(getTrackingProducts(), total / 100)
         marketingAnalytics.trackAddPaymentInfo(total / 100, ev.paymentMethod.card?.brand || 'wallet')
-        supabaseAnalytics.checkoutStart(total / 100, items.length)
+        supabaseAnalytics.checkoutStart(total / 100, itemCount)
 
         // Get tracking data for attribution
         const { fbc, fbp } = getFbCookies()
@@ -247,7 +248,6 @@ function CartExpressCheckoutInner() {
             // sessionStorage may not be available in iOS private browsing
           }
 
-          marketingAnalytics.trackPurchase(getTrackingProducts(), total / 100, paymentIntent.id)
           clearCart()
           closeCart()
           router.push(`/checkout/success?payment_intent=${paymentIntent.id}`)

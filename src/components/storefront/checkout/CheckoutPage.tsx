@@ -29,8 +29,16 @@ export function CheckoutPage() {
   const [discountCode, setDiscountCode] = useState<string | null>(null)
   const [discountAmount, setDiscountAmount] = useState(0)
   const hasTrackedCheckoutStart = useRef(false)
+  const isCreatingPaymentIntent = useRef(false)
+  const lastCartKeyRef = useRef('')
 
   const { items, isCartEmpty, getSubtotal, isFreeShipping, shippingInsurance } = useCartStore()
+  const subtotal = getSubtotal()
+  const freeShipping = isFreeShipping()
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+  const cartKey = items
+    .map((item) => `${item.designId}-${item.bundleId}-${item.quantity}`)
+    .join('|')
 
   const handleApplyDiscount = async (code: string) => {
     const subtotal = getSubtotal()
@@ -68,15 +76,18 @@ export function CheckoutPage() {
     if (items.length === 0) return
 
     const initCheckout = async () => {
+      if (isCreatingPaymentIntent.current) return
+      if (clientSecret && lastCartKeyRef.current === cartKey) return
+      isCreatingPaymentIntent.current = true
+
       // Track InitiateCheckout
       const eventId = generateEventId('ic')
-      const total = getSubtotal()
       const contentIds = items.map(item => `${item.designId}-${item.bundleId}`)
 
-      fbPixel.initiateCheckout(total / 100, items.length, contentIds, 'USD', eventId)
+      fbPixel.initiateCheckout(subtotal / 100, itemCount, contentIds, 'USD', eventId)
 
       if (!hasTrackedCheckoutStart.current) {
-        supabaseAnalytics.checkoutStart(total / 100, items.length)
+        supabaseAnalytics.checkoutStart(subtotal / 100, itemCount)
         hasTrackedCheckoutStart.current = true
       }
 
@@ -102,11 +113,11 @@ export function CheckoutPage() {
             ...getFbCookies(),
           },
           customData: {
-            value: total / 100,
+            value: subtotal / 100,
             currency: 'USD',
             content_type: 'product',
             content_category: 'Valentine Cards',
-            num_items: items.length,
+            num_items: itemCount,
             // Per Meta: use contents (not content_ids) when we have full product info
             contents: items.map(item => ({
               id: `${item.designId}-${item.bundleId}`,
@@ -120,7 +131,7 @@ export function CheckoutPage() {
       })
 
       ga4.beginCheckout({
-        value: total / 100,
+        value: subtotal / 100,
         items: items.map(item => {
           const bundle = BUNDLES.find(b => b.id === item.bundleId)
           const design = PRODUCT.designs.find(d => d.id === item.designId)
@@ -151,8 +162,7 @@ export function CheckoutPage() {
           }
         })
 
-        const qualifiesForFreeShipping = isFreeShipping()
-        const shippingCost = qualifiesForFreeShipping ? 0 : PRODUCT.shipping.standard
+        const shippingCost = freeShipping ? 0 : PRODUCT.shipping.standard
 
         const res = await fetch('/api/payment-intent', {
           method: 'POST',
@@ -187,13 +197,16 @@ export function CheckoutPage() {
         }
 
         setClientSecret(data.clientSecret)
+        lastCartKeyRef.current = cartKey
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to initialize checkout')
+      } finally {
+        isCreatingPaymentIntent.current = false
       }
     }
 
     initCheckout()
-  }, [items, getSubtotal, isFreeShipping])
+  }, [items, cartKey, clientSecret, itemCount, subtotal, freeShipping])
 
   // Redirect if cart is empty (only after mounted)
   useEffect(() => {
