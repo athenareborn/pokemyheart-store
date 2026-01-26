@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Elements, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
-import type { StripeExpressCheckoutElementConfirmEvent } from '@stripe/stripe-js'
+import type { ShippingRate, StripeExpressCheckoutElementConfirmEvent } from '@stripe/stripe-js'
 import { Zap, Loader2 } from 'lucide-react'
 import { getStripe } from '@/lib/stripe/client'
 import { BUNDLES, type BundleId } from '@/data/bundles'
@@ -79,7 +79,7 @@ function ExpressCheckoutButtons({
     return method === 'express' ? 'Express Shipping' : 'Standard Shipping'
   }
 
-  const buildExpressShippingRates = (preferredMethod: 'standard' | 'express') => {
+  const buildExpressShippingRates = (preferredMethod: 'standard' | 'express'): ShippingRate[] => {
     if (qualifiesForFreeShipping) {
       return [
         {
@@ -87,30 +87,30 @@ function ExpressCheckoutButtons({
           displayName: 'Free Shipping',
           amount: 0,
           deliveryEstimate: {
-            minimum: { unit: 'day', value: 5 },
-            maximum: { unit: 'day', value: 7 },
+            minimum: { unit: 'day' as const, value: 5 },
+            maximum: { unit: 'day' as const, value: 7 },
           },
         },
       ]
     }
 
-    const standardRate = {
+    const standardRate: ShippingRate = {
       id: 'standard-shipping',
       displayName: 'Standard Shipping',
       amount: PRODUCT.shipping.standard,
       deliveryEstimate: {
-        minimum: { unit: 'day', value: 5 },
-        maximum: { unit: 'day', value: 7 },
+        minimum: { unit: 'day' as const, value: 5 },
+        maximum: { unit: 'day' as const, value: 7 },
       },
     }
 
-    const expressRate = {
+    const expressRate: ShippingRate = {
       id: 'express-shipping',
       displayName: 'Express Shipping',
       amount: PRODUCT.shipping.express,
       deliveryEstimate: {
-        minimum: { unit: 'day', value: 1 },
-        maximum: { unit: 'day', value: 3 },
+        minimum: { unit: 'day' as const, value: 1 },
+        maximum: { unit: 'day' as const, value: 3 },
       },
     }
 

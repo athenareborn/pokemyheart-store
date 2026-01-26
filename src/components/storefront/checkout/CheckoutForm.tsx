@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PaymentElement, ExpressCheckoutElement, useStripe, useElements } from '@stripe/react-stripe-js'
-import type { StripeExpressCheckoutElementConfirmEvent } from '@stripe/stripe-js'
+import type { ShippingRate, StripeExpressCheckoutElementConfirmEvent } from '@stripe/stripe-js'
 import { Loader2, Lock } from 'lucide-react'
 import { checkoutFormSchema, type CheckoutFormInput } from '@/lib/validation/checkout-schema'
 import { useCartStore, SHIPPING_INSURANCE_PRICE } from '@/lib/store/cart'
@@ -117,7 +117,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
     return method === 'express' ? 'Express Shipping' : 'Standard Shipping'
   }
 
-  const buildExpressShippingRates = (preferredMethod: 'standard' | 'express') => {
+  const buildExpressShippingRates = (preferredMethod: 'standard' | 'express'): ShippingRate[] => {
     if (qualifiesForFreeShipping) {
       return [
         {
@@ -125,30 +125,30 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           displayName: 'Free Shipping',
           amount: 0,
           deliveryEstimate: {
-            minimum: { unit: 'day', value: 5 },
-            maximum: { unit: 'day', value: 7 },
+            minimum: { unit: 'day' as const, value: 5 },
+            maximum: { unit: 'day' as const, value: 7 },
           },
         },
       ]
     }
 
-    const standardRate = {
+    const standardRate: ShippingRate = {
       id: 'standard-shipping',
       displayName: 'Standard Shipping',
       amount: PRODUCT.shipping.standard,
       deliveryEstimate: {
-        minimum: { unit: 'day', value: 5 },
-        maximum: { unit: 'day', value: 7 },
+        minimum: { unit: 'day' as const, value: 5 },
+        maximum: { unit: 'day' as const, value: 7 },
       },
     }
 
-    const expressRate = {
+    const expressRate: ShippingRate = {
       id: 'express-shipping',
       displayName: 'Express Shipping',
       amount: PRODUCT.shipping.express,
       deliveryEstimate: {
-        minimum: { unit: 'day', value: 1 },
-        maximum: { unit: 'day', value: 3 },
+        minimum: { unit: 'day' as const, value: 1 },
+        maximum: { unit: 'day' as const, value: 3 },
       },
     }
 
