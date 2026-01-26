@@ -66,7 +66,9 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
   const allowedCountries = PRODUCT.allowedShippingCountries.length
     ? PRODUCT.allowedShippingCountries
     : (['US'] as Array<'US' | 'AU' | 'CA' | 'GB'>)
-  const defaultCountry = allowedCountries[0] ?? 'US'
+  const defaultCountry = allowedCountries.includes('US')
+    ? 'US'
+    : (allowedCountries[0] ?? 'US')
 
   const {
     register,

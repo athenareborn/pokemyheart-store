@@ -102,14 +102,6 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
 
     return (
       <div ref={ref} className="space-y-4">
-        {/* Valentine's delivery callout - right above CTA */}
-        <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
-          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-          <span>Order today for the best chance of Valentine's delivery</span>
-        </div>
-
         {/* Main CTA Button */}
         <Button
           size="lg"
@@ -139,12 +131,12 @@ export const AddToCart = forwardRef<HTMLDivElement, AddToCartProps>(
           <ExpressCheckout designId={designId} bundleId={bundleId} />
         </div>
 
-        {/* Primary Trust Badge - Returns */}
+        {/* Primary Trust Badge - Delivery */}
         <div className="flex items-center justify-center gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
           <Shield className="w-6 h-6 text-green-600 flex-shrink-0" />
           <div className="text-left">
-            <p className="font-semibold text-green-800 text-sm">30-Day Returns</p>
-            <p className="text-xs text-green-600">Eligible unused items in original packaging.</p>
+            <p className="font-semibold text-green-800 text-sm">Guaranteed Valentine&apos;s Delivery</p>
+            <p className="text-xs text-green-600">Order today to lock it in.</p>
           </div>
         </div>
 
