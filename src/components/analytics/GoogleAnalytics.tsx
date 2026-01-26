@@ -11,6 +11,8 @@ import Script from 'next/script'
 import { useEffect, Suspense } from 'react'
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID
+const GTAG_ID = GA_MEASUREMENT_ID || GOOGLE_ADS_ID
 
 /**
  * Tracks page views on route change
@@ -41,7 +43,7 @@ function GoogleAnalyticsPageView() {
  * - Manual page view control (tracks on route change)
  */
 export function GoogleAnalytics() {
-  if (!GA_MEASUREMENT_ID) {
+  if (!GTAG_ID) {
     return null
   }
 
@@ -49,7 +51,7 @@ export function GoogleAnalytics() {
     <>
       {/* Global Site Tag (gtag.js) - Google Analytics */}
       <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${GTAG_ID}`}
         strategy="afterInteractive"
       />
       <Script id="ga4-init" strategy="afterInteractive">
@@ -57,10 +59,8 @@ export function GoogleAnalytics() {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${GA_MEASUREMENT_ID}', {
-            send_page_view: false,
-            allow_enhanced_conversions: true
-          });
+          ${GA_MEASUREMENT_ID ? `gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false, allow_enhanced_conversions: true });` : ''}
+          ${GOOGLE_ADS_ID ? `gtag('config', '${GOOGLE_ADS_ID}', { allow_enhanced_conversions: true });` : ''}
         `}
       </Script>
       <Suspense fallback={null}>
