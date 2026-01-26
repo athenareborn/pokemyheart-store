@@ -14,6 +14,7 @@ import { PRODUCT } from '@/data/product'
 import { formatPrice } from '@/lib/utils'
 import { generateEventId } from '@/lib/analytics/facebook-capi'
 import { saveUserData } from '@/lib/analytics/user-data-store'
+import { ga4 } from '@/lib/analytics/ga4'
 
 const splitName = (fullName: string | null | undefined) => {
   const trimmed = fullName?.trim() || ''
@@ -135,7 +136,20 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
       country: data.shippingAddress.country,
     })
 
+    ga4.setUserData({
+      ...(email ? { email } : {}),
+      ...(phone ? { phone } : {}),
+      firstName: data.shippingAddress.firstName,
+      lastName: data.shippingAddress.lastName,
+      street: data.shippingAddress.address1,
+      city: data.shippingAddress.city,
+      region: data.shippingAddress.state,
+      postalCode: data.shippingAddress.postalCode,
+      country: data.shippingAddress.country,
+    })
+
     try {
+      const gaClientId = await ga4.getClientId()
       const purchaseEventId = generateEventId('purchase')
       const purchaseData = {
         value: total / 100,
@@ -167,6 +181,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           discountCode,
           shippingInsurance,
           fbEventId: purchaseEventId,
+          gaData: { clientId: gaClientId },
           ...(email ? { email } : {}),
           customerName: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`.trim(),
           shippingAddress: data.shippingAddress,
@@ -295,6 +310,19 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
     })
 
     try {
+      ga4.setUserData({
+        ...(email ? { email } : {}),
+        ...(phone ? { phone } : {}),
+        firstName,
+        lastName,
+        street: shippingDetails.address.line1,
+        city: shippingDetails.address.city,
+        region: shippingDetails.address.state,
+        postalCode: shippingDetails.address.postal_code,
+        country: shippingDetails.address.country,
+      })
+
+      const gaClientId = await ga4.getClientId()
       const purchaseEventId = generateEventId('purchase')
       const purchaseData = {
         value: total / 100,
@@ -330,6 +358,7 @@ export function CheckoutForm({ onShippingMethodChange, clientSecret, discountCod
           fbEventId: purchaseEventId,
           email,
           customerName: name,
+          gaData: { clientId: gaClientId },
           // Don't send shippingAddress - let Stripe keep Apple Pay's data
         }),
       })
